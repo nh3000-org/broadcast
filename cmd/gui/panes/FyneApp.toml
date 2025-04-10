@@ -1,0 +1,8 @@
+Website = "https://newhorizons3000.org"
+
+[Details]
+  Icon = "/home/oem/go/src/github.com/nh3000-org/broadcast/cmd/gui/Icon.png"
+  Name = "NH3000"
+  ID = "org.nh3000.broadcast"
+  Version = "1.0.0"
+  Build = 39
