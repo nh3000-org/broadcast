@@ -1,0 +1,7 @@
+[Unit]
+Description=NH3000 HTTP Service        
+[Service]
+Type=simple
+ExecStart=/opt/src/github.com/nh3000/broadcast/cmd/servehttp/servehttp
+[Install]
+WantedBy=multi-user.target
