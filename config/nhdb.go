@@ -34,7 +34,10 @@ import (
 //var conn *pgx.Conn
 
 // var DBaddress = "localhost:5432/radio"
-var DBaddress = "db.newhorizons3000.org:5432/radio?sslmode=verify-ca"
+var DBaddress = "db.newhorizons3000.org:5432/radio?sslmode=require"
+
+//var DBaddress = "192.168.88.232:5432/radio?sslmode=require"
+
 var DBuser = "postgres"
 var DBpassword = "postgres"
 
@@ -65,7 +68,7 @@ func NewPGSQL() error {
 		return pterr
 	}
 	TheDB := "postgresql://" + DBuser + ":" + DBpassword + "@" + DBaddress
-	//var thedb = DBaddress + DBname + "?user=" + DBuser + "&password=" + DBpassword
+
 	mydb, mydberr := pgxpool.ParseConfig(TheDB)
 	//log.Println("DB: ", TheDB)
 	if mydberr != nil {
@@ -1742,7 +1745,12 @@ var AlbumArray []string
 
 func AlbumToArray() []string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
-	conn, _ := SQL.Pool.Acquire(ctxsql)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+	if connerr != nil {
+		log.Println("AlbumToArray", connerr)
+		ctxsqlcan()
+		return nil
+	}
 	AlbumArray := []string{}
 	rows, rowserr := conn.Query(ctxsql, "select distinct album from traffic order by album")
 	var album string

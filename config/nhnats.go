@@ -384,7 +384,6 @@ func TestBucket(bucket, id string) bool {
 //var gbserr error
 
 func GetBucketSize(bucket, id string) uint64 {
-	log.Println("Get Bucket Size ", bucket, id)
 	if id == "" || id == "INTRO" || id == "OUTRO" {
 		return 0
 	}
