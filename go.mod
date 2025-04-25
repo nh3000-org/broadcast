@@ -1,6 +1,6 @@
 module github.com/nh3000-org/radio
 
-go 1.24.1
+go 1.24
 
 require (
 	fyne.io/fyne/v2 v2.5.5
@@ -14,7 +14,6 @@ require (
 )
 
 require (
-
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jeandeaual/go-locale v0.0.0-20240223122105-ce5225dcaa49 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
