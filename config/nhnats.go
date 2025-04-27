@@ -551,10 +551,10 @@ func SetupNATS() {
 	_, streammissing = jsmissingctx.StreamInfo("MESSAGES")
 	if streammissing != nil {
 		_, createerr := jsmissingctx.AddStream(&nats.StreamConfig{
-			Name:     "MESSAGES",
-			Subjects: []string{"messages.*", "events.*", "authorizations.*", "devices.*"},
-			Storage:  nats.FileStorage,
-			//MaxAge:    2048000 * time.Hour,
+			Name:      "MESSAGES",
+			Subjects:  []string{"messages.*", "events.*", "authorizations.*", "devices.*"},
+			Storage:   nats.FileStorage,
+			MaxAge:    1024 * time.Hour,
 			FirstSeq:  1,
 			Retention: nats.LimitsPolicy,
 		})
@@ -562,10 +562,10 @@ func SetupNATS() {
 			log.Println("SetupNATS MESSAGES stream missing ", getLangsNats("ms-eraj"), streammissing)
 		}
 		_, mistrafficerr = jsmissingctx.AddStream(&nats.StreamConfig{
-			Name:     "TRAFFIC",
-			Subjects: []string{"spins.*", "clicks.*", "onair.*"},
-			Storage:  nats.FileStorage,
-			//MaxAge:    204800 * time.Hour,
+			Name:      "TRAFFIC",
+			Subjects:  []string{"spins.*", "clicks.*", "onair.*"},
+			Storage:   nats.FileStorage,
+			MaxAge:    204800 * time.Hour,
 			FirstSeq:  1,
 			Retention: nats.LimitsPolicy,
 		})

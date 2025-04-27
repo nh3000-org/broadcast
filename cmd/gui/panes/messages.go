@@ -58,7 +58,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 				mymessageshort := strings.ReplaceAll(config.NatsMessages[id].MSmessage, "\n", ".")
 				mymessage = mymessageshort[0:100]
 			}
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSsubject + " " + config.NatsMessages[id].MSalias + " - " + mymessage)
+			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSsubject + "." + mymessage)
 		},
 	)
 	config.FyneMessageList = List
