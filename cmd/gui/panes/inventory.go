@@ -26,7 +26,7 @@ var pberr error
 func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	config.FyneInventoryWin = win
-	Details := widget.NewLabel("")
+	//Details := widget.NewLabel("")
 
 	larow := widget.NewLabel("Row: ")
 	edrow := widget.NewEntry()
@@ -421,50 +421,68 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		config.FyneInventoryList.Refresh()
 
 	})
-	List := widget.NewList(
-		func() int {
-			return len(config.InventoryStore)
-		},
-		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewLabel("Template Object"))
-		},
-		func(id widget.ListItemID, item fyne.CanvasObject) {
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText("[" + config.InventoryStore[id].Category + "] " + config.InventoryStore[id].Artist + " - " + config.InventoryStore[id].Song + " (" + strconv.Itoa(config.InventoryStore[id].Row) + ")")
-		},
-	)
+
+	List := widget.NewTable(func() (int, int) {
+		return len(config.InventoryStore), 5
+	}, func() fyne.CanvasObject {
+		return container.NewMax(widget.NewLabel("template11"), widget.NewIcon(nil))
+	}, func(id widget.TableCellID, o fyne.CanvasObject) {
+		l := o.(*fyne.Container).Objects[0].(*widget.Label)
+		l.Show()
+		switch id.Col {
+
+		case 0: // rowid
+			l.SetText(strconv.Itoa(config.InventoryStore[id.Row].Row))
+		case 1: // category
+			l.SetText(config.InventoryStore[id.Row].Category)
+		case 2: // artist
+			l.SetText(config.InventoryStore[id.Row].Artist)
+		case 3: // song
+			l.SetText(config.InventoryStore[id.Row].Song)
+		case 4: // album
+			l.SetText(config.InventoryStore[id.Row].Album)
+		}
+	})
+	List.SetColumnWidth(0, 64)
+	List.SetColumnWidth(1, 132)
+	List.SetColumnWidth(2, 132)
+	List.SetColumnWidth(3, 132)
+	List.SetColumnWidth(4, 132)
+	List.SetColumnWidth(5, 132)
+
 	config.FyneInventoryList = List
-	List.OnSelected = func(id widget.ListItemID) {
+	List.OnSelected = func(id widget.TableCellID) {
 
-		config.SelectedInventory = id
+		config.SelectedInventory = id.Row
 
-		Details.SetText("[" + config.InventoryStore[id].Category + "] " + config.InventoryStore[id].Artist + " - " + config.InventoryStore[id].Song)
+		//Details.SetText("[" + config.InventoryStore[id.Row].Category + "] " + config.InventoryStore[id].Artist + " - " + config.InventoryStore[id].Song)
 
-		edrow.SetText(strconv.Itoa(config.InventoryStore[id].Row))
+		edrow.SetText(strconv.Itoa(config.InventoryStore[id.Row].Row))
 		edrow.Disable()
-		edcategory.SetSelected(config.InventoryStore[id].Category)
-		edartist.SetText(config.InventoryStore[id].Artist)
-		edsong.SetText(config.InventoryStore[id].Song)
-		edalbum.SetText(config.InventoryStore[id].Album)
-		edlength.SetText(strconv.Itoa(config.InventoryStore[id].Songlength))
+		edcategory.SetSelected(config.InventoryStore[id.Row].Category)
+		edartist.SetText(config.InventoryStore[id.Row].Artist)
+		edsong.SetText(config.InventoryStore[id.Row].Song)
+		edalbum.SetText(config.InventoryStore[id.Row].Album)
+		edlength.SetText(strconv.Itoa(config.InventoryStore[id.Row].Songlength))
 		edlength.Disable()
-		edorder.SetText(config.InventoryStore[id].Rndorder)
+		edorder.SetText(config.InventoryStore[id.Row].Rndorder)
 		edorder.Disable()
 
-		edstartson.SetText(config.InventoryStore[id].Startson)
-		edexpires.SetText(config.InventoryStore[id].Expireson)
-		eddateadded.SetText(config.InventoryStore[id].Dateadded)
-		edlastplayed.SetText(config.InventoryStore[id].Lastplayed)
-		edlinks.SetText(config.InventoryStore[id].Sourcelink)
-			bucket := "mp3"
-	if strings.Contains(edcategory.Selected, "VIDEO") {
-		bucket = "mp4"
-	}
+		edstartson.SetText(config.InventoryStore[id.Row].Startson)
+		edexpires.SetText(config.InventoryStore[id.Row].Expireson)
+		eddateadded.SetText(config.InventoryStore[id.Row].Dateadded)
+		edlastplayed.SetText(config.InventoryStore[id.Row].Lastplayed)
+		edlinks.SetText(config.InventoryStore[id.Row].Sourcelink)
+		bucket := "mp3"
+		if strings.Contains(edcategory.Selected, "VIDEO") {
+			bucket = "mp4"
+		}
 		edsongsz.SetText("Song Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text))))
 		edintrosz.SetText("Intro Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"INTRO"))))
 		edoutrosz.SetText("Outro Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"OUTRO"))))
-		edspinstoday.SetText(strconv.Itoa(config.InventoryStore[id].Spinstoday))
-		edspinsweek.SetText(strconv.Itoa(config.InventoryStore[id].Spinsweek))
-		edspinstotal.SetText(strconv.Itoa(config.InventoryStore[id].Spinstotal))
+		edspinstoday.SetText(strconv.Itoa(config.InventoryStore[id.Row].Spinstoday))
+		edspinsweek.SetText(strconv.Itoa(config.InventoryStore[id.Row].Spinsweek))
+		edspinstotal.SetText(strconv.Itoa(config.InventoryStore[id.Row].Spinstotal))
 
 		deletebutton := widget.NewButtonWithIcon("Delete Inventory Item", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)

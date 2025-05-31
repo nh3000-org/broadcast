@@ -2,7 +2,6 @@ package panes
 
 import (
 	"bytes"
-	"strings"
 
 	"github.com/nh3000-org/radio/config"
 
@@ -44,30 +43,53 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		delete(config.NatsMessagesIndex, selecteduuid)
 		config.FyneMessageList.Refresh()
 	})
-	List := widget.NewList(
-		func() int {
-			return len(config.NatsMessages)
-		},
-		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewLabel("Template Object"))
-		},
-		func(id widget.ListItemID, item fyne.CanvasObject) {
+	/* 	List := widget.NewList(
+	   		func() int {
+	   			return len(config.NatsMessages)
+	   		},
+	   		func() fyne.CanvasObject {
+	   			return container.NewHBox(widget.NewLabel("Template Object"))
+	   		},
+	   		func(id widget.ListItemID, item fyne.CanvasObject) {
 
-			mymessage := config.NatsMessages[id].MSmessage
-			if len(config.NatsMessages[id].MSmessage) > 100 {
-				mymessageshort := strings.ReplaceAll(config.NatsMessages[id].MSmessage, "\n", ".")
-				mymessage = mymessageshort[0:100]
-			}
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSsubject + "." + mymessage)
-		},
-	)
+	   			mymessage := config.NatsMessages[id].MSmessage
+	   			if len(config.NatsMessages[id].MSmessage) > 100 {
+	   				mymessageshort := strings.ReplaceAll(config.NatsMessages[id].MSmessage, "\n", ".")
+	   				mymessage = mymessageshort[0:100]
+	   			}
+	   			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSsubject + "." + mymessage)
+	   		},
+	   	)
+	*/
+	List := widget.NewTable(func() (int, int) {
+		return len(config.NatsMessages), 3
+	}, func() fyne.CanvasObject {
+		return container.NewMax(widget.NewLabel("template11"), widget.NewIcon(nil))
+	}, func(id widget.TableCellID, o fyne.CanvasObject) {
+		l := o.(*fyne.Container).Objects[0].(*widget.Label)
+		l.Show()
+		switch id.Col {
+
+		case 0: // subject
+			l.SetText(config.NatsMessages[id.Row].MSsubject)
+		case 1: // message
+			l.SetText(config.NatsMessages[id.Row].MSmessage)
+		case 2: // hostname
+			l.SetText(config.NatsMessages[id.Row].MShostname)
+
+		}
+	})
+	List.SetColumnWidth(0, 132)
+	List.SetColumnWidth(1, 256)
+	List.SetColumnWidth(2, 132)
+
 	config.FyneMessageList = List
-	List.OnSelected = func(id widget.ListItemID) {
-		selectedms = id
-		selectedseq = config.NatsMessages[id].MSsequence
-		selecteduuid = config.NatsMessages[id].MSnodeuuid
-		Details.SetText(config.NatsMessages[id].MSmessage + "\n." + "\n" + config.NatsMessages[id].MSsubject + " " + config.NatsMessages[id].MSos + " " + config.NatsMessages[id].MShostname + " on " + config.NatsMessages[id].MSdate + "\n" + config.NatsMessages[id].MSipadrs + "\n" + config.NatsMessages[id].MSmacid + "\nNode ID: " + config.NatsMessages[id].MSnodeuuid + "\nMsg ID:" + config.NatsMessages[id].MSiduuid)
-		dlg := fyne.CurrentApp().NewWindow(msg2dlg(id))
+	List.OnSelected = func(id widget.TableCellID) {
+		selectedms = id.Row
+		selectedseq = config.NatsMessages[id.Row].MSsequence
+		selecteduuid = config.NatsMessages[id.Row].MSnodeuuid
+		Details.SetText(config.NatsMessages[id.Row].MSmessage + "\n." + "\n" + config.NatsMessages[id.Row].MSsubject + " " + config.NatsMessages[id.Row].MSos + " " + config.NatsMessages[id.Row].MShostname + " on " + config.NatsMessages[id.Row].MSdate + "\n" + config.NatsMessages[id.Row].MSipadrs + "\n" + config.NatsMessages[id.Row].MSmacid + "\nNode ID: " + config.NatsMessages[id.Row].MSnodeuuid + "\nMsg ID:" + config.NatsMessages[id.Row].MSiduuid)
+		dlg := fyne.CurrentApp().NewWindow(msg2dlg(id.Row))
 		DetailsVW := container.NewScroll(DetailsBorder)
 		DetailsVW.SetMinSize(fyne.NewSize(300, 240))
 		DetailsBottom := container.NewBorder(cpybutton, delbutton, nil, nil, nil)

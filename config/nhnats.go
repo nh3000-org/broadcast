@@ -393,17 +393,11 @@ func GetBucketSize(bucket, id string) uint64 {
 		if gbserr == nil {
 			return gbs.Size
 		}
-		if gbserr != nil {
-			log.Println("Get Bucket Size  error", bucket, id, gbserr)
-		}
 	}
 	if bucket == "mp4" {
 		gbs, gbserr := NATS.Obsmp4.GetInfo(id)
 		if gbserr == nil {
 			return gbs.Size
-		}
-		if gbserr != nil {
-			log.Println("Get Bucket Size  error", bucket, id, gbserr)
 		}
 	}
 
