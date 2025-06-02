@@ -12,13 +12,7 @@ import (
 	//"github.com/nh3000-org/radio/config"
 )
 
-
-
 func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
-
-
-	Details := widget.NewLabel("")
-	//var DetailsBorder = container.NewBorder(Details, nil, nil, nil, nil)
 	larow := widget.NewLabel("Row: ")
 	edrow := widget.NewEntry()
 	edrow.SetPlaceHolder("Automatically Assigned")
@@ -74,32 +68,46 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		config.FyneScheduleList.Refresh()
 	})
 
-	//List := layout.NewVBoxLayout()
+	List := widget.NewTable(func() (int, int) {
+		return len(config.ScheduleStore), 6
+	}, func() fyne.CanvasObject {
+		return container.NewMax(widget.NewLabel("template11"), widget.NewIcon(nil))
+	}, func(id widget.TableCellID, o fyne.CanvasObject) {
+		l := o.(*fyne.Container).Objects[0].(*widget.Label)
+		l.Show()
+		switch id.Col {
 
-	List := widget.NewList(
-		func() int {
-			return len(config.ScheduleStore)
-		},
-		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewLabel("Template Object"))
-		},
-		func(id widget.ListItemID, item fyne.CanvasObject) {
-			myspins := strconv.Itoa(config.ScheduleStore[id].Spinstoplay)
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.ScheduleStore[id].Days + " _ " + config.ScheduleStore[id].Hours + " _ " + config.ScheduleStore[id].Position + " _ " + config.ScheduleStore[id].Category + " Spins: " + myspins)
-		},
-	)
+		case 0: // rowid
+			l.SetText(strconv.Itoa(config.ScheduleStore[id.Row].Row))
+		case 1: // dats
+			l.SetText(config.ScheduleStore[id.Row].Days)
+		case 2: // hour
+			l.SetText(config.ScheduleStore[id.Row].Hours)
+		case 3: // position
+			l.SetText(config.ScheduleStore[id.Row].Position)
+		case 4: // category
+			l.SetText(config.ScheduleStore[id.Row].Category)
+		case 5: // spins
+			l.SetText(strconv.Itoa(config.ScheduleStore[id.Row].Spinstoplay))
+		}
+	})
+	List.SetColumnWidth(0, 64)
+	List.SetColumnWidth(1, 132)
+	List.SetColumnWidth(2, 132)
+	List.SetColumnWidth(3, 132)
+	List.SetColumnWidth(4, 132)
+	List.SetColumnWidth(5, 132)
 	config.FyneScheduleList = List
-	List.OnSelected = func(id widget.ListItemID) {
-		config.SelectedDay = id
-		myspins := strconv.Itoa(config.ScheduleStore[id].Spinstoplay)
-		Details.SetText(config.ScheduleStore[id].Days + " " + config.ScheduleStore[id].Hours + " " + config.ScheduleStore[id].Position + " " + config.ScheduleStore[id].Category + " " + myspins)
-		edrow.SetText(strconv.Itoa(config.ScheduleStore[id].Row))
+	List.OnSelected = func(id widget.TableCellID) {
+		config.SelectedDay = id.Row
+		edrow.SetText(strconv.Itoa(config.ScheduleStore[id.Row].Row))
+		edday.SetSelected(config.ScheduleStore[id.Row].Days)
+		edhour.SetSelected(config.ScheduleStore[id.Row].Hours)
+		edpos.SetSelected(config.ScheduleStore[id.Row].Position)
+		edcategory.SetSelected(config.ScheduleStore[id.Row].Category)
+		edspins.SetSelected(strconv.Itoa(config.ScheduleStore[id.Row].Spinstoplay))
+		edrow.SetText(strconv.Itoa(config.ScheduleStore[id.Row].Row))
 		edrow.Disable()
-		edday.SetSelected(config.ScheduleStore[id].Days)
-		edhour.SetSelected(config.ScheduleStore[id].Hours)
-		edpos.SetSelected(config.ScheduleStore[id].Position)
-		edcategory.SetSelected(config.ScheduleStore[id].Category)
-		edspins.SetSelected(strconv.Itoa(config.ScheduleStore[id].Spinstoplay))
 		deletebutton := widget.NewButtonWithIcon("Delete Schedule Item", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 			config.ScheduleDelete(myrow)
