@@ -17,9 +17,6 @@ func CategoriesScreen(win fyne.Window) fyne.CanvasObject {
 		Monospace: true,
 	}
 	config.FyneApp.Settings().Theme().Font(st)
-	//config.HoursGet() moved to logon
-
-	Details := widget.NewLabel("")
 
 	larow := widget.NewLabel("Row: ")
 	edrow := widget.NewEntry()
@@ -48,36 +45,44 @@ func CategoriesScreen(win fyne.Window) fyne.CanvasObject {
 		config.CategoriesGet()
 		config.FyneCategoryList.Refresh()
 	})
-	List := widget.NewList(
-		func() int {
-			return len(config.CategoriesStore)
-		},
-		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewLabel("Template Object"))
-		},
-		func(id widget.ListItemID, item fyne.CanvasObject) {
-			//mymessage = config.CategoriesStore[id].Desc
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.CategoriesStore[id].Desc)
-		},
-	)
+
+	List := widget.NewTable(func() (int, int) {
+		return len(config.CategoriesStore), 3
+	}, func() fyne.CanvasObject {
+		return container.NewMax(widget.NewLabel("template11"), widget.NewIcon(nil))
+	}, func(id widget.TableCellID, o fyne.CanvasObject) {
+		l := o.(*fyne.Container).Objects[0].(*widget.Label)
+		l.Show()
+		switch id.Col {
+
+		case 0: // rowid
+			l.SetText(strconv.Itoa(config.CategoriesStore[id.Row].Row))
+		case 1: // dats
+			l.SetText(config.CategoriesStore[id.Row].Id)
+		case 2: // hour
+			l.SetText(config.CategoriesStore[id.Row].Desc)
+		}
+	})
+	List.SetColumnWidth(0, 64)
+	List.SetColumnWidth(1, 132)
+	List.SetColumnWidth(2, 132)
+
 	config.FyneCategoryList = List
-	List.OnSelected = func(id widget.ListItemID) {
-		config.SelectedCategory = id
+	List.OnSelected = func(id widget.TableCellID) {
+		config.SelectedCategory = id.Row
 
-		Details.SetText(config.CategoriesStore[id].Id)
-
-		edrow.SetText(strconv.Itoa(config.CategoriesStore[id].Row))
+		edrow.SetText(strconv.Itoa(config.CategoriesStore[id.Row].Row))
 		edrow.Disable()
 
-		edid.SetText(config.CategoriesStore[id].Id)
+		edid.SetText(config.CategoriesStore[id.Row].Id)
 
-		eddesc.SetText(config.CategoriesStore[id].Desc)
+		eddesc.SetText(config.CategoriesStore[id.Row].Desc)
 
 		deletebutton := widget.NewButtonWithIcon("Delete Inventory Category", theme.ContentCopyIcon(), func() {
 			myrowcat, _ := strconv.Atoi(edrow.Text)
 			if config.CategoriesWhereUsed(edid.Text) != 0 {
-			config.CategoriesDelete(myrowcat)
-			config.CategoriesGet()
+				config.CategoriesDelete(myrowcat)
+				config.CategoriesGet()
 			}
 		})
 		savebutton := widget.NewButtonWithIcon("Save Inventory Category", theme.ContentCopyIcon(), func() {

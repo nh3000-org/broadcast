@@ -16,10 +16,6 @@ var myrowhours int
 
 func HoursScreen(win fyne.Window) fyne.CanvasObject {
 
-	//config.HoursGet() moved to logon
-
-	Details := widget.NewLabel("")
-
 	larow := widget.NewLabel("Row: ")
 	edrow := widget.NewEntry()
 	edrow.SetPlaceHolder("Automatically Assigned")
@@ -39,32 +35,38 @@ func HoursScreen(win fyne.Window) fyne.CanvasObject {
 		config.HoursAdd(edid.Selected, eddesc.Text)
 		config.HoursGet()
 	})
-	List := widget.NewList(
-		func() int {
-			return len(config.HoursStore)
-		},
-		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewLabel("Template Object"))
-		},
-		func(id widget.ListItemID, item fyne.CanvasObject) {
 
-			//mymessage = config.HoursStore[id].Desc
+	List := widget.NewTable(func() (int, int) {
+		return len(config.HoursStore), 3
+	}, func() fyne.CanvasObject {
+		return container.NewMax(widget.NewLabel("template11"), widget.NewIcon(nil))
+	}, func(id widget.TableCellID, o fyne.CanvasObject) {
+		l := o.(*fyne.Container).Objects[0].(*widget.Label)
+		l.Show()
+		switch id.Col {
 
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.HoursStore[id].Id + " " + config.HoursStore[id].Desc)
-		},
-	)
+		case 0: // rowid
+			l.SetText(strconv.Itoa(config.HoursStore[id.Row].Row))
+		case 1: // dats
+			l.SetText(config.HoursStore[id.Row].Id)
+		case 2: // hour
+			l.SetText(config.HoursStore[id.Row].Desc)
+		}
+	})
+	List.SetColumnWidth(0, 64)
+	List.SetColumnWidth(1, 132)
+	List.SetColumnWidth(2, 132)
+
 	config.FyneDaysList = List
-	List.OnSelected = func(id widget.ListItemID) {
-		config.SelectedHour = id
+	List.OnSelected = func(id widget.TableCellID) {
+		config.SelectedHour = id.Row
 
-		Details.SetText(config.HoursStore[id].Id)
-
-		edrow.SetText(strconv.Itoa(config.HoursStore[id].Row))
+		edrow.SetText(strconv.Itoa(config.HoursStore[id.Row].Row))
 		edrow.Disable()
 
-		edid.SetSelected(config.HoursStore[id].Id)
+		edid.SetSelected(config.HoursStore[id.Row].Id)
 
-		eddesc.SetText(config.HoursStore[id].Desc)
+		eddesc.SetText(config.HoursStore[id.Row].Desc)
 
 		deletebutton := widget.NewButtonWithIcon("Delete Hour Part", theme.ContentCopyIcon(), func() {
 			myrowhours, _ = strconv.Atoi(edrow.Text)

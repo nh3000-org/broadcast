@@ -17,10 +17,6 @@ import (
 
 func DaysScreen(win fyne.Window) fyne.CanvasObject {
 
-	//config.DaysGet() moved to logon
-
-	Details := widget.NewLabel("")
-	//var DetailsBorder = container.NewBorder(Details, nil, nil, nil, nil)
 	larow := widget.NewLabel("Row: ")
 	edrow := widget.NewEntry()
 	edrow.SetPlaceHolder("Automatically Assigned")
@@ -45,34 +41,40 @@ func DaysScreen(win fyne.Window) fyne.CanvasObject {
 		config.DaysGet()
 		config.FyneDaysList.Refresh()
 	})
-	List := widget.NewList(
-		func() int {
-			return len(config.DaysStore)
-		},
-		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewLabel("Template Object"))
-		},
-		func(id widget.ListItemID, item fyne.CanvasObject) {
+	List := widget.NewTable(func() (int, int) {
+		return len(config.DaysStore), 4
+	}, func() fyne.CanvasObject {
+		return container.NewMax(widget.NewLabel("template11"), widget.NewIcon(nil))
+	}, func(id widget.TableCellID, o fyne.CanvasObject) {
+		l := o.(*fyne.Container).Objects[0].(*widget.Label)
+		l.Show()
+		switch id.Col {
 
-			//mymessage = config.DaysStore[id].Desc
-
-			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.DaysStore[id].Day + " " + config.DaysStore[id].Desc)
-		},
-	)
+		case 0: // rowid
+			l.SetText(strconv.Itoa(config.DaysStore[id.Row].Row))
+		case 1: // dats
+			l.SetText(config.DaysStore[id.Row].Day)
+		case 2: // hour
+			l.SetText(config.DaysStore[id.Row].Desc)
+		case 3: // rowid
+			l.SetText(strconv.Itoa(config.DaysStore[id.Row].Dow))
+		}
+	})
+	List.SetColumnWidth(0, 64)
+	List.SetColumnWidth(1, 132)
+	List.SetColumnWidth(2, 132)
 	config.FyneDaysList = List
-	List.OnSelected = func(id widget.ListItemID) {
-		config.SelectedDay = id
+	List.OnSelected = func(id widget.TableCellID) {
+		config.SelectedDay = id.Row
 
-		Details.SetText(config.DaysStore[id].Day)
-
-		edrow.SetText(strconv.Itoa(config.DaysStore[id].Row))
+		edrow.SetText(strconv.Itoa(config.DaysStore[id.Row].Row))
 		edrow.Disable()
 
-		edday.SetSelected(config.DaysStore[id].Day)
+		edday.SetSelected(config.DaysStore[id.Row].Day)
 
-		eddesc.SetText(config.DaysStore[id].Desc)
+		eddesc.SetText(config.DaysStore[id.Row].Desc)
 
-		eddow.SetSelected(strconv.Itoa(config.DaysStore[id].Dow))
+		eddow.SetSelected(strconv.Itoa(config.DaysStore[id.Row].Dow))
 
 		deletebutton := widget.NewButtonWithIcon("Delete Day of Week", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
