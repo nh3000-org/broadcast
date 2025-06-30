@@ -3,7 +3,7 @@ package panes
 import (
 	"bytes"
 
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/config"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"

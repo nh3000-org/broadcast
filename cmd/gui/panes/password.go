@@ -9,7 +9,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/config"
 )
 
 func PasswordScreen(_ fyne.Window) fyne.CanvasObject {

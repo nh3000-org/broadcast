@@ -12,7 +12,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/config"
 	//"github.com/nh3000-org/radio/config"
 )
 

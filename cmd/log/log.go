@@ -28,7 +28,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/config"
 )
 
 // var idcount int

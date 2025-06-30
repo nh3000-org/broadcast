@@ -16,7 +16,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/config"
 )
 
 var songbytes []byte

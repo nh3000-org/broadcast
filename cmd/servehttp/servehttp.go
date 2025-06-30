@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/config"
 )
 
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
