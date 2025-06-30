@@ -17,7 +17,7 @@ import (
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/config"
 	//"github.com/nh3000-org/radio/config"
 )
 
@@ -405,6 +405,7 @@ func Play(ctx oto.Context, song string, cat string) int {
 }
 
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
+
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func readPreferences() {

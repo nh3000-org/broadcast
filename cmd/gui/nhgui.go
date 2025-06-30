@@ -25,8 +25,8 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
-	"github.com/nh3000-org/radio/cmd/gui/panes"
-	"github.com/nh3000-org/radio/config"
+	"github.com/nh3000-org/broadcast/cmd/gui/panes"
+	"github.com/nh3000-org/broadcast/config"
 
 	"fyne.io/fyne/v2/widget"
 )
