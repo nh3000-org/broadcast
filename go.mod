@@ -1,4 +1,4 @@
-module github.com/nh3000-org/radio
+module github.com/nh3000-org/broadcast
 
 go 1.24
 
