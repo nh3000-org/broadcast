@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/johnfercher/maroto/v2 v2.2.2
+	github.com/nh3000-org/maroto/v2 v2.2.2
 	github.com/nats-io/nats.go v1.39.1
 	golang.org/x/crypto v0.32.0
 )
