@@ -14,16 +14,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/nh3000-org/maroto/v2/pkg/components/col"
-	"github.com/nh3000-org/maroto/v2/pkg/components/row"
-	"github.com/nh3000-org/maroto/v2/pkg/components/text"
-	"github.com/nh3000-org/maroto/v2/pkg/config"
-	"github.com/nh3000-org/maroto/v2/pkg/consts/align"
-	"github.com/nh3000-org/maroto/v2/pkg/consts/fontstyle"
-	"github.com/nh3000-org/maroto/v2/pkg/core"
-	"github.com/nh3000-org/maroto/v2/pkg/props"
+	"github.com/johnfercher/maroto/v2/pkg/components/col"
+	"github.com/johnfercher/maroto/v2/pkg/components/row"
+	"github.com/johnfercher/maroto/v2/pkg/components/text"
+	"github.com/johnfercher/maroto/v2/pkg/config"
+	"github.com/johnfercher/maroto/v2/pkg/consts/align"
+	"github.com/johnfercher/maroto/v2/pkg/consts/fontstyle"
+	"github.com/johnfercher/maroto/v2/pkg/core"
+	"github.com/johnfercher/maroto/v2/pkg/props"
 
-	"github.com/nh3000-org/maroto/v2"
+	"github.com/johnfercher/maroto/v2"
 )
 
 /*

@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/nh3000-org/maroto/v2 v2.2.2
+	github.com/johnfercher/maroto/v2 v2.3.1
 	github.com/nats-io/nats.go v1.39.1
 	golang.org/x/crypto v0.32.0
 )
@@ -42,7 +42,7 @@ require (
 	github.com/hhrutter/tiff v1.0.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/nh3000-org/go-tree v1.0.5 // indirect
+	github.com/johnfercher/go-tree v1.1.0 // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
