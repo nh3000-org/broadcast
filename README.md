@@ -17,7 +17,7 @@ A small web server, also accessed through a VPN to upload a stub, and download a
 
 This is just a directory structure for communicating content to the server.
 
-Each category contains 102k MP# files with a naming convention of:
+Each category contains 192k MP# files with a naming convention of:
 
 ARTIST-SONG-ALBUM.mp3
 
