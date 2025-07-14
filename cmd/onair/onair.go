@@ -660,6 +660,29 @@ func main() {
 						config.Send("messages."+*stationId, "[main] Inventory Update "+invupderr.Error(), "onair")
 					}
 					invupdconn.Release()
+
+					if strings.Contains(category, "PLAYONCE") {
+						log.Println("deleting  expired inventory: ", fileid)
+						invdelconn, _ = config.SQL.Pool.Acquire(context.Background())
+						_, errinventorydelete = invdelconn.Conn().Prepare(context.Background(), "inventorydelete", "delete from inventory where rowid = $1")
+						if errinventorydelete != nil {
+							log.Println("[main] Prepare inventory delete", errinventorydelete)
+							config.Send("messages."+*stationId, "[main] Prepage Indentory Delete "+errinventorydelete.Error(), "onair")
+						}
+
+						_, invdelerr = invdelconn.Exec(context.Background(), "inventorydelete", rowid)
+						if invdelerr != nil {
+							log.Println("[main] deleting inventory " + invdelerr.Error())
+							config.Send("messages."+*stationId, "[main] Inventory Delete "+invdelerr.Error(), "onair")
+						}
+						invdelconn.Release()
+
+						errremovei = config.DeleteBucket("mp3s", fileid)
+						if errremovei != nil {
+							log.Println("[main] deleting mp3 failed: ", errremovei.Error(), intro)
+							config.Send("messages."+*stationId, "[main] MP3 Bucket Delete "+intro+" "+errremove.Error(), "onair")
+						}
+					}
 					if strings.HasPrefix(category, "ADDS") {
 						//log.Println("adding inventory to traffic", song)
 						trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())

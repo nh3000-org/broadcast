@@ -1215,7 +1215,7 @@ func PDFScheduleByDay() []core.Row {
 			text.NewCol(1, "Day", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 			text.NewCol(1, "Hour", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 			text.NewCol(1, "Pos", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
-			text.NewCol(2, "Cat", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
+			text.NewCol(6, "Cat", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 			text.NewCol(1, "Spins", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 		),
 	}
@@ -1235,7 +1235,7 @@ func PDFScheduleByDay() []core.Row {
 			text.NewCol(1, day, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(1, hour, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(1, position, props.Text{Size: 8, Align: align.Left}),
-			text.NewCol(2, category, props.Text{Size: 8, Align: align.Left}),
+			text.NewCol(6, category, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(1, strconv.Itoa(spinstoplay), props.Text{Size: 8, Align: align.Left}),
 		)
 		if itemcount%2 == 0 {
@@ -1432,8 +1432,8 @@ func PDFCategoryByID() []core.Row {
 		row.New(4).Add(
 			col.New(1),
 			text.NewCol(2, "Row", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
-			text.NewCol(2, "ID", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
-			text.NewCol(2, "Desc", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
+			text.NewCol(8, "ID", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
+			text.NewCol(8, "Desc", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 		),
 	}
 	contentsRow = append(contentsRow, rowshead...)
