@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,23 +15,26 @@ import (
 	"time"
 
 	"github.com/nh3000-org/broadcast/config"
+
+	"github.com/google/uuid"
 )
 
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
-var password = "nh3000-org"
-var enteredpassword = ""
+var authtoken = ""
+
+var isworking = false
 
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
-
-
 func uploadFile(w http.ResponseWriter, r *http.Request) {
-	if password != enteredpassword {
+	if authtoken != r.FormValue(authtoken) {
+		w.Write([]byte(ilogon()))
 		return
 	}
+	isworking = true
 	importHome := "/opt/radio/stub.zip"
 
 	log.Println("File Upload Endpoint Hit for User", importHome)
@@ -42,7 +46,10 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 		log.Println("File Upload r.FormFile", pmuerr)
 		w.Write([]byte("File Upload Parse Error r.FormFile"))
 	}
-
+	if authtoken != r.FormValue(authtoken) {
+		w.Write([]byte(ilogon()))
+		return
+	}
 	file, handler, reqerr := r.FormFile("stub")
 	if reqerr != nil {
 		w.Write([]byte("File Upload Error r.FormFile"))
@@ -80,8 +87,6 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	var imartist string
 	var imsong string
 	var imalbum string
-
-
 
 	var imcategory string
 	sp := "/opt/radio/stub"
@@ -211,6 +216,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+		isworking = false
 		return nil
 	})
 	if walkstuberr != nil {
@@ -218,13 +224,15 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// read all of the contents of our uploaded file into a
-
+	isworking = false
 	log.Println("Successfully Processed stub File")
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
-	if password != enteredpassword {
+	if authtoken != r.FormValue(authtoken) {
+		w.Write([]byte(ilogon()))
 		return
 	}
+	isworking = true
 	importHome := "/opt/radio/blankstub"
 	config.CategoriesWriteStub(false)
 	os.Remove("/opt/radio/stub.zip")
@@ -248,12 +256,11 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment; filename=stub.zip")
 	w.Header().Add("Content-Length", fmt.Sprint(len(hl)))
 	w.Write(hl)
+	isworking = false
 
 }
 func readPreferences() {
-	if password != enteredpassword {
-		return
-	}
+
 	// read config preferences.json
 	jsondata, readerr := os.ReadFile(PreferencesLocation)
 	if readerr != nil {
@@ -267,6 +274,8 @@ func readPreferences() {
 	}
 
 	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+
+	config.WebPassword = config.Decrypt(fmt.Sprintf("%v", cfg["WEBPASSWORD"]), MySecret)
 
 	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
 	log.Println(config.DBaddress)
@@ -311,8 +320,75 @@ func main() {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
-	log.Println("login: ",r.FormValue("pword"))
-	enteredpassword = r.FormValue("pword")
-	
-	w.Write()
+	log.Println("login: ", r.FormValue("pword"))
+	if isworking {
+		w.Write([]byte(ibusy()))
+		return
+	}
+	if config.WebPassword != r.FormValue("pword") {
+		w.Write([]byte(ilogon()))
+		return
+	}
+	w.Write([]byte(ibuilder()))
+}
+
+func ibuilder() string {
+	authtoken = uuid.New().String()
+	var s bytes.Buffer
+	s.WriteString("<!DOCTYPE html>\n")
+	s.WriteString("<html lang=\"en\">\n")
+	s.WriteString("<head>\n")
+	s.WriteString(" <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n")
+	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
+	s.WriteString(" <title>Content Provider</title>\n")
+	s.WriteString("</head>\n")
+	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"http://127.0.0.1:9000/upload\" method=\"post\">\n")
+	s.WriteString("    <input type=\"file\" name=\"stub\" />\n")
+	s.WriteString("    <input type=\"submit\" value=\"upload\" />\n")
+	s.WriteString("  </form>\n")
+	s.WriteString("<a href=\"http://127.0.0.1:9000/download\" download=\"stub.zip\">Download Stub</a>\n")
+	s.WriteString("<input type=\"hidden\" name=\"authtoken\" id=\"authtoken\" value=\"" + authtoken + "\" />\n")
+	s.WriteString("</body>\n")
+	s.WriteString("</html>\n")
+
+	return s.String()
+}
+func ilogon() string {
+	authtoken = ""
+	var s bytes.Buffer
+	s.WriteString("<!DOCTYPE html>\n")
+	s.WriteString("<html lang=\"en\">\n")
+	s.WriteString("<head>\n")
+	s.WriteString(" <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n")
+	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
+	s.WriteString(" <title>Content Provider Logon</title>\n")
+	s.WriteString("</head>\n")
+	s.WriteString("  <form action=\"http://127.0.0.1:9000/login\" method=\"post\">\n")
+	s.WriteString("    <label for=\"pword\"> Password:</label>\n")
+	s.WriteString("    <input type=\"text\" id=\"pw\" name=\"pword\"><br><br>\n")
+	s.WriteString("    <input type=\"submit\" value=\"Try Password\">\n")
+	s.WriteString("  </form>\n")
+
+	s.WriteString("</body>\n")
+	s.WriteString("</html>\n")
+
+	return s.String()
+}
+func ibusy() string {
+	authtoken = ""
+	var s bytes.Buffer
+	s.WriteString("<!DOCTYPE html>\n")
+	s.WriteString("<html lang=\"en\">\n")
+	s.WriteString("<head>\n")
+	s.WriteString(" <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n")
+	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
+	s.WriteString(" <title>Content Provider Logon</title>\n")
+	s.WriteString("</head>\n")
+	s.WriteString("<body>\n")
+	s.WriteString("  <label> System in use try again later/label>\n")
+
+	s.WriteString("</body>\n")
+	s.WriteString("</html>\n")
+
+	return s.String()
 }
