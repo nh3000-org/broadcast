@@ -9,12 +9,13 @@
 </head>
 
 <body>
-    <form action="http://127.0.0.1:9000/login">
-        <label for="pword">Password:</label>
-        <input type="text" id="pw" name="pword"><br><br>
-        <input type="submit" value="Try Password">
+
+    <form enctype="multipart/form-data" action="http://127.0.0.1:9000/upload" method="post">
+        <input type="file" name="stub" />
+        <input type="submit" value="upload" />
     </form>
 
+    <a href="http://127.0.0.1:9000/download" download="stub.zip">Download Stub</a>
 </body>
 
 </html>

@@ -18,6 +18,8 @@ import (
 
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
+var password = "nh3000-org"
+var enteredpassword = ""
 
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
@@ -26,7 +28,9 @@ const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
-
+	if password != enteredpassword {
+		return
+	}
 	importHome := "/opt/radio/stub.zip"
 
 	log.Println("File Upload Endpoint Hit for User", importHome)
@@ -218,7 +222,9 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Successfully Processed stub File")
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
-
+	if password != enteredpassword {
+		return
+	}
 	importHome := "/opt/radio/blankstub"
 	config.CategoriesWriteStub(false)
 	os.Remove("/opt/radio/stub.zip")
@@ -245,6 +251,9 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 
 }
 func readPreferences() {
+	if password != enteredpassword {
+		return
+	}
 	// read config preferences.json
 	jsondata, readerr := os.ReadFile(PreferencesLocation)
 	if readerr != nil {
@@ -288,6 +297,7 @@ func setupRoutes() {
 	readPreferences()
 	fileServer := http.FileServer(http.Dir("/opt/radio/publichtml"))
 	http.Handle("/", fileServer)
+	http.HandleFunc("/login", login)
 	http.HandleFunc("/config", configFile)
 	http.HandleFunc("/download", downloadFile)
 	http.HandleFunc("/upload", uploadFile)
@@ -297,4 +307,12 @@ func setupRoutes() {
 func main() {
 	fmt.Println("Waiting for Input")
 	setupRoutes()
+}
+
+func login(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	log.Println("login: ",r.FormValue("pword"))
+	enteredpassword = r.FormValue("pword")
+	
+	w.Write()
 }

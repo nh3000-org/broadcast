@@ -456,6 +456,15 @@ var MyLangs = map[string]string{
 	"eng-rpts": "Reports",
 	"spa-rpts": "Informes",
 	"hin-rpts": "रिपोर्टों",
+
+	"eng-wp": "Web Password",
+	"spa-wp": "Contraseña Web",
+	"hin-wp": "वेब पासवर्ड",
+
+	"eng-wp-err1": "Web Password Invalid",
+	"spa-wp-err1": "Contraseña Web Inválida",
+	"hin-wp-err1": "वेब पासवर्ड अमान्य",
+
 }
 
 // do translation
