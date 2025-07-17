@@ -23,8 +23,6 @@ var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.
 
 var authtoken = ""
 
-var isworking = false
-
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
@@ -34,7 +32,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(ilogon()))
 		return
 	}
-	isworking = true
+
 	importHome := "/opt/radio/stub.zip"
 
 	log.Println("File Upload Endpoint Hit for User", importHome)
@@ -216,7 +214,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		isworking = false
+
 		return nil
 	})
 	if walkstuberr != nil {
@@ -224,7 +222,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// read all of the contents of our uploaded file into a
-	isworking = false
+
 	log.Println("Successfully Processed stub File")
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
@@ -232,7 +230,7 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(ilogon()))
 		return
 	}
-	isworking = true
+
 	importHome := "/opt/radio/blankstub"
 	config.CategoriesWriteStub(false)
 	os.Remove("/opt/radio/stub.zip")
@@ -256,7 +254,6 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment; filename=stub.zip")
 	w.Header().Add("Content-Length", fmt.Sprint(len(hl)))
 	w.Write(hl)
-	isworking = false
 
 }
 func readPreferences() {
@@ -319,9 +316,11 @@ func main() {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
+	var ip = r.Header.Get("X-Forwarded-For")
+	var ip2 = r.RemoteAddr
 	r.ParseForm()
-	log.Println("login: ", r.FormValue("pword"))
-	if isworking {
+	log.Println("login: ", r.FormValue("pword")+" from "+ip2+ip)
+	if len(authtoken) != 0 {
 		w.Write([]byte(ibusy()))
 		return
 	}
@@ -344,7 +343,7 @@ func ibuilder() string {
 	s.WriteString("</head>\n")
 	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"http://127.0.0.1:9000/upload\" method=\"post\">\n")
 	s.WriteString("    <input type=\"file\" name=\"stub\" />\n")
-	s.WriteString("    <input type=\"submit\" value=\"upload\" />\n")
+	s.WriteString("    <input type=\"submit\" value=\"upload stub.zip\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("<a href=\"http://127.0.0.1:9000/download\" download=\"stub.zip\">Download Stub</a>\n")
 	s.WriteString("<input type=\"hidden\" name=\"authtoken\" id=\"authtoken\" value=\"" + authtoken + "\" />\n")

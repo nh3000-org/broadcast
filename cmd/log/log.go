@@ -189,7 +189,7 @@ func main() {
 	//var isauth = false
 	//var devicefound = false
 	readPreferences(*logURL)
-	var memoryStats runtime.MemStats
+	//var memoryStats runtime.MemStats
 	r := bufio.NewReader(os.Stdin)
 	buf := make([]byte, 0, 4*1024)
 	for {
