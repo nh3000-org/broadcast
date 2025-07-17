@@ -29,10 +29,6 @@ var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14,
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
-	if authtoken != r.FormValue(authtoken) {
-		w.Write([]byte(ilogon()))
-		return
-	}
 
 	importHome := "/opt/radio/stub.zip"
 
@@ -45,10 +41,13 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 		log.Println("File Upload r.FormFile", pmuerr)
 		w.Write([]byte("File Upload Parse Error r.FormFile"))
 	}
-	if authtoken != r.FormValue(authtoken) {
+
+	if authtoken != r.FormValue("Authorization") {
+		log.Println("File Upload Authorization")
 		w.Write([]byte(ilogon()))
 		return
 	}
+
 	file, handler, reqerr := r.FormFile("stub")
 	if reqerr != nil {
 		w.Write([]byte("File Upload Error r.FormFile"))
@@ -217,6 +216,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Println("Unsuccessfully Processed stub File")
 		log.Println(userdata)
+		log.Println("Upload File")
 		return nil
 	})
 	if walkstuberr != nil {
@@ -227,37 +227,55 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Successfully Processed stub File")
 	log.Println(userdata)
+	log.Println("Upload File")
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
-	if authtoken != r.FormValue(authtoken) {
+	log.Println("Download Stub")
+	pmuerr := r.ParseForm()
+	if pmuerr != nil {
+		log.Println("File Download", pmuerr)
+		w.Write([]byte("File Download Parse Error r.FormFile"))
+	}
+
+	if authtoken != r.FormValue("Authorization") {
+		log.Println("File Download Authorization")
 		w.Write([]byte(ilogon()))
 		return
 	}
-
 	importHome := "/opt/radio/blankstub"
+	log.Println("Download File: ", importHome)
 	config.CategoriesWriteStub(false)
-	os.Remove("/opt/radio/stub.zip")
-	os.Chdir(importHome)
-	cmd := exec.Command("zip", "-r", "/opt/radio/stub.zip", "stub")
-	out, err := cmd.Output()
+	err := os.Remove("/opt/radio/blankstub/stub.zip")
 	if err != nil {
+		w.Write([]byte("Could not remove previous entry"))
+		log.Println("Could not remove previous entry: ", err, importHome)
+	}
+	err1 := os.Chdir(importHome)
+	if err1 != nil {
+		w.Write([]byte("Could not change to directory"))
+		log.Println("Could not change to directory: ", err1, importHome)
+	}
+	cmd := exec.Command("zip", "-r", "/opt/radio/blankstub/stub.zip", "stub")
+	out, err3 := cmd.Output()
+	if err3 != nil {
 		w.Write([]byte("ZIP could not run command"))
-		log.Println("ZIP could not run command: ", err, importHome)
+		log.Println("ZIP could not run command: ", err3, importHome)
 	} else {
-		//w.Write([]byte(string(out)))
 		log.Println("ZIP Output: ", string(out))
 	}
-	//df, errdf := os.Open("/opt/radio/blankstub/stub.zip")
-	//if errdf != nil {
-	//	log.Println("Download Could Not Open file stub.zip ")
-	//}
-	hl, _ := os.ReadFile("/opt/radio/stub.zip")
+
+	hl, err4 := os.ReadFile("/opt/radio/blankstub/stub.zip")
+	if err4 != nil {
+		w.Write([]byte("Could not read /opt/radio/blankstub/stub.zip"))
+		log.Println("Could not read: /opt/radio/blankstub/stub.zip ", err4, importHome)
+	}
+	log.Println(userdata)
+	log.Println("Download File Created")
 
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", "attachment; filename=stub.zip")
 	w.Header().Add("Content-Length", fmt.Sprint(len(hl)))
 	w.Write(hl)
-	log.Println(userdata)
 
 }
 func readPreferences() {
@@ -330,14 +348,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 	userdata = userdata + "Agent: " + r.UserAgent() + "\n"
 	userdata = userdata + "=====================================\n"
 	log.Println(userdata)
-	if len(authtoken) != 0 {
-		w.Write([]byte(ibusy()))
-		return
-	}
+	log.Println("Login")
+
 	if config.WebPassword != r.FormValue("pword") {
 		w.Write([]byte(ilogon()))
 		return
 	}
+
 	w.Write([]byte(ibuilder()))
 }
 
@@ -353,17 +370,18 @@ func ibuilder() string {
 	s.WriteString("</head>\n")
 	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"http://127.0.0.1:9000/upload\" method=\"post\">\n")
 	s.WriteString("    <input type=\"file\" name=\"stub\" />\n")
-	s.WriteString("    <input type=\"submit\" value=\"upload stub.zip\" />\n")
+	s.WriteString("    <input type=\"submit\" value=\"Upload stub.zip\" />\n")
 	s.WriteString("  </form>\n")
-	s.WriteString("<a href=\"http://127.0.0.1:9000/download\" download=\"stub.zip\">Download Stub</a>\n")
-	s.WriteString("<input type=\"hidden\" name=\"authtoken\" id=\"authtoken\" value=\"" + authtoken + "\" />\n")
+	s.WriteString("  <form  action=\"http://127.0.0.1:9000/download\" method=\"post\">\n")
+	s.WriteString("    <input type=\"submit\" value=\"Download stub.zip\" />\n")
+	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
+	s.WriteString("  </form>\n")
 	s.WriteString("</body>\n")
 	s.WriteString("</html>\n")
 
 	return s.String()
 }
 func ilogon() string {
-	authtoken = ""
 	var s bytes.Buffer
 	s.WriteString("<!DOCTYPE html>\n")
 	s.WriteString("<html lang=\"en\">\n")
