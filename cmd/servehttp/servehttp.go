@@ -23,6 +23,7 @@ var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.
 
 var authtoken = ""
 
+var userdata = ""
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
@@ -214,7 +215,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-
+		log.Println("Unsuccessfully Processed stub File")
+		log.Println(userdata)
 		return nil
 	})
 	if walkstuberr != nil {
@@ -224,6 +226,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	// read all of the contents of our uploaded file into a
 
 	log.Println("Successfully Processed stub File")
+	log.Println(userdata)
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
 	if authtoken != r.FormValue(authtoken) {
@@ -254,6 +257,7 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment; filename=stub.zip")
 	w.Header().Add("Content-Length", fmt.Sprint(len(hl)))
 	w.Write(hl)
+	log.Println(userdata)
 
 }
 func readPreferences() {
@@ -316,10 +320,16 @@ func main() {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	var ip = r.Header.Get("X-Forwarded-For")
-	var ip2 = r.RemoteAddr
+
 	r.ParseForm()
-	log.Println("login: ", r.FormValue("pword")+" from "+ip2+ip)
+	userdata = "\n"
+	userdata = userdata + "=====================================\n"
+	userdata = userdata + "Forwarded: " + r.Header.Get("X-Forwarded-For") + "\n"
+	userdata = userdata + "RemoteAddr: " + r.RemoteAddr + "\n"
+	userdata = userdata + "Password: " + r.FormValue("pword") + "\n"
+	userdata = userdata + "Agent: " + r.UserAgent() + "\n"
+	userdata = userdata + "=====================================\n"
+	log.Println(userdata)
 	if len(authtoken) != 0 {
 		w.Write([]byte(ibusy()))
 		return
