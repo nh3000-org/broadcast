@@ -329,7 +329,7 @@ func setupRoutes() {
 	http.HandleFunc("/config", configFile)
 	http.HandleFunc("/download", downloadFile)
 	http.HandleFunc("/upload", uploadFile)
-	http.ListenAndServe(":9000", nil)
+	http.ListenAndServeTLS(":9000", "server.crt", "server.key", nil)
 }
 
 func main() {
@@ -369,11 +369,11 @@ func ibuilder() string {
 	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
 	s.WriteString(" <title>Content Provider</title>\n")
 	s.WriteString("</head>\n")
-	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"http://127.0.0.1:9000/upload\" method=\"post\">\n")
+	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"https://192.168.88.233:9000/upload\" method=\"post\">\n")
 	s.WriteString("    <input type=\"file\" name=\"stub\" />\n")
 	s.WriteString("    <input type=\"submit\" value=\"Upload stub.zip\" />\n")
 	s.WriteString("  </form>\n")
-	s.WriteString("  <form  action=\"http://127.0.0.1:9000/download\" method=\"post\">\n")
+	s.WriteString("  <form  action=\"https://192.168.88.233:9000/download\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Download stub.zip\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
@@ -391,7 +391,7 @@ func ilogon() string {
 	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
 	s.WriteString(" <title>Content Provider Logon</title>\n")
 	s.WriteString("</head>\n")
-	s.WriteString("  <form action=\"http://127.0.0.1:9000/login\" method=\"post\">\n")
+	s.WriteString("  <form action=\"https://192.168.88.233:9000/login\" method=\"post\">\n")
 	s.WriteString("    <label for=\"pword\"> Password:</label>\n")
 	s.WriteString("    <input type=\"text\" id=\"pw\" name=\"pword\"><br><br>\n")
 	s.WriteString("    <input type=\"submit\" value=\"Try Password\">\n")
