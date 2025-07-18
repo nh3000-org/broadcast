@@ -354,12 +354,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(ilogon()))
 		return
 	}
+	authtoken = r.RemoteAddr + "-" + uuid.New().String()
 
 	w.Write([]byte(ibuilder()))
 }
 
 func ibuilder() string {
-	authtoken = uuid.New().String()
+
 	var s bytes.Buffer
 	s.WriteString("<!DOCTYPE html>\n")
 	s.WriteString("<html lang=\"en\">\n")
