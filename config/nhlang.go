@@ -465,6 +465,13 @@ var MyLangs = map[string]string{
 	"spa-wp-err1": "Contraseña Web Inválida",
 	"hin-wp-err1": "वेब पासवर्ड अमान्य",
 
+	"eng-wa": "Web Address https://",
+	"spa-wa": "Dirección Web https://",
+	"hin-wa": "वेब पता https://",
+
+	"eng-wa-err1": "Web Address Invalid",
+	"spa-wa-err1": "Dirección Web no Válida",
+	"hin-wa-err1": "वेब पता अमान्य है",
 }
 
 // do translation

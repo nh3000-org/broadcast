@@ -67,9 +67,9 @@ var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"                                   // must be 24 characters
 // default gui password
-var WebPassword = "nh3000-org" // default web password shipped with app
-var WebAddress = "http://broadcast.newhorizons3000.org:9000" // default web address
-const Password = "123456"      // default password shipped with app
+var WebPassword = "nh3000-org"                 // default web password shipped with app
+var WebAddress = "https://192.168.88.233:9000" // default web address
+const Password = "123456"                      // default password shipped with app
 var PasswordHash string
 var PreferedLanguage string
 var FyneMessageWin fyne.Window

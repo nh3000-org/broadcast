@@ -66,6 +66,12 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	webpassword.Disable()
 	var webpasswordShadow = ""
 
+	webaddresslabel := widget.NewLabel(config.GetLangs("wa"))
+	webaddress := widget.NewEntry()
+	webaddress.SetPlaceHolder(config.GetLangs("wa"))
+	webaddress.Disable()
+	var webaddressShadow = ""
+
 	calabel := widget.NewLabel(config.GetLangs("cs-ca"))
 	ca := widget.NewMultiLineEntry()
 	ca.Resize(fyne.NewSize(320, 120))
@@ -175,6 +181,11 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			config.FyneApp.Preferences().SetString("WEBPASSWORD", config.Encrypt(webpassword.Text, config.MySecret))
 			webpasswordShadow = webpassword.Text
 
+			webaddressShadow = config.FyneApp.Preferences().StringWithFallback("WEBADDRESS", config.Encrypt("https://", config.MySecret))
+			webaddress.SetText(config.Decrypt(webaddressShadow, config.MySecret))
+			config.FyneApp.Preferences().SetString("WEBADDRESS", config.Encrypt(webaddress.Text, config.MySecret))
+			webaddressShadow = webaddress.Text
+
 			webpassword.Enable()
 			password.Disable()
 			alias.Enable()
@@ -209,6 +220,16 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 				config.FyneApp.Preferences().SetString("WEBPASSWORD", config.Encrypt(webpassword.Text, config.MySecret))
 			} else {
 				errors.SetText(config.GetLangs("wp-err1"))
+			}
+
+		}
+
+		if webaddressShadow != webaddress.Text {
+			haserrors = config.Edit("STRING", webaddress.Text)
+			if !haserrors {
+				config.FyneApp.Preferences().SetString("WEBADDRESS", config.Encrypt(webaddress.Text, config.MySecret))
+			} else {
+				errors.SetText(config.GetLangs("wa-err1"))
 			}
 
 		}
@@ -308,6 +329,8 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 			config.WebPassword = webpassword.Text
 
+			config.WebAddress = webaddress.Text
+
 			config.NatsServer = server.Text
 			//config.NatsQueue = queue.Text
 			config.NatsQueuePassword = queuepassword.Text
@@ -318,6 +341,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			config.DBuser = dbuser.Text
 			config.DBpassword = dbpassword.Text
 			webpassword.Disable()
+			webaddress.Disable()
 			password.Disable()
 			server.Disable()
 			alias.Disable()
@@ -332,6 +356,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 			errors.SetText("...")
 			webpasswordShadow = ""
+			webaddressShadow = ""
 			aliasShadow = ""
 			queueShadow = ""
 			serverShadow = ""
@@ -339,6 +364,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			ccShadow = ""
 			ckShadow = ""
 			webpassword.SetText("")
+			webaddress.SetText("")
 			password.SetText("")
 			server.SetText("")
 			queue.SetText("")
@@ -381,6 +407,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	}
 	if !config.LoggedOn {
 		webpassword.Enable()
+		webaddress.Enable()
 		password.Enable()
 		server.Disable()
 		alias.Disable()
@@ -418,6 +445,8 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 		dbpassword,
 		webpasswordlabel,
 		webpassword,
+		webaddresslabel,
+		webaddress,
 		SSbutton,
 		SEbutton,
 		container.NewHBox(
