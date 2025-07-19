@@ -23,13 +23,15 @@ var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.
 
 var authtoken = ""
 
+var isbusy = false
+
 var userdata = ""
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
-
+	isbusy = true
 	importHome := "/opt/radio/stub.zip"
 
 	log.Println("File Upload Endpoint Hit for User", importHome)
@@ -40,11 +42,14 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	if pmuerr != nil {
 		log.Println("File Upload r.FormFile", pmuerr)
 		w.Write([]byte("File Upload Parse Error r.FormFile"))
+		isbusy = false
+		return
 	}
 
 	if authtoken != r.FormValue("Authorization") {
 		log.Println("File Upload Authorization")
 		w.Write([]byte(ilogon()))
+		isbusy = false
 		return
 	}
 
@@ -52,6 +57,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	if reqerr != nil {
 		w.Write([]byte("File Upload Error r.FormFile"))
 		log.Println("File Upload r.FormFile", reqerr)
+		isbusy = false
+		return
 	}
 	defer file.Close()
 
@@ -217,6 +224,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 		log.Println("Unsuccessfully Processed stub File")
 		log.Println(userdata)
 		log.Println("Upload File")
+		isbusy = false
 		return nil
 	})
 	if walkstuberr != nil {
@@ -224,21 +232,24 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// read all of the contents of our uploaded file into a
-
+	isbusy = false
 	log.Println("Successfully Processed stub File")
 	log.Println(userdata)
 	log.Println("Upload File")
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
+	isbusy = true
 	log.Println("Download Stub")
 	pmuerr := r.ParseForm()
 	if pmuerr != nil {
 		log.Println("File Download", pmuerr)
 		w.Write([]byte("File Download Parse Error r.FormFile"))
+
 	}
 
 	if authtoken != r.FormValue("Authorization") {
 		log.Println("File Download Authorization")
+		isbusy = false
 		w.Write([]byte(ilogon()))
 		return
 	}
@@ -249,17 +260,23 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Write([]byte("Could not remove previous entry"))
 		log.Println("Could not remove previous entry: ", err, importHome)
+		isbusy = false
+		return
 	}
 	err1 := os.Chdir(importHome)
 	if err1 != nil {
 		w.Write([]byte("Could not change to directory"))
 		log.Println("Could not change to directory: ", err1, importHome)
+		isbusy = false
+		return
 	}
 	cmd := exec.Command("zip", "-r", "/opt/radio/blankstub/stub.zip", "stub")
 	out, err3 := cmd.Output()
 	if err3 != nil {
 		w.Write([]byte("ZIP could not run command"))
 		log.Println("ZIP could not run command: ", err3, importHome)
+		isbusy = false
+		return
 	} else {
 		log.Println("ZIP Output: ", string(out))
 	}
@@ -268,10 +285,12 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	if err4 != nil {
 		w.Write([]byte("Could not read /opt/radio/blankstub/stub.zip"))
 		log.Println("Could not read: /opt/radio/blankstub/stub.zip ", err4, importHome)
+		isbusy = false
+		return
 	}
 	log.Println(userdata)
 	log.Println("Download File Created")
-
+	isbusy = false
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", "attachment; filename=stub.zip")
 	w.Header().Add("Content-Length", fmt.Sprint(len(hl)))
@@ -349,7 +368,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	userdata = userdata + "=====================================\n"
 	log.Println(userdata)
 	log.Println("Login")
-
+	if isbusy {
+		w.Write([]byte(ibusy()))
+		return
+	}
 	if config.WebPassword != r.FormValue("pword") {
 		w.Write([]byte(ilogon()))
 		return
@@ -391,7 +413,7 @@ func ilogon() string {
 	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
 	s.WriteString(" <title>Content Provider Logon</title>\n")
 	s.WriteString("</head>\n")
-	s.WriteString("  <form action=\"https://192.168.88.233:9000/login\" method=\"post\">\n")
+	s.WriteString("  <form action=\"" + config.WebAddress + "/login\" method=\"post\">\n")
 	s.WriteString("    <label for=\"pword\"> Password:</label>\n")
 	s.WriteString("    <input type=\"text\" id=\"pw\" name=\"pword\"><br><br>\n")
 	s.WriteString("    <input type=\"submit\" value=\"Try Password\">\n")
