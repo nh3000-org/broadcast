@@ -22,6 +22,7 @@ import (
 var songbytes []byte
 var songerr error
 var pberr error
+var shadowCategory string
 
 func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
@@ -460,6 +461,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		edrow.SetText(strconv.Itoa(config.InventoryStore[id.Row].Row))
 		edrow.Disable()
 		edcategory.SetSelected(config.InventoryStore[id.Row].Category)
+		shadowCategory = config.InventoryStore[id.Row].Category
 		edartist.SetText(config.InventoryStore[id.Row].Artist)
 		edsong.SetText(config.InventoryStore[id.Row].Song)
 		edalbum.SetText(config.InventoryStore[id.Row].Album)
@@ -500,6 +502,13 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			config.InventoryUpdate(myrow, edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
 			config.InventoryGet()
 			config.FyneInventoryList.Refresh()
+			if shadowCategory == "CURRENTS" {
+				if edcategory.Selected != "CURRENTS" {
+					// delete intro/outro
+					config.DeleteBucket("MP3", strconv.Itoa(myrow)+"INTRO.mp3")
+					config.DeleteBucket("MP3", strconv.Itoa(myrow)+"OUTRO.mp3")
+				}
+			}
 
 		})
 		databox := container.NewVBox(
