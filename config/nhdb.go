@@ -296,7 +296,7 @@ func CategoriesWhereUsed(cat string) int {
 
 }
 
-var instructions = "Radio Stub Instructions\nBrowse to this file to initiate import\nSongs are identified by ARTIST-SONG-ALBUM.mp3 and ARTIST-SONG-ALBUM-INTRO.mp3 and ARTIST-SONG-ALBUM-OUTRO.mp3 where INTRO and OUTRO are for TOP40 anouncements in the following categories\nADDS, ADDSDRIVETIME and ADDSTOH are used to add advertising to system.\nFILLTOTOH is a phantom category used internally\nIMAGINGID is used to hold artist station plugs\nLIVE is phantom category to indicate live segments and suspend player for an hour\nMUSIC is the music category\nNEXT is phantom category\nROOTS is accompanying music category\nSTATIONID is ids for sprinkling\nTOP40 is currect hits\nNWS is News Weather Sports and will play once then delete"
+var instructions = "Radio Stub Instructions\nBrowse to this file to initiate import\nSongs are identified by ARTIST-SONG-ALBUM.mp3 and ARTIST-SONG-ALBUM-INTRO.mp3 and ARTIST-SONG-ALBUM-OUTRO.mp3 where INTRO and OUTRO are for CURRENTS anouncements in the following categories\nADDS, ADDSDRIVETIME and ADDSTOH are used to add advertising to system.\nFILLTOTOH is a phantom category used internally\nIMAGINGID is used to hold artist station plugs\nLIVE is phantom category to indicate live segments and suspend player for an hour\nMUSIC is the music category\nNEXT is phantom category\nROOTS is accompanying music category\nSTATIONID is ids for sprinkling\nCURRENTS is current hits\nNWS is News Weather Sports and will play once then delete"
 
 func CategoriesWriteStub(withinventory bool) string {
 	userHome := "/opt/radio/"
@@ -720,7 +720,7 @@ func InventoryUpdate(row int, category string, artist string, song string, album
 	_, rowserr := conn.Exec(ctxsql, "update inventory set category =$1, artist = $2, song = $3, album = $4, songlength = $5, rndorder = $6, startson = $7,expireson = $8, lastplayed = $9, dateadded = $10, spinstoday = $11, spinsweek = $12, spinstotal = $13 , sourcelink = $14 where rowid = $15", category, artist, song, album, songlength, rndorder, startson, expireson, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink, row)
 
 	if rowserr != nil {
-		log.Println("InventoryDelete Update Inventory row error", rowserr)
+		log.Println("Inventory Update Inventory row error", rowserr)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -795,11 +795,11 @@ func InventoryAdd(category string, artist string, song string, album string, son
 func ToPDF(reportname, stationid string) {
 	switch reportname {
 	case "SpinsPerDay":
-		PDFInventory("Spins Per Day", "TOP40SPD", stationid)
+		PDFInventory("Spins Per Day", "CURRENTSSPD", stationid)
 	case "SpinsPerWeek":
-		PDFInventory("Spins Per Week", "TOP40SPW", stationid)
+		PDFInventory("Spins Per Week", "CURRENTSSPW", stationid)
 	case "SpinsTotal":
-		PDFInventory("TOP40 Total", "TOP40ALL", stationid)
+		PDFInventory("CURRENTS Total", "CURRENTSALL", stationid)
 	case "InventoryByCategoryFULL":
 		PDFInventory("All Categories", "ALL", stationid)
 	case "CategoryList":
@@ -1493,8 +1493,8 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 	var full pgx.Rows
 	var fullerr error
-	if strings.Contains(cat, "TOP40") {
-		full, fullerr = conn.Query(ctxsql, "select * from inventory where category = 'TOP40' order by category,artist,song")
+	if strings.Contains(cat, "CURRENTS") {
+		full, fullerr = conn.Query(ctxsql, "select * from inventory where category = 'CURRENTS' order by category,artist,song")
 	}
 	if strings.Contains(cat, "ALL") {
 		full, fullerr = conn.Query(ctxsql, "select * from inventory  order by category,artist,song")

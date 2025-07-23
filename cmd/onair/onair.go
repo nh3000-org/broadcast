@@ -117,7 +117,7 @@ func adjustToTopOfHour() {
 			log.Println("[TOH]", playingday, playinghour, tohspins)
 		}
 		tohgetconn, _ = config.SQL.Pool.Acquire(context.Background())
-		_, tohnextget = tohgetconn.Conn().Prepare(context.Background(), "toh", "select * from inventory where category = 'TOP40' limit 30")
+		_, tohnextget = tohgetconn.Conn().Prepare(context.Background(), "toh", "select * from inventory where category = 'CURRENTS' limit 30")
 		if tohnextget != nil {
 			log.Println("[TOH] nextgetconn", tohnextget)
 			config.Send("messages."+StationId, "[TOH] Prepare Next Get TOH "+tohnextget.Error(), "onair")
@@ -364,7 +364,7 @@ func Play(ctx oto.Context, song string, cat string) int {
 
 	elapsed = 0
 
-	if cat == "top40" {
+	if cat == "CURRENTS" {
 		t = time.Now()
 		if t.Minute()%2 == 0 {
 			song += "INTRO"
