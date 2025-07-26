@@ -472,6 +472,10 @@ var MyLangs = map[string]string{
 	"eng-wa-err1": "Web Address Invalid",
 	"spa-wa-err1": "Dirección Web no Válida",
 	"hin-wa-err1": "वेब पता अमान्य है",
+
+	"eng-addsmm": "Advertising Max Minutes",
+	"spa-addsmm": "Minutos Máximos de Publicidad",
+	"hin-addsmm": "विज्ञापन अधिकतम मिनट",
 }
 
 // do translation

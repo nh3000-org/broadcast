@@ -77,6 +77,14 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	edstartson.SetText(time.Now().String())
 	gridstartson := container.New(layout.NewGridLayoutWithRows(2), lastartson, edstartson)
 
+	laaddstimeslot := widget.NewLabel("Adds Time Slot: ")
+	edaddstimeslot := widget.NewCheckGroup([]string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}, func([]string) {})
+	gridaddstimeslot := container.New(layout.NewGridLayoutWithRows(2), laaddstimeslot, edaddstimeslot)
+
+	laaddsmaxspins := widget.NewLabel("Adds Max Spins: ")
+	edaddsmaxspins := widget.NewEntry()
+	gridaddsmaxspins := container.New(layout.NewGridLayoutWithRows(2), laaddsmaxspins, edaddsmaxspins)
+
 	lalastplayed := widget.NewLabel("Last Played: ")
 	edlastplayed := widget.NewEntry()
 	edlastplayed.SetText("2000-01-01 00:00:00")
@@ -186,6 +194,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 						imsong = result[0]
 						imalbum = "Digital"
 					}
+					addtimeslots := make([]string, 23)
+					maxspins, _ := strconv.Atoi("0")
 					length, _ := strconv.Atoi("0")
 					today, _ := strconv.Atoi("0")
 					week, _ := strconv.Atoi("0")
@@ -203,7 +213,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 						d = "0" + d
 					}
 					added = strings.Replace(added, "DD", d, 1)
-					rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", "1999-01-01 00:00:00", added, today, week, total, "Stub")
+					rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", addtimeslots, maxspins, "1999-01-01 00:00:00", added, today, week, total, "Stub")
 					row := strconv.Itoa(rowreturned)
 					if row != "0" {
 						songbytes, songerr = os.ReadFile(imimportdir)
@@ -412,7 +422,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		today, _ := strconv.Atoi(edspinstoday.Text)
 		week, _ := strconv.Atoi(edspinsweek.Text)
 		total, _ := strconv.Atoi(edspinstotal.Text)
-		rowreturned := config.InventoryAdd(edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
+		addsmaxspins, _ := strconv.Atoi(edaddsmaxspins.Text)
+		rowreturned := config.InventoryAdd(edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edaddstimeslot.Selected, addsmaxspins, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
 		row := strconv.Itoa(rowreturned)
 		edrow.SetText(row)
 		openSong.Enable()
@@ -472,6 +483,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 		edstartson.SetText(config.InventoryStore[id.Row].Startson)
 		edexpires.SetText(config.InventoryStore[id.Row].Expireson)
+		edaddstimeslot.SetSelected(config.InventoryStore[id.Row].AddsTimeSlots)
+		addsmaxminutes.SetText(config.InventoryStore[id.Row].AddsMaxSpins)
 		eddateadded.SetText(config.InventoryStore[id.Row].Dateadded)
 		edlastplayed.SetText(config.InventoryStore[id.Row].Lastplayed)
 		edlinks.SetText(config.InventoryStore[id.Row].Sourcelink)
@@ -524,6 +537,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			gridorder,
 			gridstartson,
 			gridexpires,
+			gridaddstimeslot,
+			gridaddsmaxspins,
 			gridlastplayed,
 			gridedateadded,
 			gridlinks,
