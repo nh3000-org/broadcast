@@ -72,6 +72,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 			config.FyneApp.Settings().SetTheme(config.MyTheme{})
 		}),
 	)
+
 	ssbutton := widget.NewButton(config.GetLangs("ss-ss"), func() {
 		x, _ := strconv.Atoi(config.Decrypt(preferredthemeShadow, config.MySecret))
 		if x != config.Selected {
