@@ -15,7 +15,7 @@ import (
 var preferredlanguageShadow string
 var msgmaxageShadow string
 var preferredthemeShadow string
-var addsmaxminutesShadow string
+var adsmaxminutesShadow string
 var filterShadow string
 
 func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
@@ -43,9 +43,9 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	ammlabel := widget.NewLabel(config.GetLangs("addsmm"))
 	amm := widget.NewRadioGroup([]string{"1", "2", "3", "4", "5"}, func(string) {})
 	amm.Horizontal = true
-	addsmaxminutesShadow = config.FyneApp.Preferences().StringWithFallback("AddsMaxMinutes", config.Encrypt("5", config.MySecret))
-	config.AdsMaxMinutes, _ = strconv.Atoi(addsmaxminutesShadow)
-	amm.SetSelected(config.Decrypt(addsmaxminutesShadow, config.MySecret))
+	adsmaxminutesShadow = config.FyneApp.Preferences().StringWithFallback("AddsMaxMinutes", config.Encrypt("5", config.MySecret))
+	config.AdsMaxMinutes, _ = strconv.Atoi(adsmaxminutesShadow)
+	amm.SetSelected(config.Decrypt(adsmaxminutesShadow, config.MySecret))
 
 	fllabel := widget.NewLabel(config.GetLangs("ms-filter"))
 	filter := widget.NewRadioGroup([]string{"True", "False"}, func(string) {})

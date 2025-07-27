@@ -72,7 +72,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 	webaddress.Disable()
 	var webaddressShadow = ""
 
-var adsmaxminutesShadow = ""
+
 
 	calabel := widget.NewLabel(config.GetLangs("cs-ca"))
 	ca := widget.NewMultiLineEntry()
@@ -187,9 +187,6 @@ var adsmaxminutesShadow = ""
 			webaddress.SetText(config.Decrypt(webaddressShadow, config.MySecret))
 			config.FyneApp.Preferences().SetString("WEBADDRESS", config.Encrypt(webaddress.Text, config.MySecret))
 			webaddressShadow = webaddress.Text
-
-			adsmaxminutesShadow = config.FyneApp.Preferences().StringWithFallback("ADSMAXMINUTES", config.Encrypt("5", config.MySecret))
-
 
 			webpassword.Enable()
 			password.Disable()

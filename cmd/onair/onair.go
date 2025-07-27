@@ -623,7 +623,7 @@ func main() {
 					if strings.HasPrefix(category, "ADS") {
 						playtheads = true
 						// check time slots
-						timeslots
+						
 						// check max minutes
 						if processingadsminutes > config.AdsMaxMinutes {
 							playtheads = false
