@@ -43,7 +43,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	ammlabel := widget.NewLabel(config.GetLangs("addsmm"))
 	amm := widget.NewRadioGroup([]string{"1", "2", "3", "4", "5"}, func(string) {})
 	amm.Horizontal = true
-	adsmaxminutesShadow = config.FyneApp.Preferences().StringWithFallback("AddsMaxMinutes", config.Encrypt("5", config.MySecret))
+	adsmaxminutesShadow = config.FyneApp.Preferences().StringWithFallback("AdsMaxMinutes", config.Encrypt("5", config.MySecret))
 	config.AdsMaxMinutes, _ = strconv.Atoi(adsmaxminutesShadow)
 	amm.SetSelected(config.Decrypt(adsmaxminutesShadow, config.MySecret))
 
@@ -83,7 +83,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		if msgmaxageShadow != ma.Selected {
 			config.FyneApp.Preferences().SetString("NatsMsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
 		}
-		if addsmaxminutesShadow != amm.Selected {
+		if adsmaxminutesShadow != amm.Selected {
 			config.FyneApp.Preferences().SetString("AddsMaxMinutes", config.Encrypt(ma.Selected, config.MySecret))
 		}
 		log.Println("settings ", ma.Selected)
