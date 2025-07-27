@@ -44,7 +44,8 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	amm := widget.NewRadioGroup([]string{"1", "2", "3", "4", "5"}, func(string) {})
 	amm.Horizontal = true
 	addsmaxminutesShadow = config.FyneApp.Preferences().StringWithFallback("AddsMaxMinutes", config.Encrypt("5", config.MySecret))
-	amm.SetSelected(config.Decrypt(msgmaxageShadow, config.MySecret))
+	config.AdsMaxMinutes, _ = strconv.Atoi(addsmaxminutesShadow)
+	amm.SetSelected(config.Decrypt(addsmaxminutesShadow, config.MySecret))
 
 	fllabel := widget.NewLabel(config.GetLangs("ms-filter"))
 	filter := widget.NewRadioGroup([]string{"True", "False"}, func(string) {})

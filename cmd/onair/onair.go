@@ -47,6 +47,13 @@ var rndorder string
 var startson string
 var expireson string
 var lastplayed string
+var adstimeslots []string
+var adsmaxspins string
+var processingads bool
+var processingadsminutes int
+var playtheads bool
+var countadsspinstoday int
+var countadsmaxspins int
 var dateadded string
 var today string
 var week string
@@ -599,7 +606,7 @@ func main() {
 					if spinstoplay <= 0 {
 						break
 					}
-					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 					//log.Println("processing inventory song get"+song, " schedule", playingday, playinghour, categories)
 					if inverr != nil {
 						log.Println("[main] processing inventory song get " + inverr.Error())
@@ -607,7 +614,34 @@ func main() {
 					}
 					// play the item
 					config.SendONAIRmp3(artist + " - " + album + " - " + song)
-					itemlength = Play(otoctx, rowid, category)
+					// handle ads time slots, max spins, and max minutes
+
+					if !strings.HasPrefix(category, "ADS") {
+						processingads = false
+						processingadsminutes = 0
+					}
+					if strings.HasPrefix(category, "ADS") {
+						playtheads = true
+						// check time slots
+						timeslots
+						// check max minutes
+						if processingadsminutes > config.AdsMaxMinutes {
+							playtheads = false
+						}
+						// check max spins per day
+
+						countadsspinstoday, _ = strconv.Atoi(today)
+						if countadsmaxspins > countadsspinstoday {
+							playtheads = false
+						}
+						if playtheads {
+							itemlength = Play(otoctx, rowid, category)
+							processingadsminutes += itemlength
+						}
+
+					} else {
+						itemlength = Play(otoctx, rowid, category)
+					}
 					// update statistics
 					spinsweek, _ = strconv.Atoi(week)
 					spinsweek++
@@ -683,8 +717,9 @@ func main() {
 							config.Send("messages."+*stationId, "[main] MP3 Bucket Delete "+intro+" "+errremove.Error(), "onair")
 						}
 					}
-					if strings.HasPrefix(category, "ADDS") {
-						//log.Println("adding inventory to traffic", song)
+					if strings.HasPrefix(category, "ADS") {
+						// add time slots, max spins per day
+
 						trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
 						if trafficaddconnerr != nil {
 							log.Println("[main] Prepare trafficadd", trafficaddconnerr)
