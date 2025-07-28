@@ -165,7 +165,9 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 				d = "0" + d
 			}
 			added = strings.Replace(added, "DD", d, 1)
-			rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", "1999-01-01 00:00:00", added, today, week, total, "Stub")
+			adstimeslots := []string{}
+			rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", adstimeslots, 12, "1999-01-01 00:00:00", added, today, week, total, "Stub")
+
 			row := strconv.Itoa(rowreturned)
 			if row == "0" {
 				w.Write([]byte("Inventory Not Added" + imcategory + "-" + imartist + "-" + imalbum))
