@@ -350,7 +350,7 @@ func setupRoutes() {
 	http.HandleFunc("/config", configFile)
 	http.HandleFunc("/download", downloadFile)
 	http.HandleFunc("/upload", uploadFile)
-	err := http.ListenAndServeTLS(":9000", "server.pem", "cert.pem", nil)
+	err := http.ListenAndServeTLS(":9000", "cert.pem", "server.pem", nil)
 	if err != nil {
 		log.Println("SSL ERROR ", err)
 	}
