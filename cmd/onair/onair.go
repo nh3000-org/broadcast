@@ -117,14 +117,14 @@ func adjustToTopOfHour() {
 	tohleft = 60 - tohmin
 	tohspinsf = tohleft / 3.30
 	tohspins = int(tohspinsf)
-	//log.Println("[TOH] time min left spins", tohmin, tohleft, tohspins)
+	log.Println("[TOH] time min", tohmin, "left", tohleft, "spins", tohspins)
 
 	if tohspins > 1 {
 		if logto {
-			log.Println("[TOH]", playingday, playinghour, tohspins)
+			log.Println("[TOH]", "DAY", playingday, "HOUR", playinghour, "SPINS", tohspins)
 		}
 		tohgetconn, _ = config.SQL.Pool.Acquire(context.Background())
-		_, tohnextget = tohgetconn.Conn().Prepare(context.Background(), "toh", "select * from inventory where category = 'CURRENTS' limit 30")
+		_, tohnextget = tohgetconn.Conn().Prepare(context.Background(), "toh", "select * from inventory where category = 'RECURRENTS' limit 30")
 		if tohnextget != nil {
 			log.Println("[TOH] nextgetconn", tohnextget)
 			config.Send("messages."+StationId, "[TOH] Prepare Next Get TOH "+tohnextget.Error(), "onair")
@@ -136,8 +136,8 @@ func adjustToTopOfHour() {
 		}
 
 		for tohrows.Next() {
-			//log.Println("[adjustTtoherroTopOfHour] playing", tohspins)
-			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+			log.Println("[adjustTtoherroTopOfHour] playing", tohspins)
+			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 			if logto {
 				log.Println("[adjustTtoherroTopOfHour] playing", tohspins, artist, song)
 			}
@@ -380,6 +380,7 @@ func Play(ctx oto.Context, song string, cat string) int {
 		}
 
 	}
+	log.Println(cat+" ", song, "  ")
 	// Read the mp3 file into memory
 	fileBytes = config.GetBucket("mp3", song, StationId)
 	/* 	if err != nil {
@@ -615,6 +616,7 @@ func main() {
 					// play the item
 					config.SendONAIRmp3(artist + " - " + album + " - " + song)
 					// handle ads time slots, max spins, and max minutes
+					log.Println(category + ": " + artist + " - " + album + " - " + song)
 
 					if !strings.HasPrefix(category, "ADS") {
 						processingads = false
@@ -623,7 +625,7 @@ func main() {
 					if strings.HasPrefix(category, "ADS") {
 						playtheads = true
 						// check time slots
-						
+
 						// check max minutes
 						if processingadsminutes > config.AdsMaxMinutes {
 							playtheads = false

@@ -587,9 +587,9 @@ func ScheduleCopy(dayfrom, dayto string) {
 	ctxsqlcan()
 }
 
-//type ATS struct {
-//	Slot string // ads time slots 00-23
-//}
+//	type ATS struct {
+//		Slot string // ads time slots 00-23
+//	}
 type InventoryStruct struct {
 	Row          int    // rowid
 	Category     string // category
@@ -710,6 +710,31 @@ func InventoryUpdateRNDORDER() {
 	ctxsqlcan()
 
 }
+func InventoryGetRow(category, artist, song, album string) string {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where category = '"+category+"'and artist='"+artist+"' and song='"+song+"' and album='"+album+"'")
+	var row int // rowid
+
+	for rows.Next() {
+		err := rows.Scan(&row)
+		if err != nil {
+			log.Println("InventoryGetRow Inventory row", err)
+			conn.Release()
+			ctxsqlcan()
+			return ""
+		}
+
+	}
+	if rowserr != nil {
+		log.Println("InventoryGet Get Inventory row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+	return strconv.Itoa(row)
+
+}
 
 func InventoryDelete(row int) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
@@ -776,7 +801,7 @@ func InventoryAdd(category string, artist string, song string, album string, son
 	}
 	iadconn.Release()
 	iaconn, _ = SQL.Pool.Acquire(iactxsql)
-	_, rowserr := iaconn.Exec(iactxsql, "insert into  inventory (category,artist,song,album,songlength,rndorder,startson,expireson,adstimeslots, adsmaxspins,lastplayed,dateadded,spinstoday,spinsweek,spinstotal,sourcelink) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,S15.$16)", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsmaxspins, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink)
+	_, rowserr := iaconn.Exec(iactxsql, "insert into  inventory (category,artist,song,album,songlength,rndorder,startson,expireson,adstimeslots, adsmaxspins,lastplayed,dateadded,spinstoday,spinsweek,spinstotal,sourcelink) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsmaxspins, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink)
 
 	if rowserr != nil {
 		log.Println("InventoryAdd Add Inventory row error insert", rowserr)
