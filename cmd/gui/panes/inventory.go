@@ -217,67 +217,72 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 						d = "0" + d
 					}
 					added = strings.Replace(added, "DD", d, 1)
-					rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", addtimeslots, maxspins, "1999-01-01 00:00:00", added, today, week, total, "Stub")
-					row := strconv.Itoa(rowreturned)
-					if row != "0" {
-						songbytes, songerr = os.ReadFile(imimportdir)
-						if songerr != nil {
-							config.Send("messages."+config.NatsAlias, "Put Bucket Song Read Error", config.NatsAlias)
-						}
-						if songerr == nil {
-							pberr = config.PutBucket("mp3", row, songbytes)
-							if pberr == nil {
-								songbytes = []byte("")
+					rowexists := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
+					if rowexists == "0" {
+						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", addtimeslots, maxspins, "1999-01-01 00:00:00", added, today, week, total, "Stub")
+						row := strconv.Itoa(rowreturned)
+						if row != "0" {
+							songbytes, songerr = os.ReadFile(imimportdir)
+							if songerr != nil {
+								config.Send("messages."+config.NatsAlias, "Put Bucket Song Read Error", config.NatsAlias)
 							}
-							if pberr != nil {
-								config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
-							}
-						}
-						log.Println("checking intro/outro", cat)
-						if strings.HasSuffix(cat, "INTRO.mp3") {
-							rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
-							if len(rowreturned) > 0 {
-								log.Println("importing intro", cat)
-								songbytes, songerr = os.ReadFile(imimportdir)
-								if songerr != nil {
-									log.Println("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
-									config.Send("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
+							if songerr == nil {
+								pberr = config.PutBucket("mp3", row, songbytes)
+								if pberr == nil {
+									songbytes = []byte("")
 								}
-								if songerr == nil {
-
-									pberr = config.PutBucket("mp3", rowreturned+"INTRO", songbytes)
-									if pberr == nil {
-										songbytes = []byte("")
-									}
-									if pberr != nil {
-										log.Println("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
-										config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
-									}
-								}
-							}
-						}
-						if strings.HasSuffix(cat, "OUTRO.mp3") {
-							rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
-							if len(rowreturned) > 0 {
-								log.Println("importing outro", cat)
-								songbytes, songerr = os.ReadFile(imimportdir)
-								if songerr != nil {
-									log.Println("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
-									config.Send("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
-								}
-								if songerr == nil {
-									pberr = config.PutBucket("mp3", rowreturned+"OUTRO", songbytes)
-									if pberr == nil {
-										songbytes = []byte("")
-									}
-									if pberr != nil {
-										log.Println("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
-										config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
-									}
+								if pberr != nil {
+									config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
 								}
 							}
 						}
 					}
+					log.Println("checking intro/outro", cat)
+					if strings.HasSuffix(cat, "INTRO.mp3") {
+						rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
+						if len(rowreturned) > 0 {
+							log.Println("importing intro", rowreturned)
+							songbytes, songerr = os.ReadFile(imimportdir)
+							if songerr != nil {
+								log.Println("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
+								config.Send("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
+							}
+							if songerr == nil {
+								log.Println("putting intro", rowreturned+"INTRO")
+								pberr = config.PutBucket("mp3", rowreturned+"INTRO", songbytes)
+								if pberr == nil {
+									songbytes = []byte("")
+								}
+								if pberr != nil {
+									log.Println("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+									config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+								}
+							}
+						}
+					}
+					if strings.HasSuffix(cat, "OUTRO.mp3") {
+						rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
+						if len(rowreturned) > 0 {
+							log.Println("importing outro", rowreturned)
+							songbytes, songerr = os.ReadFile(imimportdir)
+							if songerr != nil {
+								log.Println("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
+								config.Send("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
+							}
+							if songerr == nil {
+								log.Println("putting outro", rowreturned+"OUTRO")
+								pberr = config.PutBucket("mp3", rowreturned+"OUTRO", songbytes)
+								if pberr == nil {
+									songbytes = []byte("")
+								}
+								if pberr != nil {
+									log.Println("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+									config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+								}
+							}
+						}
+					}
+
 				}
 				return nil
 			})

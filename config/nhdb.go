@@ -732,6 +732,33 @@ func InventoryGetRow(category, artist, song, album string) string {
 	}
 	conn.Release()
 	ctxsqlcan()
+	log.Println("getrow ",row)
+	return strconv.Itoa(row)
+
+}
+func InventoryGetRowByRow(rowin string) string {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where rowid = '"+rowin+".")
+	var row int // rowid
+
+	for rows.Next() {
+		err := rows.Scan(&row)
+		if err != nil {
+			log.Println("InventoryGetRow Inventory row", err)
+			conn.Release()
+			ctxsqlcan()
+			return ""
+		}
+
+	}
+	if rowserr != nil {
+		log.Println("InventoryGet Get Inventory row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+	log.Println("getrow ",row)
 	return strconv.Itoa(row)
 
 }

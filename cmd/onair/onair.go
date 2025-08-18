@@ -374,14 +374,21 @@ func Play(ctx oto.Context, song string, cat string) int {
 	if cat == "CURRENTS" {
 		t = time.Now()
 		if t.Minute()%2 == 0 {
-			song += "INTRO"
+			value := config.InventoryGetRowByRow(song)
+			if len(value) > 0 {
+				song += "INTRO"
+			}
 		} else {
-			song += "OUTRO"
+			value := config.InventoryGetRowByRow(song)
+			if len(value) > 0 {
+				song += "OUTRO"
+			}
 		}
 
 	}
 	log.Println(cat+" ", song, "  ")
 	// Read the mp3 file into memory
+
 	fileBytes = config.GetBucket("mp3", song, StationId)
 	/* 	if err != nil {
 		panic("reading my-file.mp3 failed: " + err.Error())
