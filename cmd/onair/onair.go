@@ -376,12 +376,18 @@ func Play(ctx oto.Context, song string, cat string) int {
 		if t.Minute()%2 == 0 {
 			value := config.InventoryGetRowByRow(song)
 			if len(value) > 0 {
-				song += "INTRO"
+				sz := config.GetBucketSize("MP3", song+"INTRO")
+				if sz > 0 {
+					song += "INTRO"
+				}
 			}
 		} else {
 			value := config.InventoryGetRowByRow(song)
 			if len(value) > 0 {
-				song += "OUTRO"
+				sz := config.GetBucketSize("MP3", song+"INTRO")
+				if sz > 0 {
+					song += "OUTRO"
+				}
 			}
 		}
 
@@ -552,7 +558,7 @@ func main() {
 	//clearSpinsPerDayCount()
 
 	// toh to get in sync
-	adjustToTopOfHour()
+	// TODO add back adjustToTopOfHour()
 	for {
 
 		runtime.GC()

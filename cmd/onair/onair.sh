@@ -1,4 +1,4 @@
 #!/bin/sh
 cd /opt/src/github.com/nh3000/broadcast/cmd/onair
 go build onair.go
-./onair -schedday MON -stationid WRRW -schedhour 23 -logging true
+./onair -schedday TUE -stationid WVOD -schedhour 06 -logging true

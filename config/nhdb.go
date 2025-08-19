@@ -732,7 +732,7 @@ func InventoryGetRow(category, artist, song, album string) string {
 	}
 	conn.Release()
 	ctxsqlcan()
-	log.Println("getrow ",row)
+	log.Println("getrow ", row)
 	return strconv.Itoa(row)
 
 }
@@ -740,7 +740,7 @@ func InventoryGetRowByRow(rowin string) string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where rowid = '"+rowin+".")
+	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where rowid = '"+rowin+"'")
 	var row int // rowid
 
 	for rows.Next() {
@@ -758,7 +758,7 @@ func InventoryGetRowByRow(rowin string) string {
 	}
 	conn.Release()
 	ctxsqlcan()
-	log.Println("getrow ",row)
+	log.Println("getrow ", row)
 	return strconv.Itoa(row)
 
 }
@@ -1569,6 +1569,8 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	var rndorder string // assigned weekly
 	var startson string
 	var expireson string
+	var adstimeslots []string
+	var adsmaxspins string
 	var lastplayed string
 	var dateadded string
 	var spinstoday int    // cleared daily at day reset
@@ -1601,7 +1603,7 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	contentsRow = append(contentsRow, rowshead...)
 	for full.Next() {
 
-		err := full.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
+		err := full.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
 		if err != nil {
 			log.Println("PDFInventoryByCategory PDF Get Inventory row", err)
 		}
