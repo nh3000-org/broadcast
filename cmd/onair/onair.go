@@ -49,11 +49,13 @@ var expireson string
 var lastplayed string
 var adstimeslots []string
 var adsmaxspins string
+var adsmaxspinsperhour string
 var processingads bool
 var processingadsminutes int
 var playtheads bool
 var countadsspinstoday int
 var countadsmaxspins int
+var countadsmaxspinsperhour int
 var dateadded string
 var today string
 var week string
@@ -136,8 +138,8 @@ func adjustToTopOfHour() {
 		}
 
 		for tohrows.Next() {
-			log.Println("[adjustTtoherroTopOfHour] playing", tohspins)
-			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+
+			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 			if logto {
 				log.Println("[adjustTtoherroTopOfHour] playing", tohspins, artist, song)
 			}
@@ -445,7 +447,7 @@ func readPreferences() {
 	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
 
 	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
-	log.Println(config.DBaddress)
+	//log.Println(config.DBaddress)
 
 	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
 
@@ -453,6 +455,9 @@ func readPreferences() {
 	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
+	amm := config.Decrypt(fmt.Sprintf("%v", cfg["ADSMAXMINUTES"]), MySecret)
+	config.AdsMaxMinutes, _ = strconv.Atoi(amm)
 
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
@@ -620,16 +625,12 @@ func main() {
 					if spinstoplay <= 0 {
 						break
 					}
-					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 					//log.Println("processing inventory song get"+song, " schedule", playingday, playinghour, categories)
 					if inverr != nil {
 						log.Println("[main] processing inventory song get " + inverr.Error())
 						config.Send("messages."+*stationId, "[main] Inventory Song Get "+inverr.Error(), "onair")
 					}
-					// play the item
-					config.SendONAIRmp3(artist + " - " + album + " - " + song)
-					// handle ads time slots, max spins, and max minutes
-					log.Println(category + ": " + artist + " - " + album + " - " + song)
 
 					if !strings.HasPrefix(category, "ADS") {
 						processingads = false
@@ -637,24 +638,190 @@ func main() {
 					}
 					if strings.HasPrefix(category, "ADS") {
 						playtheads = true
-						// check time slots
 
-						// check max minutes
-						if processingadsminutes > config.AdsMaxMinutes {
+						st, sterr := time.Parse(time.DateTime, startson)
+						if sterr != nil {
+							log.Println("[main] inventory time parse startson "+sterr.Error(), " startson", startson, " schedule", playingday, playinghour, categories)
+							config.Send("messages."+*stationId, "[main] Inventory Time Parse startson "+sterr.Error(), "onair")
+						}
+						//log.Println("EXPIRES: ", ex.String())
+						if time.Now().Before(st) {
+							log.Println("skipping inventory not started yet: ", artist, song, album,  fileid, startson, endson)
 							playtheads = false
+						}
+
+
+						et, eterr := time.Parse(time.DateTime, expireson)
+						if sterr != nil {
+							log.Println("[main] inventory time parse endson "+eterr.Error(), " endson", expireson, " schedule", playingday, playinghour, categories)
+							config.Send("messages."+*stationId, "[main] Inventory Time Parse xpireson "+eterr.Error(), "onair")
+						}
+						//log.Println("EXPIRES: ", ex.String())
+						if time.Now().After(et) {
+							log.Println("skipping inventory expired: ", artist, song, album,  fileid, startson, expireson)
+							playtheads = false
+						}
+
+						if playtheads {
+							if processingadsminutes > config.AdsMaxMinutes {
+								log.Println("ADS Reached max ad minutes used:", processingadsminutes, "max", config.AdsMaxMinutes)
+								playtheads = false
+							}
 						}
 						// check max spins per day
+						if playtheads {
+							countadsspinstoday, _ = strconv.Atoi(today)
+							if countadsmaxspins > countadsspinstoday {
+								log.Println("ADS Reached max ad spins used:", countadsmaxspins, "today", countadsspinstoday)
+								playtheads = false
+							}
+						}
+						//apply mask adstimeslots contains this hour part
+						//log.Println("ADS hour part mask:", adstimeslots, "hour part", playinghour)
+						if playtheads {
+						}
+						var isinhourpart = false
+						for _, v := range adstimeslots {
+							if v == playinghour {
+								isinhourpart = true
+							}
 
-						countadsspinstoday, _ = strconv.Atoi(today)
-						if countadsmaxspins > countadsspinstoday {
+						}
+						if !isinhourpart {
+							log.Println("ADS skipping ad not in hour part:")
 							playtheads = false
 						}
+						// TODO remove foll
+						log.Println("ADS PLAYING ALL HOUR PARTS:")
+						playtheads = true
+						//}
+						//add  spots per hour
 						if playtheads {
+							log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour)
+
+
+
+							// get the traffic report to determine
+							// calculate sd and ed dates
+							sd := "YYYY-MM-DD HH:mm:SS"
+							ed := "YYYY-MM-DD HH:mm:SS"
+							// start
+							timenow := time.Now()
+
+							
+							timebefore := timenow.Add(-60 * time.Minute)
+
+							tn, sterr := time.Parse(time.DateTime, startson)
+						if sterr != nil {
+							log.Println("[main] inventory time parse startson "+sterr.Error(), " startson", startson, " schedule", playingday, playinghour, categories)
+							config.Send("messages."+*stationId, "[main] Inventory Time Parse startson "+sterr.Error(), "onair")
+						}
+
+							sd = strings.Replace(sd, "YYYY", strconv.Itoa(timenow.Year()), 1)
+							month = strconv.Itoa(int(timenow.Month()))
+							if len(month) == 1 {
+								month = "0" + month
+							}
+							sd = strings.Replace(sd, "MM", month, 1)
+							day = strconv.Itoa(int(timenow.Day()))
+							if len(day) == 1 {
+								day = "0" + day
+							}
+							sd = strings.Replace(sd, "DD", day, 1)
+
+							hours = strconv.Itoa(int(timenow.Hour()))
+							if len(hours) == 1 {
+								hours = "0" + hours
+							}
+							sd = strings.Replace(sd, "HH", hours, 1)
+
+							min = strconv.Itoa(int(timenow.Minute()))
+							if len(min) == 1 {
+								min = "0" + min
+							}
+							sd = strings.Replace(sd, "mm", min, 1)
+
+							sec = strconv.Itoa(int(timenow.Second()))
+							if len(sec) == 1 {
+								sec = "0" + sec
+							}
+							sd = strings.Replace(sd, "SS", sec, 1)
+
+							ed = strings.Replace(ed, "YYYY", strconv.Itoa(timebefore.Year()), 1)
+							month = strconv.Itoa(int(timebefore.Month()))
+							if len(month) == 1 {
+								month = "0" + month
+							}
+							ed = strings.Replace(ed, "MM", month, 1)
+							day = strconv.Itoa(int(timebefore.Day()))
+							if len(day) == 1 {
+								day = "0" + day
+							}
+							ed = strings.Replace(ed, "DD", day, 1)
+
+							hours = strconv.Itoa(int(timebefore.Hour()))
+							if len(hours) == 1 {
+								hours = "0" + hours
+							}
+							ed = strings.Replace(ed, "HH", hours, 1)
+
+							min = strconv.Itoa(int(timebefore.Minute()))
+							if len(min) == 1 {
+								min = "0" + min
+							}
+							ed = strings.Replace(ed, "mm", min, 1)
+
+							sec = strconv.Itoa(int(timebefore.Second()))
+							if len(sec) == 1 {
+								sec = "0" + sec
+							}
+							ed = strings.Replace(ed, "SS", sec, 1)
+							// end
+
+							target, err := strconv.Atoi(adsmaxspinsperhour)
+							if err != nil {
+								log.Println("ADS target:", adsmaxspinsperhour, err)
+							}
+
+							if target >= config.InventoryGetTrafficCount(artist, song, album, sd, ed) {
+								log.Println("ADS Reached max ad spins used:", adsmaxspinsperhour, "today", countadsmaxspins)
+								playtheads = false
+							}
+						}
+						if playtheads {
+							config.SendONAIRmp3(artist + " - " + album + " - " + song)
+							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
 							processingadsminutes += itemlength
+
+							// add time slots, max spins per day
+
+							trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
+							if trafficaddconnerr != nil {
+								log.Println("[main] Prepare trafficadd", trafficaddconnerr)
+								config.Send("messages."+*stationId, "[main] Prepare trafficadd conn "+trafficaddconnerr.Error(), "onair")
+
+							}
+							_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (artist, album,song,playedon) values($1,$2,$3,$4)")
+							if errtrafficadd != nil {
+								log.Println("[main] Prepare trafficadd", errtrafficadd)
+								config.Send("messages."+*stationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
+							}
+							//log.Println("adding inventory to traffic adding", song)
+							_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played)
+							if trafficadderr != nil {
+								log.Println("[main] updating inventory " + trafficadderr.Error())
+								config.Send("messages."+*stationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
+							}
+							trafficaddconn.Release()
+
 						}
 
 					} else {
+						// play the item
+						config.SendONAIRmp3(artist + " - " + album + " - " + song)
+						// handle ads time slots, max spins, and max minutes
+						log.Println(category + ": " + artist + " - " + album + " - " + song)
 						itemlength = Play(otoctx, rowid, category)
 					}
 					// update statistics
@@ -732,28 +899,7 @@ func main() {
 							config.Send("messages."+*stationId, "[main] MP3 Bucket Delete "+intro+" "+errremove.Error(), "onair")
 						}
 					}
-					if strings.HasPrefix(category, "ADS") {
-						// add time slots, max spins per day
 
-						trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
-						if trafficaddconnerr != nil {
-							log.Println("[main] Prepare trafficadd", trafficaddconnerr)
-							config.Send("messages."+*stationId, "[main] Prepare trafficadd conn "+trafficaddconnerr.Error(), "onair")
-
-						}
-						_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (artist, album,song,playedon) values($1,$2,$3,$4)")
-						if errtrafficadd != nil {
-							log.Println("[main] Prepare trafficadd", errtrafficadd)
-							config.Send("messages."+*stationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
-						}
-						//log.Println("adding inventory to traffic adding", song)
-						_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played)
-						if trafficadderr != nil {
-							log.Println("[main] updating inventory " + trafficadderr.Error())
-							config.Send("messages."+*stationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
-						}
-						trafficaddconn.Release()
-					}
 					expireson = strings.Replace(expireson, " ", "T", 1)
 					expireson = expireson + "Z"
 					/* 					if !strings.HasPrefix(expireson, "9999") {

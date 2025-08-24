@@ -91,6 +91,7 @@ var LoggedOn bool
 var TrafficStart = "YYYY-MM-DD 00:00:00"
 var TrafficEnd = "YYYY-MM-DD 23:59:59"
 var TrafficAlbum = ""
+var TimeZoneOffset = ""
 
 func DataStore(file string) fyne.URI {
 	DataLocation, dlerr := storage.Child(FyneApp.Storage().RootURI(), file)

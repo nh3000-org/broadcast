@@ -591,23 +591,24 @@ func ScheduleCopy(dayfrom, dayto string) {
 //		Slot string // ads time slots 00-23
 //	}
 type InventoryStruct struct {
-	Row          int    // rowid
-	Category     string // category
-	Artist       string // artist
-	Song         string // song
-	Album        string // Album
-	Songlength   int    // song length
-	Rndorder     string // assigned weekly
-	Startson     string //
-	AdsTimeSlots []string
-	AdsMaxSpins  int
-	Expireson    string
-	Lastplayed   string
-	Dateadded    string
-	Spinstoday   int    // cleared daily at day reset
-	Spinsweek    int    // spins weekly at week reset
-	Spinstotal   int    // total spins
-	Sourcelink   string // link to relevant source
+	Row                int    // rowid
+	Category           string // category
+	Artist             string // artist
+	Song               string // song
+	Album              string // Album
+	Songlength         int    // song length
+	Rndorder           string // assigned weekly
+	Startson           string //
+	AdsTimeSlots       []string
+	AdsMaxSpins        int
+	AdsMaxSpinsPerHour int
+	Expireson          string
+	Lastplayed         string
+	Dateadded          string
+	Spinstoday         int    // cleared daily at day reset
+	Spinsweek          int    // spins weekly at week reset
+	Spinstotal         int    // total spins
+	Sourcelink         string // link to relevant source
 }
 
 var InventoryStore = make(map[int]InventoryStruct)
@@ -630,6 +631,7 @@ func InventoryGet() {
 	var expireson string
 	var adstimeslots []string
 	var adsmaxspins int
+	var adsmaxspinsperhour int
 	var lastplayed string
 	var dateadded string
 	var spinstoday int    // cleared daily at day reset
@@ -637,7 +639,7 @@ func InventoryGet() {
 	var spinstotal int    // total spins
 	var sourcelink string // link to source
 	for rows.Next() {
-		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
+		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
 		if err != nil {
 			log.Println("InventoryGet Get Inventory row", err)
 		}
@@ -654,6 +656,7 @@ func InventoryGet() {
 		ds.Expireson = expireson
 		ds.AdsTimeSlots = adstimeslots
 		ds.AdsMaxSpins = adsmaxspins
+		ds.AdsMaxSpinsPerHour = adsmaxspinsperhour
 		ds.Spinstoday = spinstoday
 		ds.Spinsweek = spinsweek
 		ds.Spinstotal = spinstotal
@@ -775,10 +778,10 @@ func InventoryDelete(row int) {
 	conn.Release()
 	ctxsqlcan()
 }
-func InventoryUpdate(row int, category string, artist string, song string, album string, songlength int, rndorder string, startson string, expireson string, adstimeslots []string, adsmaxspins int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int, sourcelink string) {
+func InventoryUpdate(row int, category string, artist string, song string, album string, songlength int, rndorder string, startson string, expireson string, adstimeslots []string, adsmaxspins int, adsmaxspinsperhour int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int, sourcelink string) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
-	_, rowserr := conn.Exec(ctxsql, "update inventory set category =$1, artist = $2, song = $3, album = $4, songlength = $5, rndorder = $6, startson = $7,expireson = $8, adstimeslots = $9, adsmaxspins = $10,lastplayed = $11, dateadded = $12, spinstoday = $13, spinsweek = $14, spinstotal = $15 , sourcelink = $16 where rowid = $17", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsmaxspins, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink, row)
+	_, rowserr := conn.Exec(ctxsql, "update inventory set category =$1, artist = $2, song = $3, album = $4, songlength = $5, rndorder = $6, startson = $7,expireson = $8, adstimeslots = $9, adsmaxspins = $10, adsmaxspinsperhour = $11,lastplayed = $12, dateadded = $13, spinstoday = $14, spinsweek = $15, spinstotal = $16 , sourcelink = $17 where rowid = $18", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink, row)
 
 	if rowserr != nil {
 		log.Println("Inventory Update Inventory row error", rowserr)
@@ -787,7 +790,7 @@ func InventoryUpdate(row int, category string, artist string, song string, album
 	ctxsqlcan()
 }
 
-func InventoryAdd(category string, artist string, song string, album string, songlength int, rndorder string, startson string, expireson string, adstimeslots []string, adsmaxspins int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int, sourcelink string) int {
+func InventoryAdd(category string, artist string, song string, album string, songlength int, rndorder string, startson string, expireson string, adstimeslots []string, adsmaxspins int, adsmaxspinsperhour int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int, sourcelink string) int {
 
 	var iactxsql context.Context
 	var iactxsqlcan context.CancelFunc
@@ -828,7 +831,7 @@ func InventoryAdd(category string, artist string, song string, album string, son
 	}
 	iadconn.Release()
 	iaconn, _ = SQL.Pool.Acquire(iactxsql)
-	_, rowserr := iaconn.Exec(iactxsql, "insert into  inventory (category,artist,song,album,songlength,rndorder,startson,expireson,adstimeslots, adsmaxspins,lastplayed,dateadded,spinstoday,spinsweek,spinstotal,sourcelink) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsmaxspins, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink)
+	_, rowserr := iaconn.Exec(iactxsql, "insert into  inventory (category,artist,song,album,songlength,rndorder,startson,expireson,adstimeslots, adsmaxspins,adsmaxspinsperhour,lastplayed,dateadded,spinstoday,spinsweek,spinstotal,sourcelink) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink)
 
 	if rowserr != nil {
 		log.Println("InventoryAdd Add Inventory row error insert", rowserr)
@@ -1571,6 +1574,7 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	var expireson string
 	var adstimeslots []string
 	var adsmaxspins string
+	var adsmaxspinsperhour string
 	var lastplayed string
 	var dateadded string
 	var spinstoday int    // cleared daily at day reset
@@ -1603,7 +1607,7 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	contentsRow = append(contentsRow, rowshead...)
 	for full.Next() {
 
-		err := full.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
+		err := full.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
 		if err != nil {
 			log.Println("PDFInventoryByCategory PDF Get Inventory row", err)
 		}
@@ -1802,6 +1806,27 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	conn.Release()
 	ctxsqlcan()
 	return contentsRow
+}
+
+func InventoryGetTrafficCount(artist, song, album, startd, endd string) int {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+	if connerr != nil {
+		log.Println("InventoryGetTrafficCount", connerr)
+		ctxsqlcan()
+		return 0
+	}
+	log.Println("InventoryGetTrafficCount", artist, song, album, startd, endd)
+	c := 0
+	rc, rowserr := conn.Query(ctxsql, "select count(*) from traffic where artist='"+artist+"' and song = '"+song+"' and album = '"+album+"' and playedon between '"+startd+"' and  '"+endd+"'")
+	if rowserr != nil {
+		log.Println("InventoryGetTrafficCount rowserr", rowserr)
+	}
+	rc.Scan(c)
+	conn.Release()
+	ctxsqlcan()
+	return c
+
 }
 
 var AlbumArray []string

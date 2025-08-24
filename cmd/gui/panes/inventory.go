@@ -69,7 +69,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	laexpires := widget.NewLabel("Expires On: ")
 	edexpires := widget.NewEntry()
-	edexpires.SetText("9999-01-01 00:00:00")
+	edexpires.SetText("9999-01-01T00:00:00Z")
 	gridexpires := container.New(layout.NewGridLayoutWithRows(2), laexpires, edexpires)
 
 	lastartson := widget.NewLabel("Starts On: ")
@@ -84,8 +84,11 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	laadsmaxspins := widget.NewLabel("ADS Max Spins Per Day: ")
 	edadsmaxspins := widget.NewSelect([]string{"12", "24", "36", "48", "9999"}, func(string) {})
-
 	gridadsmaxspins := container.New(layout.NewGridLayoutWithRows(2), laadsmaxspins, edadsmaxspins)
+
+	laadsmaxspinsperhour := widget.NewLabel("ADS Max Spins Per Hour: ")
+	edadsmaxspinsperhour := widget.NewSelect([]string{"1", "2", "3", "4"}, func(string) {})
+	gridadsmaxspinsperhour := container.New(layout.NewGridLayoutWithRows(2), laadsmaxspinsperhour, edadsmaxspinsperhour)
 
 	lalastplayed := widget.NewLabel("Last Played: ")
 	edlastplayed := widget.NewEntry()
@@ -200,6 +203,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 					}
 					addtimeslots := make([]string, 23)
 					maxspins, _ := strconv.Atoi("0")
+					maxspinsperhour, _ := strconv.Atoi("0")
 					length, _ := strconv.Atoi("0")
 					today, _ := strconv.Atoi("0")
 					week, _ := strconv.Atoi("0")
@@ -219,7 +223,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 					added = strings.Replace(added, "DD", d, 1)
 					rowexists := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
 					if rowexists == "0" {
-						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", addtimeslots, maxspins, "1999-01-01 00:00:00", added, today, week, total, "Stub")
+						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", addtimeslots, maxspins, maxspinsperhour, "1999-01-01 00:00:00", added, today, week, total, "Stub")
 						row := strconv.Itoa(rowreturned)
 						if row != "0" {
 							songbytes, songerr = os.ReadFile(imimportdir)
@@ -447,7 +451,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		week, _ := strconv.Atoi(edspinsweek.Text)
 		total, _ := strconv.Atoi(edspinstotal.Text)
 		addsmaxspins, _ := strconv.Atoi(edadsmaxspins.Selected)
-		rowreturned := config.InventoryAdd(edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, addsmaxspins, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
+		addsmaxspinsperhour, _ := strconv.Atoi(edadsmaxspinsperhour.Selected)
+		rowreturned := config.InventoryAdd(edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, addsmaxspins, addsmaxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
 		row := strconv.Itoa(rowreturned)
 		edrow.SetText(row)
 		openSong.Enable()
@@ -509,6 +514,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		edexpires.SetText(config.InventoryStore[id.Row].Expireson)
 		edadstimeslot.SetSelected(config.InventoryStore[id.Row].AdsTimeSlots)
 		edadsmaxspins.SetSelected(strconv.Itoa(config.InventoryStore[id.Row].AdsMaxSpins))
+		edadsmaxspinsperhour.SetSelected(strconv.Itoa(config.InventoryStore[id.Row].AdsMaxSpinsPerHour))
 		eddateadded.SetText(config.InventoryStore[id.Row].Dateadded)
 		edlastplayed.SetText(config.InventoryStore[id.Row].Lastplayed)
 		edlinks.SetText(config.InventoryStore[id.Row].Sourcelink)
@@ -536,7 +542,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			var week, _ = strconv.Atoi(edspinsweek.Text)
 			var total, _ = strconv.Atoi(edspinstotal.Text)
 			var maxspins, _ = strconv.Atoi(edadsmaxspins.Selected)
-			config.InventoryUpdate(myrow, edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, maxspins, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
+			var maxspinsperhour, _ = strconv.Atoi(edadsmaxspinsperhour.Selected)
+			config.InventoryUpdate(myrow, edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, maxspins, maxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
 			config.InventoryGet()
 			config.FyneInventoryList.Refresh()
 			if shadowCategory == "CURRENTS" {
@@ -563,6 +570,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			gridexpires,
 			gridadstimeslot,
 			gridadsmaxspins,
+			gridadsmaxspinsperhour,
 			gridlastplayed,
 			gridedateadded,
 			gridlinks,
@@ -633,6 +641,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			gridexpires,
 			gridadstimeslot,
 			gridadsmaxspins,
+			gridadsmaxspinsperhour,
 			gridlastplayed,
 			gridedateadded,
 			gridlinks,
