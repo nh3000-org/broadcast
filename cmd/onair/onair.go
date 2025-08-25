@@ -646,10 +646,9 @@ func main() {
 						}
 						//log.Println("EXPIRES: ", ex.String())
 						if time.Now().Before(st) {
-							log.Println("skipping inventory not started yet: ", artist, song, album,  fileid, startson, endson)
+							log.Println("skipping inventory not started yet: ", artist, song, album, fileid, startson, endson)
 							playtheads = false
 						}
-
 
 						et, eterr := time.Parse(time.DateTime, expireson)
 						if sterr != nil {
@@ -658,7 +657,7 @@ func main() {
 						}
 						//log.Println("EXPIRES: ", ex.String())
 						if time.Now().After(et) {
-							log.Println("skipping inventory expired: ", artist, song, album,  fileid, startson, expireson)
+							log.Println("skipping inventory expired: ", artist, song, album, fileid, startson, expireson)
 							playtheads = false
 						}
 
@@ -699,91 +698,20 @@ func main() {
 						if playtheads {
 							log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour)
 
-
-
-							// get the traffic report to determine
-							// calculate sd and ed dates
-							sd := "YYYY-MM-DD HH:mm:SS"
-							ed := "YYYY-MM-DD HH:mm:SS"
-							// start
-							timenow := time.Now()
-
-							
-							timebefore := timenow.Add(-60 * time.Minute)
-
-							tn, sterr := time.Parse(time.DateTime, startson)
-						if sterr != nil {
-							log.Println("[main] inventory time parse startson "+sterr.Error(), " startson", startson, " schedule", playingday, playinghour, categories)
-							config.Send("messages."+*stationId, "[main] Inventory Time Parse startson "+sterr.Error(), "onair")
-						}
-
-							sd = strings.Replace(sd, "YYYY", strconv.Itoa(timenow.Year()), 1)
-							month = strconv.Itoa(int(timenow.Month()))
-							if len(month) == 1 {
-								month = "0" + month
-							}
-							sd = strings.Replace(sd, "MM", month, 1)
-							day = strconv.Itoa(int(timenow.Day()))
-							if len(day) == 1 {
-								day = "0" + day
-							}
-							sd = strings.Replace(sd, "DD", day, 1)
-
-							hours = strconv.Itoa(int(timenow.Hour()))
-							if len(hours) == 1 {
-								hours = "0" + hours
-							}
-							sd = strings.Replace(sd, "HH", hours, 1)
-
-							min = strconv.Itoa(int(timenow.Minute()))
-							if len(min) == 1 {
-								min = "0" + min
-							}
-							sd = strings.Replace(sd, "mm", min, 1)
-
-							sec = strconv.Itoa(int(timenow.Second()))
-							if len(sec) == 1 {
-								sec = "0" + sec
-							}
-							sd = strings.Replace(sd, "SS", sec, 1)
-
-							ed = strings.Replace(ed, "YYYY", strconv.Itoa(timebefore.Year()), 1)
-							month = strconv.Itoa(int(timebefore.Month()))
-							if len(month) == 1 {
-								month = "0" + month
-							}
-							ed = strings.Replace(ed, "MM", month, 1)
-							day = strconv.Itoa(int(timebefore.Day()))
-							if len(day) == 1 {
-								day = "0" + day
-							}
-							ed = strings.Replace(ed, "DD", day, 1)
-
-							hours = strconv.Itoa(int(timebefore.Hour()))
-							if len(hours) == 1 {
-								hours = "0" + hours
-							}
-							ed = strings.Replace(ed, "HH", hours, 1)
-
-							min = strconv.Itoa(int(timebefore.Minute()))
-							if len(min) == 1 {
-								min = "0" + min
-							}
-							ed = strings.Replace(ed, "mm", min, 1)
-
-							sec = strconv.Itoa(int(timebefore.Second()))
-							if len(sec) == 1 {
-								sec = "0" + sec
-							}
-							ed = strings.Replace(ed, "SS", sec, 1)
-							// end
-
-							target, err := strconv.Atoi(adsmaxspinsperhour)
+							targetmaxspinsperhour, err := strconv.Atoi(adsmaxspinsperhour)
 							if err != nil {
-								log.Println("ADS target:", adsmaxspinsperhour, err)
+								log.Println("ADS targetmaxspinsperhour:", adsmaxspinsperhour, err)
 							}
+							//poaeeay := []string
+							pomap := config.InventoryGetTrafficCount(artist, song, album)
 
-							if target >= config.InventoryGetTrafficCount(artist, song, album, sd, ed) {
+							// must be on same day
+							// must be in hourpart
+							// take count by playinghour
+							lastplayedhour := lp.Hour()
+							//get day and hour
+
+							if targethour == lastplayedhour {
 								log.Println("ADS Reached max ad spins used:", adsmaxspinsperhour, "today", countadsmaxspins)
 								playtheads = false
 							}

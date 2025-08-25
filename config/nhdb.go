@@ -1808,24 +1808,52 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	return contentsRow
 }
 
-func InventoryGetTrafficCount(artist, song, album, startd, endd string) int {
+func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, connerr := SQL.Pool.Acquire(ctxsql)
+	var mykey string
+	var myhp string
+	var  myvalue int
 	if connerr != nil {
 		log.Println("InventoryGetTrafficCount", connerr)
 		ctxsqlcan()
-		return 0
+		return nil
 	}
-	log.Println("InventoryGetTrafficCount", artist, song, album, startd, endd)
-	c := 0
-	rc, rowserr := conn.Query(ctxsql, "select count(*) from traffic where artist='"+artist+"' and song = '"+song+"' and album = '"+album+"' and playedon between '"+startd+"' and  '"+endd+"'")
+	log.Println("InventoryGetTrafficCount", artist, song, album)
+	
+	returnpo := make(map[string]int)
+	playedon := ""
+	rc, rowserr := conn.Query(ctxsql, "select playedon from traffic where artist='"+artist+"' and song = '"+song+"' and album = '"+album+"' order by playedon desc")
 	if rowserr != nil {
 		log.Println("InventoryGetTrafficCount rowserr", rowserr)
+			conn.Release()
+	ctxsqlcan()
+		return returnpo
 	}
-	rc.Scan(c)
+	for rc.Next() {
+		err := rc.Scan(&playedon)
+		if err != nil {
+			log.Println("InventoryGetTrafficCount rowserr playedon", err)
+		}
+
+		// get date and hourpart yyyy-mm-dd-HP
+		mykey = playedon[0:9]
+		// now get hourpart
+		myhp=playedon[10:12]
+		mykey = mykey + myhp
+		
+		myvalue = returnpo[mykey]
+		returnpo[mykey] = myvalue + 1
+		log.Println("InventoryGetTrafficCount rowserr mykey", mykey," value ",myvalue)
+
+		// increment counter
+		
+
+	}
+
 	conn.Release()
 	ctxsqlcan()
-	return c
+	return returnpo
 
 }
 
