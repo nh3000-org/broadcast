@@ -48,6 +48,7 @@ var startson string
 var expireson string
 var lastplayed string
 var adstimeslots []string
+var adsdayslots []string
 var adsmaxspins string
 var adsmaxspinsperhour string
 var processingads bool
@@ -114,7 +115,6 @@ var toherrinventoryupd error
 
 func adjustToTopOfHour() {
 
-	//tohtime = time.Now()
 	tohmin = float64(time.Now().Minute())
 	tohleft = 60 - tohmin
 	tohspinsf = tohleft / 3.30
@@ -139,7 +139,7 @@ func adjustToTopOfHour() {
 
 		for tohrows.Next() {
 
-			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots,&adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 			if logto {
 				log.Println("[adjustTtoherroTopOfHour] playing", tohspins, artist, song)
 			}
@@ -456,7 +456,7 @@ func readPreferences() {
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
 	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
-	amm := config.Decrypt(fmt.Sprintf("%v", cfg["ADSMAXMINUTES"]), MySecret)
+	amm := config.Decrypt(fmt.Sprintf("%v", cfg["AdsMaxMinutes"]), MySecret)
 	config.AdsMaxMinutes, _ = strconv.Atoi(amm)
 
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
@@ -625,7 +625,7 @@ func main() {
 					if spinstoplay <= 0 {
 						break
 					}
-					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots,&adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 					//log.Println("processing inventory song get"+song, " schedule", playingday, playinghour, categories)
 					if inverr != nil {
 						log.Println("[main] processing inventory song get " + inverr.Error())
@@ -646,7 +646,7 @@ func main() {
 						}
 						//log.Println("EXPIRES: ", ex.String())
 						if time.Now().Before(st) {
-							log.Println("skipping inventory not started yet: ", artist, song, album, fileid, startson, endson)
+							log.Println("skipping inventory not started yet: ", artist, song, album, fileid, startson)
 							playtheads = false
 						}
 
@@ -678,45 +678,64 @@ func main() {
 						//apply mask adstimeslots contains this hour part
 						//log.Println("ADS hour part mask:", adstimeslots, "hour part", playinghour)
 						if playtheads {
-						}
-						var isinhourpart = false
-						for _, v := range adstimeslots {
-							if v == playinghour {
-								isinhourpart = true
+
+							var isinhourpart = false
+							for _, v := range adstimeslots {
+								if v == playinghour {
+									isinhourpart = true
+								}
+
+							}
+														if !isinhourpart {
+								log.Println("ADS skipping ad not in hour part:")
+								playtheads = false
 							}
 
-						}
-						if !isinhourpart {
-							log.Println("ADS skipping ad not in hour part:")
-							playtheads = false
 						}
 						// TODO remove foll
 						log.Println("ADS PLAYING ALL HOUR PARTS:")
 						playtheads = true
-						//}
-						//add  spots per hour
+
+						if playtheads {
+
+							var isindaypart = false
+							for _, v := range adsdayslots {
+								if v == playingday {
+									isindaypart = true
+								}
+
+							}
+							if !isindaypart {
+								log.Println("ADS skipping ad not in hour part:")
+								playtheads = false
+							}
+						}
+						// TODO remove foll
+						log.Println("ADS PLAYING ALL HOUR PARTS:")
+						playtheads = true
+
 						if playtheads {
 							log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour)
-
+							timenow := time.RFC3339
 							targetmaxspinsperhour, err := strconv.Atoi(adsmaxspinsperhour)
 							if err != nil {
-								log.Println("ADS targetmaxspinsperhour:", adsmaxspinsperhour, err)
+								log.Println("ADS targetmaxspinsperhour:", targetmaxspinsperhour, err)
 							}
-							//poaeeay := []string
 							pomap := config.InventoryGetTrafficCount(artist, song, album)
 
-							// must be on same day
-							// must be in hourpart
-							// take count by playinghour
-							lastplayedhour := lp.Hour()
-							//get day and hour
+							tdate := timenow[0:8]
 
-							if targethour == lastplayedhour {
-								log.Println("ADS Reached max ad spins used:", adsmaxspinsperhour, "today", countadsmaxspins)
+							v := pomap[tdate+playinghour]
+							// TODO FORCE ADDS
+							log.Println("ADS PLAYING 1 per hour:")
+							targetmaxspinsperhour = 1
+							if v >= targetmaxspinsperhour {
+								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour)
 								playtheads = false
 							}
 						}
 						if playtheads {
+							played = time.DateTime
 							config.SendONAIRmp3(artist + " - " + album + " - " + song)
 							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
@@ -736,6 +755,7 @@ func main() {
 								config.Send("messages."+*stationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
 							}
 							//log.Println("adding inventory to traffic adding", song)
+
 							_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played)
 							if trafficadderr != nil {
 								log.Println("[main] updating inventory " + trafficadderr.Error())
@@ -759,37 +779,7 @@ func main() {
 					spinstoday++
 					spinstotal, _ = strconv.Atoi(total)
 					spinstotal++
-					lp = time.Now()
-
-					played = strings.Replace(played, "YYYY", strconv.Itoa(lp.Year()), 1)
-					month = strconv.Itoa(int(lp.Month()))
-					if len(month) == 1 {
-						month = "0" + month
-					}
-					played = strings.Replace(played, "MM", month, 1)
-					day = strconv.Itoa(int(lp.Day()))
-					if len(day) == 1 {
-						day = "0" + day
-					}
-					played = strings.Replace(played, "DD", day, 1)
-
-					hours = strconv.Itoa(int(lp.Hour()))
-					if len(hours) == 1 {
-						hours = "0" + hours
-					}
-					played = strings.Replace(played, "HH", hours, 1)
-
-					min = strconv.Itoa(int(lp.Minute()))
-					if len(min) == 1 {
-						min = "0" + min
-					}
-					played = strings.Replace(played, "mm", min, 1)
-
-					sec = strconv.Itoa(int(lp.Second()))
-					if len(sec) == 1 {
-						sec = "0" + sec
-					}
-					played = strings.Replace(played, "SS", sec, 1)
+					played = time.DateTime
 
 					//log.Println("last played", played, " schedule", playingday, playinghour, categories)
 					invupdconn, _ = config.SQL.Pool.Acquire(context.Background())
