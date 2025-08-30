@@ -142,6 +142,7 @@ CREATE TABLE public.inventory (
     startson text,
     expireson text,
     adstimeslots text[],
+    adsdayslots text[],
     adsmaxspins integer,
     adsmaxspinsperhour integer,
     lastplayed text,
@@ -391,7 +392,7 @@ COPY public.hours (rowid, id, description) FROM stdin;
 -- Data for Name: inventory; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.inventory (rowid, category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink) FROM stdin;
+COPY public.inventory (rowid, category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsdayslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink) FROM stdin;
 \.
 
 

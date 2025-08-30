@@ -408,6 +408,7 @@ create table inventory (
   startson  text,
   expireson text,
   adstimeslots text array[23],
+  adsdayslots text array[7],
   adsmaxspins int,
   adsmaxspinsperhour int,
   lastplayed text,

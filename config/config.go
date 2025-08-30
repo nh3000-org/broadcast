@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+
 	"strings"
 	"time"
 
@@ -49,20 +50,10 @@ var NatsUserAuthorizationsPassword = "PASSWORD"
 var NatsQueuePassword = "987654321098765432109876"
 var NatsQueueDurable = "snatsdurable"
 
-// var NatsQueue = "MESSAGES"
-//var NatsQueues = []string{"MESSAGES", "EVENTS", "COMMANDS", "DEVICES"}
-
 var NatsNodeUUID string
 var NatsAlias string
 
-//var NatsReceivingMessages bool
-
 var NatsMsgMaxAge string
-
-// var NatsCONSUMER nats.JetStream
-// var NatsJETSTREAM  nats.JetStream
-//var MsgCancel = false
-//var DevCancel = false
 
 // default encryption
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
@@ -92,6 +83,14 @@ var TrafficStart = "YYYY-MM-DD 00:00:00"
 var TrafficEnd = "YYYY-MM-DD 23:59:59"
 var TrafficAlbum = ""
 var TimeZoneOffset = ""
+
+func GetDateTime(offsethours string) string {
+	ct := time.Now()
+	hours, _ := time.ParseDuration(offsethours)
+	future := ct.Add(hours)
+
+	return future.String()
+}
 
 func DataStore(file string) fyne.URI {
 	DataLocation, dlerr := storage.Child(FyneApp.Storage().RootURI(), file)

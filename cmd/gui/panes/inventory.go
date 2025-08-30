@@ -82,7 +82,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	edadstimeslot.Horizontal = true
 	gridadstimeslot := container.New(layout.NewGridLayoutWithRows(2), laadstimeslot, edadstimeslot)
 
-	laadsdayslot := widget.NewLabel("ADS Time Slot: ")
+	laadsdayslot := widget.NewLabel("ADS Day Slot: ")
 	edadsdayslot := widget.NewCheckGroup([]string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}, func([]string) {})
 	edadsdayslot.Horizontal = true
 	gridadsdayslot := container.New(layout.NewGridLayoutWithRows(2), laadsdayslot, edadsdayslot)
@@ -208,42 +208,46 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 					}
 					//adstimeslots := make([]string, 23)
 					//adsdayslots := make([]string, 7)
-					maxspins, _ := 0
+					maxspins := 0
 					maxspinsperhour := 0
-					length, _ := strconv.Atoi("0")
-					today, _ := strconv.Atoi("0")
-					week, _ := strconv.Atoi("0")
-					total, _ := strconv.Atoi("0")
+					length := 0
+					today := 0
+					week := 0
+					total := 0
 
-					added = time.DateTime
+					//added = time.DateTime
+					//da := time.Now()
+
+					added := config.GetDateTime("1h")
+					sd := config.GetDateTime("1h")
+
+					ed := "9999-01-01 00:00:00"
+					log.Println("init", "sd", sd[0:19], "ed", ed[0:19], "added", added[0:19])
+					//ft := "9999-01-01 00:00:00"
+					var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "123"}
+					var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
 
 					rowexists := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
 					if rowexists == "0" {
-						var sd = "2025-01-01 00:00:00"
-						var ed = "9999-01-01 00:00:00"
-						var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "123"}
-						var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
+
 						maxspins = 0
 						maxspinsperhour = 0
-						if imalbum == "ADS" {
+						if imcategory == "ADS" {
+							log.Println("before sd", sd, "ed", ed[0:19], "added", added)
 
-							// default start date today +1
-							now := time.Now()
-							adssd := now.AddDate(0, 0, -1)
-							sd = adssd.Format("2000-01-01 00:00:00")
-							// default end date today + 30
-							adsed := now.AddDate(0, 0, 30)
-							ed = adsed.Format("2000-01-01 00:00:00")
+							ed = config.GetDateTime("720h")
+
+							log.Println("in ads sd", sd, "ed", ed[0:19], "added", added)
 							// default hour parts 07 - 18
 							hp = []string{"06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"}
 							// default day slots MON-FRI
 							dp = []string{"MON", "TUE", "WED", "THU", "FRI"}
 							// mas spins per day 24
-							maxspins = 720
+							maxspins = 12
 							maxspinsperhour = 1
 
 						}
-						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", sd, ed, hp, dp, maxspins, maxspinsperhour, "1999-01-01 00:00:00", added, today, week, total, "Stub")
+						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", sd[0:19], ed[0:19], hp, dp, maxspins, maxspinsperhour, "1999-01-01 00:00:00", added[0:19], today, week, total, "Stub")
 						row := strconv.Itoa(rowreturned)
 						if row != "0" {
 							songbytes, songerr = os.ReadFile(imimportdir)
@@ -261,18 +265,18 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 							}
 						}
 					}
-					log.Println("checking intro/outro", cat)
+
 					if strings.HasSuffix(cat, "INTRO.mp3") {
 						rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
 						if len(rowreturned) > 0 {
-							log.Println("importing intro", rowreturned)
+							//log.Println("importing intro", rowreturned)
 							songbytes, songerr = os.ReadFile(imimportdir)
 							if songerr != nil {
 								log.Println("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
 								config.Send("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
 							}
 							if songerr == nil {
-								log.Println("putting intro", rowreturned+"INTRO")
+								//log.Println("putting intro", rowreturned+"INTRO")
 								pberr = config.PutBucket("mp3", rowreturned+"INTRO", songbytes)
 								if pberr == nil {
 									songbytes = []byte("")
@@ -287,14 +291,14 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 					if strings.HasSuffix(cat, "OUTRO.mp3") {
 						rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
 						if len(rowreturned) > 0 {
-							log.Println("importing outro", rowreturned)
+							//log.Println("importing outro", rowreturned)
 							songbytes, songerr = os.ReadFile(imimportdir)
 							if songerr != nil {
 								log.Println("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
 								config.Send("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
 							}
 							if songerr == nil {
-								log.Println("putting outro", rowreturned+"OUTRO")
+								//log.Println("putting outro", rowreturned+"OUTRO")
 								pberr = config.PutBucket("mp3", rowreturned+"OUTRO", songbytes)
 								if pberr == nil {
 									songbytes = []byte("")

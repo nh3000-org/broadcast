@@ -738,7 +738,7 @@ func InventoryGetRow(category, artist, song, album string) string {
 	}
 	conn.Release()
 	ctxsqlcan()
-	log.Println("getrow ", row)
+	//log.Println("getrow ", row)
 	return strconv.Itoa(row)
 
 }
