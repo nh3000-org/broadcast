@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
+	//"time"
 
 	"github.com/nh3000-org/broadcast/config"
 
@@ -97,20 +97,14 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	sp := "/opt/radio/stub"
 	os.Chdir(sp)
 	startpath := strings.Replace(sp, "/README.txt", "", 1)
-	walkstuberr := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+			walkstuberr := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 
-		//removepath := "/opt/radio/stub/"
-		//cat := strings.Replace(path, removepath, "", 1)
-		//imimportdir := startpath + "/" + cat
-		removepath := startpath + "/"
-		cat := strings.Replace(path, removepath, "", 1)
-		imimportdir := startpath + "/" + cat
-		w.Write([]byte("Upload file " + imimportdir))
-		log.Println("uploadfile ", imimportdir)
-		//imimportdir := removepath + cat
-		if info.IsDir() {
-			imcategory = cat
-		}
+				removepath := startpath + "/"
+				cat := strings.Replace(path, removepath, "", 1)
+				imimportdir := startpath + "/" + cat
+				if info.IsDir() {
+					imcategory = cat
+				}
 
 				if strings.HasSuffix(cat, "mp3") {
 					rmcat := imcategory + "/"
@@ -142,29 +136,44 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 					if strings.HasSuffix(cat, "INTRO.mp3") {
 						imalbum = strings.ReplaceAll(imalbum, "INTRO", "")
 					}
-					addtimeslots := make([]string, 23)
-					maxspins, _ := strconv.Atoi("0")
-					length, _ := strconv.Atoi("0")
-					today, _ := strconv.Atoi("0")
-					week, _ := strconv.Atoi("0")
-					total, _ := strconv.Atoi("0")
 
-					da := time.Now()
-					var added string
-					added = strings.Replace(added, "YYYY", strconv.Itoa(da.Year()), 1)
-					m := strconv.Itoa(int(da.Month()))
-					if len(m) == 1 {
-						m = "0" + m
-					}
-					added = strings.Replace(added, "MM", m, 1)
-					d := strconv.Itoa(int(da.Day()))
-					if len(d) == 1 {
-						d = "0" + d
-					}
-					added = strings.Replace(added, "DD", d, 1)
+					maxspins := 0
+					maxspinsperhour := 0
+					length := 0
+					today := 0
+					week := 0
+					total := 0
+
+					added := config.GetDateTime("1h")
+					sd := config.GetDateTime("1h")
+
+					ed := "9999-01-01 00:00:00"
+					//log.Println("init", "sd", sd[0:19], "ed", ed[0:19], "added", added[0:19])
+					//ft := "9999-01-01 00:00:00"
+					var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "123"}
+					var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
+
 					rowexists := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
 					if rowexists == "0" {
-						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", "2023-12-31 00:00:00", "9999-12-31 00:00:00", addtimeslots, maxspins, "1999-01-01 00:00:00", added, today, week, total, "Stub")
+
+						maxspins = 0
+						maxspinsperhour = 0
+						if imcategory == "ADS" {
+							log.Println("before sd", sd, "ed", ed[0:19], "added", added[0:19])
+
+							ed = config.GetDateTime("720h")
+
+							//log.Println("in ads sd", sd, "ed", ed[0:19], "added", added[0:19])
+							// default hour parts 07 - 18
+							hp = []string{"06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"}
+							// default day slots MON-FRI
+							dp = []string{"MON", "TUE", "WED", "THU", "FRI"}
+							// mas spins per day 24
+							maxspins = 12
+							maxspinsperhour = 1
+
+						}
+						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", sd[0:19], ed[0:19], hp, dp, maxspins, maxspinsperhour, "1999-01-01 00:00:00", added[0:19], today, week, total, "Stub")
 						row := strconv.Itoa(rowreturned)
 						if row != "0" {
 							songbytes, songerr := os.ReadFile(imimportdir)
@@ -182,18 +191,18 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 					}
-					log.Println("checking intro/outro", cat)
+
 					if strings.HasSuffix(cat, "INTRO.mp3") {
 						rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
 						if len(rowreturned) > 0 {
-							log.Println("importing intro", rowreturned)
+							//log.Println("importing intro", rowreturned)
 							songbytes, songerr := os.ReadFile(imimportdir)
 							if songerr != nil {
 								log.Println("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
 								config.Send("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
 							}
 							if songerr == nil {
-								log.Println("putting intro", rowreturned+"INTRO")
+								//log.Println("putting intro", rowreturned+"INTRO")
 								pberr := config.PutBucket("mp3", rowreturned+"INTRO", songbytes)
 								if pberr == nil {
 									songbytes = []byte("")
@@ -208,14 +217,14 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 					if strings.HasSuffix(cat, "OUTRO.mp3") {
 						rowreturned := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
 						if len(rowreturned) > 0 {
-							log.Println("importing outro", rowreturned)
+							//log.Println("importing outro", rowreturned)
 							songbytes, songerr := os.ReadFile(imimportdir)
 							if songerr != nil {
 								log.Println("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
 								config.Send("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
 							}
 							if songerr == nil {
-								log.Println("putting outro", rowreturned+"OUTRO")
+								//log.Println("putting outro", rowreturned+"OUTRO")
 								pberr := config.PutBucket("mp3", rowreturned+"OUTRO", songbytes)
 								if pberr == nil {
 									songbytes = []byte("")
@@ -231,7 +240,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 				}
 				return nil
 			})
-			if walkstuberr != nil {
+						if walkstuberr != nil {
 				log.Println("messages.IMPORT", "Inventory Walk Err FileInfo "+walkstuberr.Error(), "onair")
 				config.Send("messages.IMPORT", "Inventory Walk Err FileInfo "+walkstuberr.Error(), "onair")
 			}
