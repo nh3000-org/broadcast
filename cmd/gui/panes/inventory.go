@@ -74,7 +74,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	lastartson := widget.NewLabel("Starts On: ")
 	edstartson := widget.NewEntry()
-	edstartson.SetText(time.Now().String())
+	so := config.GetDateTime("1")
+	edstartson.SetText(so[0:19])
 	gridstartson := container.New(layout.NewGridLayoutWithRows(2), lastartson, edstartson)
 
 	laadstimeslot := widget.NewLabel("ADS Time Slot: ")
@@ -104,20 +105,9 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	eddateadded := widget.NewEntry()
 	eddateadded.Disable()
 
-	da := time.Now()
-	added := "YYYY-MM-DD 00:00:00"
-	added = strings.Replace(added, "YYYY", strconv.Itoa(da.Year()), 1)
-	m := strconv.Itoa(int(da.Month()))
-	if len(m) == 1 {
-		m = "0" + m
-	}
-	added = strings.Replace(added, "MM", m, 1)
-	d := strconv.Itoa(int(da.Day()))
-	if len(d) == 1 {
-		d = "0" + d
-	}
-	added = strings.Replace(added, "DD", d, 1)
-	eddateadded.SetText(added)
+	da := config.GetDateTime("1h")
+
+	eddateadded.SetText(da[0:19])
 	gridedateadded := container.New(layout.NewGridLayoutWithRows(2), ladateadded, eddateadded)
 
 	laspinstoday := widget.NewLabel("Spins Today: ")
@@ -206,8 +196,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 					if strings.HasSuffix(cat, "INTRO.mp3") {
 						imalbum = strings.ReplaceAll(imalbum, "INTRO", "")
 					}
-					//adstimeslots := make([]string, 23)
-					//adsdayslots := make([]string, 7)
+
 					maxspins := 0
 					maxspinsperhour := 0
 					length := 0
@@ -215,14 +204,11 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 					week := 0
 					total := 0
 
-					//added = time.DateTime
-					//da := time.Now()
-
 					added := config.GetDateTime("1h")
 					sd := config.GetDateTime("1h")
 
 					ed := "9999-01-01 00:00:00"
-					log.Println("init", "sd", sd[0:19], "ed", ed[0:19], "added", added[0:19])
+					//log.Println("init", "sd", sd[0:19], "ed", ed[0:19], "added", added[0:19])
 					//ft := "9999-01-01 00:00:00"
 					var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "123"}
 					var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
@@ -233,11 +219,11 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 						maxspins = 0
 						maxspinsperhour = 0
 						if imcategory == "ADS" {
-							log.Println("before sd", sd, "ed", ed[0:19], "added", added)
+							log.Println("before sd", sd, "ed", ed[0:19], "added", added[0:19])
 
 							ed = config.GetDateTime("720h")
 
-							log.Println("in ads sd", sd, "ed", ed[0:19], "added", added)
+							//log.Println("in ads sd", sd, "ed", ed[0:19], "added", added[0:19])
 							// default hour parts 07 - 18
 							hp = []string{"06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"}
 							// default day slots MON-FRI
@@ -635,21 +621,9 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 		edlastplayed.SetText("1999-01-01 00:00:00")
 
-		var da = time.Now()
+		da := config.GetDateTime("1h")
 
-		added := "YYYY-MM-DD 00:00:00"
-		added = strings.Replace(added, "YYYY", strconv.Itoa(da.Year()), 10)
-		m := strconv.Itoa(int(da.Month()))
-		if len(m) == 1 {
-			m = "0" + m
-		}
-		added = strings.Replace(added, "MM", m, 1)
-		d := strconv.Itoa(int(da.Day()))
-		if len(d) == 1 {
-			d = "0" + d
-		}
-		added = strings.Replace(added, "DD", d, 1)
-		eddateadded.SetText(added)
+		eddateadded.SetText(da[0:19])
 		edspinstoday.SetText("0")
 		edspinsweek.SetText("0")
 		edspinstotal.SetText("0")

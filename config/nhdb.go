@@ -656,6 +656,8 @@ func InventoryGet() {
 		ds.Song = song
 		ds.Startson = startson
 		ds.Expireson = expireson
+		ds.Lastplayed = lastplayed
+		ds.Dateadded = dateadded
 		ds.AdsTimeSlots = adstimeslots
 		ds.AdsDaySlots = adsdayslots
 		ds.AdsMaxSpins = adsmaxspins
@@ -808,6 +810,7 @@ func InventoryAdd(category string, artist string, song string, album string, son
 	var rowid = 0
 	var iaconn *pgxpool.Conn
 	var iaconn1 *pgxpool.Conn
+	//log.Println("startson ", startson, "endon", expireson, "lastplayed", lastplayed, "added", dateadded)
 	iactxsql, iactxsqlcan = context.WithTimeout(context.Background(), 1*time.Minute)
 
 	iadconn, _ = SQL.Pool.Acquire(iactxsql)
