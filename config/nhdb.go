@@ -643,7 +643,7 @@ func InventoryGet() {
 	for rows.Next() {
 		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
 		if err != nil {
-			log.Println("InventoryGet Get Inventory row", err)
+			log.Println("InventoryGet Get Inventory row:", err)
 		}
 		ds := InventoryStruct{}
 		ds.Row = row
@@ -1843,11 +1843,11 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 			log.Println("InventoryGetTrafficCount rowserr playedon", err)
 		}
 
-		// get date and hourpart yyyy-mm-dd-HP
+		// get date and hourpart yyyy-mm-dd-HP from yyyy-mm-dd HH:mm:ss
 		mykey = playedon[0:10]
 		// now get hourpart
 		myhp = playedon[12:14]
-		mykey = mykey + myhp
+		mykey = mykey + "." + myhp
 
 		myvalue = returnpo[mykey]
 		returnpo[mykey] = myvalue + 1

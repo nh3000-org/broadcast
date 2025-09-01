@@ -86,6 +86,7 @@ var TimeZoneOffset = ""
 
 func GetDateTime(offsethours string) string {
 	ct := time.Now()
+
 	hours, _ := time.ParseDuration(offsethours)
 	future := ct.Add(hours)
 

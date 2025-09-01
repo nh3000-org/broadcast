@@ -85,7 +85,7 @@ func playNext() {
 	}
 
 	for nextrows.Next() {
-		nexterr = nextrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+		nexterr = nextrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 		if nexterr != nil {
 			log.Println("processing inventory song get " + nexterr.Error())
 			config.Send("messages.NEXT", "Inventory Song Get "+nexterr.Error(), "onair")
@@ -139,7 +139,7 @@ func adjustToTopOfHour() {
 
 		for tohrows.Next() {
 
-			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots,&adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 			if logto {
 				log.Println("[adjustTtoherroTopOfHour] playing", tohspins, artist, song)
 			}
@@ -625,10 +625,10 @@ func main() {
 					if spinstoplay <= 0 {
 						break
 					}
-					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots,&adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+					inverr = invrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 					//log.Println("processing inventory song get"+song, " schedule", playingday, playinghour, categories)
 					if inverr != nil {
-						log.Println("[main] processing inventory song get " + inverr.Error())
+						log.Println("[main] processing inventory song get  invrowsnext:" + inverr.Error())
 						config.Send("messages."+*stationId, "[main] Inventory Song Get "+inverr.Error(), "onair")
 					}
 
@@ -686,7 +686,7 @@ func main() {
 								}
 
 							}
-														if !isinhourpart {
+							if !isinhourpart {
 								log.Println("ADS skipping ad not in hour part:")
 								playtheads = false
 							}
@@ -735,7 +735,8 @@ func main() {
 							}
 						}
 						if playtheads {
-							played = time.DateTime
+
+							played = config.GetDateTime("0h")
 							config.SendONAIRmp3(artist + " - " + album + " - " + song)
 							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
