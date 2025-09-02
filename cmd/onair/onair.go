@@ -693,7 +693,7 @@ func main() {
 
 						}
 						// TODO remove foll
-						log.Println("ADS PLAYING ALL HOUR PARTS:")
+						//log.Println("ADS PLAYING ALL HOUR PARTS:")
 						playtheads = true
 
 						if playtheads {
@@ -711,7 +711,7 @@ func main() {
 							}
 						}
 						// TODO remove foll
-						log.Println("ADS PLAYING ALL HOUR PARTS:")
+						log.Println("ADS PLAYING ALL HOUR PARTS REMOVE ME:")
 						playtheads = true
 
 						if playtheads {
