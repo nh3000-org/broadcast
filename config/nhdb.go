@@ -641,7 +641,7 @@ func InventoryGet() {
 	var spinstotal int    // total spins
 	var sourcelink string // link to source
 	for rows.Next() {
-		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, 
+		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins,
 			&adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
 		if err != nil {
 			log.Println("InventoryGet Get Inventory row:", err)
@@ -923,11 +923,7 @@ func PDFTrafficByAlbum() []core.Row {
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 	var full pgx.Rows
 	var fullerr error
-	/*   rowid serial primary key,
-	     artist text not null,
-	     song   text not null,
-	     album  text,
-	     playedon text */
+
 	if TrafficAlbum == "" {
 		full, fullerr = conn.Query(ctxsql, "select * from traffic where playedon >= '"+TrafficStart+"' and playedon <= '"+TrafficEnd+"' order by album,playedon")
 	}
@@ -1021,7 +1017,7 @@ func PDFTrafficByAlbum() []core.Row {
 			text.NewCol(2, album, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(2, artist, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(2, song, props.Text{Size: 8, Align: align.Left}),
-			text.NewCol(2, playedon, props.Text{Size: 8, Align: align.Left}),
+			text.NewCol(2, playedon[0:19], props.Text{Size: 8, Align: align.Left}),
 		)
 		if itemcount%2 == 0 {
 			gray := getGrayColor()

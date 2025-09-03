@@ -666,7 +666,7 @@ func main() {
 						}
 
 						if playtheads {
-							if processingadsminutes > config.AdsMaxMinutes {
+							if processingadsminutes/60 > config.AdsMaxMinutes {
 								log.Println("ADS Reached max ad minutes used:", processingadsminutes/60, "max", config.AdsMaxMinutes, artist, song, album)
 								playtheads = false
 							}

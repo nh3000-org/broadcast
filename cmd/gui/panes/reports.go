@@ -1,9 +1,9 @@
 package panes
 
 import (
-	"os"
+	"log"
 	"os/exec"
-	"path/filepath"
+
 	"strconv"
 	"strings"
 	"time"
@@ -18,7 +18,7 @@ import (
 
 func ReportsScreen(win fyne.Window) fyne.CanvasObject {
 
-	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	//dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 
 	t := time.Now()
 
@@ -64,8 +64,12 @@ func ReportsScreen(win fyne.Window) fyne.CanvasObject {
 			config.TrafficEnd = TrafEnd.Text
 			config.TrafficAlbum = selalbum.Selected
 			config.ToPDF("TrafficReport", "ADMIN")
-			cmd := exec.Command("xdg-open", dir+"/TrafficReport.pdf")
-			cmd.Start()
+			cmd := exec.Command("xdg-open", "TrafficReport.pdf")
+			cmderr := cmd.Start()
+			log.Println("Traffic", cmderr, "rpt", "TrafficReport.pdf")
+			if cmderr != nil {
+				log.Println("Traffic", cmderr, "rpt", "TrafficReport.pdf")
+			}
 
 		})
 		databox := container.NewGridWithRows((7),
@@ -92,43 +96,43 @@ func ReportsScreen(win fyne.Window) fyne.CanvasObject {
 
 	daysreport := widget.NewButton("Days", func() {
 		config.ToPDF("DaysList", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-DaysList.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-DaysList.pdf")
 		cmd.Start()
 	})
 	hoursreport := widget.NewButton("Hours", func() {
 		config.ToPDF("HoursList", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-HoursList.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-HoursList.pdf")
 		cmd.Start()
 	})
 	categoriesreport := widget.NewButton("Categories", func() {
 		config.ToPDF("CategoryList", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-CategoryList.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-CategoryList.pdf")
 		cmd.Start()
 	})
 	schedulereport := widget.NewButton("Schedule", func() {
 		config.ToPDF("ScheduleList", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-ScheduleList.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-ScheduleList.pdf")
 		cmd.Start()
 	})
 	inventoryreport := widget.NewButton("Inventory", func() {
 
 		config.ToPDF("InventoryByCategoryFULL", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-InventoryByCategoryFULL.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-InventoryByCategoryFULL.pdf")
 		cmd.Start()
 	})
 	spinsperday := widget.NewButton("SpinsPerDay", func() {
 		config.ToPDF("SpinsPerDay", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-SpinsPerDay.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-SpinsPerDay.pdf")
 		cmd.Start()
 	})
 	spinsperweek := widget.NewButton("SpinsPerWeek", func() {
 		config.ToPDF("SpinsPerWeek", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-SpinsPerWeek.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-SpinsPerWeek.pdf")
 		cmd.Start()
 	})
 	spinstotal := widget.NewButton("SpinsTotal", func() {
 		config.ToPDF("SpinsTotal", "ADMIN")
-		cmd := exec.Command("xdg-open", dir+"/ADMIN-SpinsTotal.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-SpinsTotal.pdf")
 		cmd.Start()
 	})
 
