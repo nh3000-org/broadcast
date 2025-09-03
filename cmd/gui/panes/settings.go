@@ -85,7 +85,7 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 			config.FyneApp.Preferences().SetString("NatsMsgMaxAge", config.Encrypt(ma.Selected, config.MySecret))
 		}
 		if adsmaxminutesShadow != amm.Selected {
-			config.FyneApp.Preferences().SetString("AddsMaxMinutes", config.Encrypt(ma.Selected, config.MySecret))
+			config.FyneApp.Preferences().SetString("AdsMaxMinutes", config.Encrypt(amm.Selected, config.MySecret))
 		}
 		log.Println("settings ", ma.Selected)
 		if filterShadow != filter.Selected {

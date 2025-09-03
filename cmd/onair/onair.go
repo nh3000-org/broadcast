@@ -70,6 +70,7 @@ var errnextget error
 var nextrows pgx.Rows
 var nextrowserr error
 var nexterr error
+var erramm error
 
 func playNext() {
 	nextgetconn, _ = config.SQL.Pool.Acquire(context.Background())
@@ -457,8 +458,11 @@ func readPreferences() {
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
 	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
 	amm := config.Decrypt(fmt.Sprintf("%v", cfg["AdsMaxMinutes"]), MySecret)
-	config.AdsMaxMinutes, _ = strconv.Atoi(amm)
-
+	config.AdsMaxMinutes, erramm = strconv.Atoi(amm)
+	if erramm != nil {
+		log.Println("CONFIG AdsMaxMinutes", amm, erramm)
+	}
+	log.Println("CONFIG AdsMaxMinutes", config.AdsMaxMinutes)
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
 	config.NewPGSQL()
@@ -663,7 +667,7 @@ func main() {
 
 						if playtheads {
 							if processingadsminutes > config.AdsMaxMinutes {
-								log.Println("ADS Reached max ad minutes used:", processingadsminutes, "max", config.AdsMaxMinutes)
+								log.Println("ADS Reached max ad minutes used:", processingadsminutes/60, "max", config.AdsMaxMinutes, artist, song, album)
 								playtheads = false
 							}
 						}
@@ -671,7 +675,7 @@ func main() {
 						if playtheads {
 							countadsspinstoday, _ = strconv.Atoi(today)
 							if countadsmaxspins > countadsspinstoday {
-								log.Println("ADS Reached max ad spins used:", countadsmaxspins, "today", countadsspinstoday)
+								log.Println("ADS Reached max ad spins used:", countadsmaxspins, "today", countadsspinstoday, artist, song, album)
 								playtheads = false
 							}
 						}
@@ -687,7 +691,7 @@ func main() {
 
 							}
 							if !isinhourpart {
-								log.Println("ADS skipping ad not in hour part:")
+								log.Println("ADS skipping ad not in hour part:", artist, song, album)
 								playtheads = false
 							}
 
@@ -706,20 +710,20 @@ func main() {
 
 							}
 							if !isindaypart {
-								log.Println("ADS skipping ad not in hour part:")
+								log.Println("ADS skipping ad not in hour part:", artist, song, album)
 								playtheads = false
 							}
 						}
 						// TODO remove foll
-						log.Println("ADS PLAYING ALL HOUR PARTS REMOVE ME:")
+						log.Println("ADS PLAYING ALL HOUR PARTS REMOVE ME:", artist, song, album)
 						playtheads = true
 
 						if playtheads {
-							log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour)
+							log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour, artist, song, album)
 							timenow := time.RFC3339
 							targetmaxspinsperhour, err := strconv.Atoi(adsmaxspinsperhour)
 							if err != nil {
-								log.Println("ADS targetmaxspinsperhour:", targetmaxspinsperhour, err)
+								log.Println("ADS targetmaxspinsperhour:", targetmaxspinsperhour, err, artist, song, album)
 							}
 							pomap := config.InventoryGetTrafficCount(artist, song, album)
 
@@ -730,7 +734,7 @@ func main() {
 							log.Println("ADS PLAYING 1 per hour:")
 							targetmaxspinsperhour = 1
 							if v >= targetmaxspinsperhour {
-								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour)
+								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour, artist, song, album)
 								playtheads = false
 							}
 						}
