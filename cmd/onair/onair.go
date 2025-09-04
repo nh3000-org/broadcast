@@ -121,7 +121,10 @@ func adjustToTopOfHour() {
 	tohspinsf = tohleft / 3.30
 	tohspins = int(tohspinsf)
 	log.Println("[TOH] time min", tohmin, "left", tohleft, "spins", tohspins)
+	if tohleft > 50 {
+		tohspins = 0
 
+	}
 	if tohspins > 1 {
 		if logto {
 			log.Println("[TOH]", "DAY", playingday, "HOUR", playinghour, "SPINS", tohspins)
@@ -395,7 +398,7 @@ func Play(ctx oto.Context, song string, cat string) int {
 		}
 
 	}
-	log.Println(cat+" ", song, "  ")
+	//log.Println(cat+" ", song, "  ")
 	// Read the mp3 file into memory
 
 	fileBytes = config.GetBucket("mp3", song, StationId)
@@ -462,7 +465,7 @@ func readPreferences() {
 	if erramm != nil {
 		log.Println("CONFIG AdsMaxMinutes", amm, erramm)
 	}
-	log.Println("CONFIG AdsMaxMinutes", config.AdsMaxMinutes)
+	//log.Println("CONFIG AdsMaxMinutes", config.AdsMaxMinutes)
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
 	config.NewPGSQL()
@@ -564,16 +567,14 @@ func main() {
 	var invrows pgx.Rows
 	var invrowserr error
 	var inverr error
-	//clearSpinsPerDayCount()
 
-	// toh to get in sync
-	// TODO add back adjustToTopOfHour()
+	adjustToTopOfHour()
 	for {
 
 		runtime.GC()
 		runtime.ReadMemStats(&memoryStats)
 		if logto {
-			log.Println("Memory start: day:", playingday, ":hour:", playinghour, ":mem:", strconv.FormatUint(memoryStats.Alloc/1024/1024, 10)+" Mib")
+			log.Println("====================Memory start: day:", playingday, ":hour:", playinghour, ":mem:", strconv.FormatUint(memoryStats.Alloc/1024/1024, 10)+" Mib")
 		}
 		connectionspool, connectionspoolerr = config.SQL.Pool.Acquire(context.Background())
 		if connectionspoolerr != nil {
@@ -719,7 +720,7 @@ func main() {
 						playtheads = true
 
 						if playtheads {
-							log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour, artist, song, album)
+							//log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour, artist, song, album)
 							timenow := time.RFC3339
 							targetmaxspinsperhour, err := strconv.Atoi(adsmaxspinsperhour)
 							if err != nil {
@@ -731,7 +732,7 @@ func main() {
 
 							v := pomap[tdate+playinghour]
 							// TODO FORCE ADDS
-							log.Println("ADS PLAYING 1 per hour:")
+							//log.Println("ADS PLAYING 1 per hour:")
 							targetmaxspinsperhour = 1
 							if v >= targetmaxspinsperhour {
 								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour, artist, song, album)
@@ -742,7 +743,7 @@ func main() {
 
 							played = config.GetDateTime("0h")
 							config.SendONAIRmp3(artist + " - " + album + " - " + song)
-							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
+							//log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
 							processingadsminutes += itemlength
 

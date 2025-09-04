@@ -767,7 +767,7 @@ func InventoryGetRowByRow(rowin string) string {
 	}
 	conn.Release()
 	ctxsqlcan()
-	log.Println("getrow ", row)
+	//log.Println("getrow ", row)
 	return strconv.Itoa(row)
 
 }
@@ -1823,7 +1823,7 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 		ctxsqlcan()
 		return nil
 	}
-	log.Println("InventoryGetTrafficCount", artist, song, album)
+	//log.Println("InventoryGetTrafficCount", artist, song, album)
 
 	returnpo := make(map[string]int)
 	playedon := ""
@@ -1848,7 +1848,7 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 
 		myvalue = returnpo[mykey]
 		returnpo[mykey] = myvalue + 1
-		log.Println("InventoryGetTrafficCount rowserr mykey", mykey, " value ", myvalue)
+		//log.Println("InventoryGetTrafficCount rowserr mykey", mykey, " value ", myvalue)
 
 		// increment counter
 
