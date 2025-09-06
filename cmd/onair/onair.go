@@ -699,7 +699,7 @@ func main() {
 						}
 						// TODO remove foll
 						//log.Println("ADS PLAYING ALL HOUR PARTS:")
-						playtheads = true
+						//playtheads = true
 
 						if playtheads {
 
@@ -716,8 +716,8 @@ func main() {
 							}
 						}
 						// TODO remove foll
-						log.Println("ADS PLAYING ALL HOUR PARTS REMOVE ME:", artist, song, album)
-						playtheads = true
+						//log.Println("ADS PLAYING ALL HOUR PARTS REMOVE ME:", artist, song, album)
+						//playtheads = true
 
 						if playtheads {
 							//log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour, artist, song, album)
@@ -733,7 +733,7 @@ func main() {
 							v := pomap[tdate+playinghour]
 							// TODO FORCE ADDS
 							//log.Println("ADS PLAYING 1 per hour:")
-							targetmaxspinsperhour = 1
+							//targetmaxspinsperhour = 1
 							if v >= targetmaxspinsperhour {
 								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour, artist, song, album)
 								playtheads = false
