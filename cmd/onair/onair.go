@@ -570,6 +570,7 @@ func main() {
 	var invrowserr error
 	var inverr error
 	var toderr error
+	config.InventoryUpdateRNDORDER()
 	adjustToTopOfHour()
 	for {
 
@@ -777,6 +778,7 @@ func main() {
 						config.SendONAIRmp3(artist + " - " + album + " - " + song)
 						// handle ads time slots, max spins, and max minutes
 						log.Println(category + ": " + artist + " - " + album + " - " + song)
+
 						itemlength = Play(otoctx, rowid, category)
 					}
 					// update statistics
@@ -786,7 +788,9 @@ func main() {
 					spinstoday++
 					spinstotal, _ = strconv.Atoi(total)
 					spinstotal++
-					played = time.DateTime
+
+					timenow := time.RFC3339
+					played = timenow[0:19]
 
 					//log.Println("last played", played, " schedule", playingday, playinghour, categories)
 					invupdconn, _ = config.SQL.Pool.Acquire(context.Background())
