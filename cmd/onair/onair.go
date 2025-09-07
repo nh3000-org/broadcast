@@ -215,6 +215,7 @@ func adjustToTopOfHour() {
 		}
 
 		tohgetconn.Release()
+		getNextHourPart()
 	}
 }
 func getNextDay() {
@@ -713,7 +714,7 @@ func main() {
 								}
 
 							}
-							if !isindaypart && !playtheads {
+							if !isindaypart {
 								log.Println("ADS skipping ad not in day part:", artist, song, album)
 								playtheads = false
 							}
@@ -743,7 +744,7 @@ func main() {
 
 							played = config.GetDateTime("0h")
 							config.SendONAIRmp3(artist + " - " + album + " - " + song)
-							//log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
+							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
 							processingadsminutes += itemlength
 
@@ -893,7 +894,7 @@ func main() {
 		}
 		schedulerows.Close()
 		adjustToTopOfHour()
-		getNextHourPart()
+		//getNextHourPart()
 
 	}
 
