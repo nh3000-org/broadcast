@@ -698,7 +698,7 @@ func main() {
 								}
 
 							}
-							if !isinhourpart && !playtheads {
+							if !isinhourpart {
 								log.Println("ADS skipping ad not in hour part:", artist, song, album)
 								playtheads = false
 							}
