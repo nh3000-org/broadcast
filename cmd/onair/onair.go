@@ -542,10 +542,11 @@ func main() {
 		playinghour = "0" + playinghour
 	}
 	pm := time.Now().Minute()
+	log.Println("TEST from cli", schedDay, schedHour)
 	log.Println("TEST day hour minute station logging", playingday, playinghour, pm, *stationId, *Logging)
 
-	playingday = *schedDay
-	playinghour = *schedHour
+	//playingday = *schedDay
+	//playinghour = *schedHour
 	otoctx = playsetup()
 
 	if *Logging == "true" {
@@ -567,7 +568,7 @@ func main() {
 	var invrows pgx.Rows
 	var invrowserr error
 	var inverr error
-
+	var toderr error
 	adjustToTopOfHour()
 	for {
 
@@ -674,7 +675,12 @@ func main() {
 						}
 						// check max spins per day
 						if playtheads {
-							countadsspinstoday, _ = strconv.Atoi(today)
+							countadsspinstoday, toderr = strconv.Atoi(today)
+							if toderr != nil {
+								log.Println("ADS today error", toderr, artist, song, album)
+								config.Send("messages."+*stationId, "ADS today error "+toderr.Error()+artist+" "+song+" "+album, "onair")
+								playtheads = false
+							}
 							if countadsmaxspins > countadsspinstoday {
 								log.Println("ADS Reached max ad spins used:", countadsmaxspins, "today", countadsspinstoday, artist, song, album)
 								playtheads = false
@@ -691,15 +697,12 @@ func main() {
 								}
 
 							}
-							if !isinhourpart {
+							if !isinhourpart && !playtheads {
 								log.Println("ADS skipping ad not in hour part:", artist, song, album)
 								playtheads = false
 							}
 
 						}
-						// TODO remove foll
-						//log.Println("ADS PLAYING ALL HOUR PARTS:")
-						//playtheads = true
 
 						if playtheads {
 
@@ -710,14 +713,11 @@ func main() {
 								}
 
 							}
-							if !isindaypart {
-								log.Println("ADS skipping ad not in hour part:", artist, song, album)
+							if !isindaypart && !playtheads {
+								log.Println("ADS skipping ad not in day part:", artist, song, album)
 								playtheads = false
 							}
 						}
-						// TODO remove foll
-						//log.Println("ADS PLAYING ALL HOUR PARTS REMOVE ME:", artist, song, album)
-						//playtheads = true
 
 						if playtheads {
 							//log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour, artist, song, album)
