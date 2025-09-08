@@ -788,9 +788,7 @@ func main() {
 					spinstoday++
 					spinstotal, _ = strconv.Atoi(total)
 					spinstotal++
-
-					timenow := time.RFC3339
-					played = timenow[0:19]
+					played := config.GetDateTime("0h")
 
 					//log.Println("last played", played, " schedule", playingday, playinghour, categories)
 					invupdconn, _ = config.SQL.Pool.Acquire(context.Background())
@@ -799,7 +797,7 @@ func main() {
 						log.Println("[main] Prepare inventory upd", errinventoryupd, " schedule", playingday, playinghour, categories)
 						config.Send("messages."+*stationId, "[main] Prepare Inventory Update "+errinventorygetschedule.Error(), "onair")
 					}
-					_, invupderr = invupdconn.Exec(context.Background(), "inventoryupdate", spinstoday, spinsweek, spinstotal, played, itemlength, rowid)
+					_, invupderr = invupdconn.Exec(context.Background(), "inventoryupdate", spinstoday, spinsweek, spinstotal, played[0:19], itemlength, rowid)
 					if invupderr != nil {
 						log.Println("[main] updating inventory "+invupderr.Error(), " schedule", playingday, playinghour, categories)
 						config.Send("messages."+*stationId, "[main] Inventory Update "+invupderr.Error(), "onair")
