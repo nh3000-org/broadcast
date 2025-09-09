@@ -304,11 +304,13 @@ var hperr error
 func getNextHourPart() {
 	//adjustToTopOfHour()
 	if logto {
-		log.Println("HOUR TIMING", time.Since(hourtimingstart).Minutes())
+		log.Println("HOUR TIMING", time.Since(hourtimingstart).Minutes(), "playinghour",playinghour)
 	}
+	
 	hourtimingstart = time.Now()
 	hp, hperr = strconv.Atoi(playinghour)
 	if hperr != nil {
+		log.Println("getnexthour",hperr)
 		playinghour = "00"
 		schedhour = "00"
 		return
@@ -326,6 +328,7 @@ func getNextHourPart() {
 	if len(newhp) == 1 {
 		newhp = "0" + newhp
 	}
+	log.Println("getnexthour next playing hour",newhp)
 	playinghour = newhp
 	schedhour = newhp
 	//return newhp
