@@ -33,7 +33,7 @@ const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func uploadFile(w http.ResponseWriter, r *http.Request) {
 	isbusy = true
-	importHome := "/opt/radio/stub.zip"
+	importHome := "/opt/radio/upload/stub"
 
 	log.Println("File Upload Endpoint Hit for User", importHome)
 
@@ -48,7 +48,7 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authtoken != r.FormValue("Authorization") {
-		log.Println("File Upload Authorization")
+		log.Println("File Upload Authorization", authtoken, "form", r.FormValue("Authorization"))
 		w.Write([]byte(ilogon()))
 		isbusy = false
 		return
@@ -63,28 +63,39 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Create a destination file
-	dst, _ := os.Create(importHome)
-	defer dst.Close()
+	// Create a destination file to copy upload into
+	thezipped, err0 := os.Create(importHome + ".zip")
+	if err0 != nil {
+		w.Write([]byte("File create error" + ": " + importHome + ".zip" + " error " + err0.Error()))
+		log.Println("File create error"+": "+importHome+".zip", err0)
+		isbusy = false
+		return
+	}
+	defer thezipped.Close()
 
 	// Upload the file to the destination path
-	nb_bytes, _ := io.Copy(dst, file)
+	nb_bytes, _ := io.Copy(thezipped, file)
 
 	fmt.Println("File uploaded successfully", nb_bytes)
 	w.Write([]byte("File uploaded successfully"))
-	fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-	fmt.Printf("File Size: %+v\n", handler.Size)
-	fmt.Printf("MIME Header: %+v\n", handler.Header)
+	fmt.Printf("\nUploaded File: %+v\n", handler.Filename)
+	fmt.Printf("\nFile Size: %+v\n", handler.Size)
+	fmt.Printf("\nMIME Header: %+v\n", handler.Header)
 
 	// Create a temporary file within our temp-images directory that follows
 	// a particular naming pattern
 
-	os.RemoveAll("/opt/radio/stub")
-	cmd := exec.Command("unzip", "-d", "/opt/radio", importHome)
+	os.RemoveAll("/opt/radio/upload/" + strings.Replace(handler.Filename, ".zip", "", 1))
+	//os.Remove("/opt/radio/upload/stub.zip")
+
+	log.Println("UNZIP input: ", "/opt/radio/upload/stub", "output", importHome)
+	os.Chdir("/opt/radio/upload")
+	cmd := exec.Command("unzip", "/opt/radio/upload/stub.zip")
+	//cmd := exec.Command("unzip", handler.Filename, "-d", importHome)
 	out, err := cmd.Output()
 	if err != nil {
-		w.Write([]byte("UNZIP could not run command"))
-		log.Println("UNZIP could not run command: ", err, importHome)
+		w.Write([]byte("\nUNZIP could not run command\n"))
+		log.Println("UNZIP could not run command: ", err, "importhome", importHome)
 	} else {
 		w.Write([]byte(string(out)))
 		log.Println("Output: ", string(out))
@@ -95,9 +106,10 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	var imalbum string
 
 	var imcategory string
-	sp := "/opt/radio/stub"
+	sp := "/opt/radio/upload/" + strings.Replace(handler.Filename, ".zip", "", 1)
 	os.Chdir(sp)
 	startpath := strings.Replace(sp, "/README.txt", "", 1)
+	log.Println("WalkPath: ", startpath)
 	walkstuberr := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 
 		removepath := startpath + "/"
@@ -155,6 +167,10 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 			var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
 
 			rowexists := config.InventoryGetRow(imcategory, imartist, imsong, imalbum)
+			if rowexists != "0" {
+				log.Println("Row Exists Skipping : ", rowexists, "cat", imcategory, "artist", imartist, "song", imsong, "album", imalbum)
+				w.Write([]byte("\nRow Exists Skipping " + "cat: " + imcategory + " artist: " + imartist + " song: " + imsong + " album: " + imalbum + "\n"))
+			}
 			if rowexists == "0" {
 
 				maxspins = 0
@@ -289,7 +305,7 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	out, err3 := cmd.Output()
 	if err3 != nil {
 		w.Write([]byte("ZIP could not run command"))
-		log.Println("ZIP could not run command: ", err3, importHome)
+		log.Println("ZIP could not run command: ", err3, " importHome", importHome)
 		isbusy = false
 		return
 	} else {
@@ -334,13 +350,13 @@ func readPreferences() {
 	log.Println(config.DBaddress)
 
 	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
-
+	config.NatsAlias = config.Decrypt(fmt.Sprintf("%v", cfg["NatsAlias"]), MySecret)
 	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
 	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
 
-	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
+	log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
 	config.NewPGSQL()
 }
@@ -412,6 +428,7 @@ func ibuilder() string {
 	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"" + config.WebAddress + "/upload\" method=\"post\">\n")
 	s.WriteString("    <input type=\"file\" name=\"stub\" />\n")
 	s.WriteString("    <input type=\"submit\" value=\"Upload stub.zip\" />\n")
+	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/download\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Download stub.zip\" />\n")
