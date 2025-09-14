@@ -206,6 +206,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 							config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
 						}
 					}
+					log.Println("Inventory Added", imcategory, imartist, imalbum)
+					w.Write([]byte("\nAdded " + "cat: " + imcategory + " artist: " + imartist + " song: " + imsong + " album: " + imalbum + "\n"))
 				}
 			}
 
@@ -229,6 +231,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 							config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
 						}
 					}
+					log.Println("Inventory Added INTRO", imcategory, imartist, imalbum)
+					w.Write([]byte("\nAdded INTRO " + "cat: " + imcategory + " artist: " + imartist + " song: " + imsong + " album: " + imalbum + "\n"))
 				}
 			}
 			if strings.HasSuffix(cat, "OUTRO.mp3") {
@@ -251,6 +255,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 							config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
 						}
 					}
+					log.Println("Inventory Added OUTRO", imcategory, imartist, imalbum)
+					w.Write([]byte("\nAdded OUTRO " + "cat: " + imcategory + " artist: " + imartist + " song: " + imsong + " album: " + imalbum + "\n"))
 				}
 			}
 
