@@ -746,35 +746,11 @@ func main() {
 							}
 						}
 						if playtheads {
-
 							played = config.GetDateTime("0h")
 							config.SendONAIRmp3(artist + " - " + album + " - " + song)
 							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
 							processingadsminutes += itemlength
-
-							// add time slots, max spins per day
-
-							trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
-							if trafficaddconnerr != nil {
-								log.Println("[main] Prepare trafficadd", trafficaddconnerr)
-								config.Send("messages."+*stationId, "[main] Prepare trafficadd conn "+trafficaddconnerr.Error(), "onair")
-
-							}
-							_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (artist, album,song,playedon) values($1,$2,$3,$4)")
-							if errtrafficadd != nil {
-								log.Println("[main] Prepare trafficadd", errtrafficadd)
-								config.Send("messages."+*stationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
-							}
-							//log.Println("adding inventory to traffic adding", song)
-
-							_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played)
-							if trafficadderr != nil {
-								log.Println("[main] updating inventory " + trafficadderr.Error())
-								config.Send("messages."+*stationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
-							}
-							trafficaddconn.Release()
-
 						}
 
 					} else {
@@ -784,8 +760,32 @@ func main() {
 						log.Println(category + ": " + artist + " - " + album + " - " + song)
 
 						itemlength = Play(otoctx, rowid, category)
+
 					}
 					// update statistics
+					if strings.HasPrefix(category, "ADS") || strings.HasPrefix(category, "NWS") || strings.HasPrefix(category, "DJ") {
+
+						trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
+						if trafficaddconnerr != nil {
+							log.Println("[main] Prepare trafficadd", trafficaddconnerr)
+							config.Send("messages."+*stationId, "[main] Prepare trafficadd conn "+trafficaddconnerr.Error(), "onair")
+
+						}
+						_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (artist, album,song,playedon) values($1,$2,$3,$4)")
+						if errtrafficadd != nil {
+							log.Println("[main] Prepare trafficadd", errtrafficadd)
+							config.Send("messages."+*stationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
+						}
+						//log.Println("adding inventory to traffic adding", song)
+
+						_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played)
+						if trafficadderr != nil {
+							log.Println("[main] updating inventory " + trafficadderr.Error())
+							config.Send("messages."+*stationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
+						}
+						trafficaddconn.Release()
+
+					}
 					spinsweek, _ = strconv.Atoi(week)
 					spinsweek++
 					spinstoday, _ = strconv.Atoi(today)
