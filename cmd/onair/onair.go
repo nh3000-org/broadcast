@@ -648,7 +648,9 @@ func main() {
 						processingads = false
 						processingadsminutes = 0
 					}
+
 					st, sterr := time.Parse(time.DateTime, startson)
+					played = config.GetDateTime("0h")
 					if sterr != nil {
 						log.Println("[main] inventory time parse startson "+sterr.Error(), " startson", startson, " schedule", playingday, playinghour, categories)
 						config.Send("messages."+*stationId, "[main] Inventory Time Parse startson "+sterr.Error(), "onair")
@@ -746,7 +748,7 @@ func main() {
 							}
 						}
 						if playtheads {
-							played = config.GetDateTime("0h")
+
 							config.SendONAIRmp3(artist + " - " + album + " - " + song)
 							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
