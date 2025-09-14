@@ -123,7 +123,7 @@ func adjustToTopOfHour() {
 	log.Println("[TOH] time min", tohmin, "left", tohleft, "spins", tohspins)
 	if tohleft > 50 {
 		tohspins = 0
-
+		return
 	}
 	if tohspins > 1 {
 		if logto {
