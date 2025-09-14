@@ -648,14 +648,14 @@ func main() {
 						processingads = false
 						processingadsminutes = 0
 					}
+					st, sterr := time.Parse(time.DateTime, startson)
+					if sterr != nil {
+						log.Println("[main] inventory time parse startson "+sterr.Error(), " startson", startson, " schedule", playingday, playinghour, categories)
+						config.Send("messages."+*stationId, "[main] Inventory Time Parse startson "+sterr.Error(), "onair")
+					}
 					if strings.HasPrefix(category, "ADS") {
 						playtheads = true
 
-						st, sterr := time.Parse(time.DateTime, startson)
-						if sterr != nil {
-							log.Println("[main] inventory time parse startson "+sterr.Error(), " startson", startson, " schedule", playingday, playinghour, categories)
-							config.Send("messages."+*stationId, "[main] Inventory Time Parse startson "+sterr.Error(), "onair")
-						}
 						//log.Println("EXPIRES: ", ex.String())
 						if time.Now().Before(st) {
 							log.Println("skipping inventory not started yet: ", artist, song, album, fileid, startson)
