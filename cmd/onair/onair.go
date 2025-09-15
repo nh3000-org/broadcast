@@ -780,7 +780,7 @@ func main() {
 						}
 						//log.Println("adding inventory to traffic adding", song)
 
-						_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played)
+						_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played[0:19])
 						if trafficadderr != nil {
 							log.Println("[main] updating inventory " + trafficadderr.Error())
 							config.Send("messages."+*stationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
