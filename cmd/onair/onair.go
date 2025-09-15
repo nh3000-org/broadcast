@@ -650,7 +650,7 @@ func main() {
 					}
 
 					st, sterr := time.Parse(time.DateTime, startson)
-					played = config.GetDateTime("0h")
+					played = config.GetDateTime("0h")[0:19]
 					if sterr != nil {
 						log.Println("[main] inventory time parse startson "+sterr.Error(), " startson", startson, " schedule", playingday, playinghour, categories)
 						config.Send("messages."+*stationId, "[main] Inventory Time Parse startson "+sterr.Error(), "onair")
