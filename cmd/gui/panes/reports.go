@@ -117,22 +117,22 @@ func ReportsScreen(win fyne.Window) fyne.CanvasObject {
 	inventoryreport := widget.NewButton("Inventory", func() {
 
 		config.ToPDF("InventoryByCategoryFULL", "ADMIN")
-		cmd := exec.Command("xdg-open", "ADMIN-InventoryByCategoryFULL.pdf")
+		cmd := exec.Command("xdg-open", "ADMIN-InventoryByCategory.pdf")
 		cmd.Start()
 	})
 	spinsperday := widget.NewButton("SpinsPerDay", func() {
 		config.ToPDF("SpinsPerDay", "ADMIN")
-		cmd := exec.Command("xdg-open", "ADMIN-SpinsPerDay.pdf")
+		cmd := exec.Command("xdg-open", "SPD-SpinsPerDay.pdf")
 		cmd.Start()
 	})
 	spinsperweek := widget.NewButton("SpinsPerWeek", func() {
 		config.ToPDF("SpinsPerWeek", "ADMIN")
-		cmd := exec.Command("xdg-open", "ADMIN-SpinsPerWeek.pdf")
+		cmd := exec.Command("xdg-open", "SPW-InventoryByCategory.pdf")
 		cmd.Start()
 	})
 	spinstotal := widget.NewButton("SpinsTotal", func() {
 		config.ToPDF("SpinsTotal", "ADMIN")
-		cmd := exec.Command("xdg-open", "ADMIN-SpinsTotal.pdf")
+		cmd := exec.Command("xdg-open", "ALL-InventoryByCategory.pdf")
 		cmd.Start()
 	})
 

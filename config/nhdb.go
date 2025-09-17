@@ -866,11 +866,11 @@ func InventoryAdd(category string, artist string, song string, album string, son
 func ToPDF(reportname, stationid string) {
 	switch reportname {
 	case "SpinsPerDay":
-		PDFInventory("Spins Per Day", "CURRENTSSPD", stationid)
+		PDFInventory("Spins Per Day", "SPD", stationid)
 	case "SpinsPerWeek":
-		PDFInventory("Spins Per Week", "CURRENTSSPW", stationid)
+		PDFInventory("Spins Per Week", "SPW", stationid)
 	case "SpinsTotal":
-		PDFInventory("CURRENTS Total", "CURRENTSALL", stationid)
+		PDFInventory("Spins Total", "ALL", stationid)
 	case "InventoryByCategoryFULL":
 		PDFInventory("All Categories", "ALL", stationid)
 	case "CategoryList":
@@ -1088,6 +1088,7 @@ func PDFInventory(rn, cat, stationid string) {
 		log.Println(merr.Error())
 	}
 	merr = docpdf.Save(cat + "-InventoryByCategory.pdf")
+	log.Println("PDFInventory PDF Save", cat+"-InventoryByCategory.pdf")
 	if merr != nil {
 		log.Println("PDFInventory PDF Save", merr.Error())
 	}
@@ -1554,17 +1555,23 @@ func PDFCategoryByID() []core.Row {
 
 func PDFInventoryByCategory(cat string) []core.Row {
 	var rowsgti []core.Row
-
+	//log.Println("PDFInventoryByCategory start cat:", cat)
 	var contentsRow []core.Row
-	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
-	conn, _ := SQL.Pool.Acquire(ctxsql)
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 3*time.Second)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+	if connerr != nil {
+		log.Println("PDFInventoryByCategory pool acquire connerr:", connerr)
+	}
 	var full pgx.Rows
 	var fullerr error
-	if strings.Contains(cat, "CURRENTS") {
-		full, fullerr = conn.Query(ctxsql, "select * from inventory where category = 'CURRENTS' order by category,artist,song")
+	if strings.HasPrefix(cat, "SPW") || strings.HasPrefix(cat, "SPD") {
+		full, fullerr = conn.Query(ctxsql, "select * from inventory where category = 'CURRENTS' order by category,artist,song,album")
 	}
-	if strings.Contains(cat, "ALL") {
-		full, fullerr = conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
+	if strings.HasPrefix(cat, "ALL") {
+		full, fullerr = conn.Query(ctxsql, "select * from inventory  order by category,artist,song,album")
+	}
+	if fullerr != nil {
+		log.Println("PDFInventoryByCategory sql query Fullerr:", fullerr)
 	}
 	var rowid int       // rowid
 	var category string // category
@@ -1610,10 +1617,10 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	}
 	contentsRow = append(contentsRow, rowshead...)
 	for full.Next() {
-
+		//log.Println("PDFInventoryByCategory full.next:", category)
 		err := full.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
 		if err != nil {
-			log.Println("PDFInventoryByCategory PDF Get Inventory row", err)
+			log.Println("PDFInventoryByCategory PDF Get Inventory scan:", err)
 		}
 		//log.Println("Get Inventory row", category)
 		//log.Println("CATCHANGE", CATCHANGE, "db", category)
