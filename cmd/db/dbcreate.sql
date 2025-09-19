@@ -624,9 +624,11 @@ create index inventorybycategorysong on inventory (category,song);
 create index inventoryplayget on inventory (category,lastplayed,rndorder);
 create table traffic (
   rowid serial primary key,
+  category varchar(64) not null,
   artist text not null,
   song   text not null,
   album  text,
   playedon text
 );
 create index trafficbyartist on traffic (artist,song,album);
+create index trafficbycategory on traffic (category,album);

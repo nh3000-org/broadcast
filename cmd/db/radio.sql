@@ -222,6 +222,7 @@ ALTER SEQUENCE public.schedule_rowid_seq OWNED BY public.schedule.rowid;
 
 CREATE TABLE public.traffic (
     rowid integer NOT NULL,
+    category character varying(64) NOT NULL,
     artist text NOT NULL,
     song text NOT NULL,
     album text,
@@ -869,7 +870,7 @@ COPY public.schedule (rowid, days, hours, "position", categories, spinstoplay) F
 -- Data for Name: traffic; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.traffic (rowid, artist, song, album, playedon) FROM stdin;
+COPY public.traffic (rowid, category, artist, song, album, playedon) FROM stdin;
 \.
 
 
@@ -1017,6 +1018,13 @@ CREATE INDEX scheduleindex ON public.schedule USING btree (days, hours, "positio
 --
 
 CREATE INDEX trafficbyartist ON public.traffic USING btree (artist, song, album);
+
+
+--
+-- Name: trafficbycategory; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX trafficbycategory ON public.traffic USING btree (category, album);
 
 
 --

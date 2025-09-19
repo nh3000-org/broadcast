@@ -774,14 +774,14 @@ func main() {
 							config.Send("messages."+*stationId, "[main] Prepare trafficadd conn "+trafficaddconnerr.Error(), "onair")
 
 						}
-						_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (artist, album,song,playedon) values($1,$2,$3,$4)")
+						_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (category,artist, album,song,playedon) values($1,$2,$3,$4,$5)")
 						if errtrafficadd != nil {
 							log.Println("[main] Prepare trafficadd", errtrafficadd)
 							config.Send("messages."+*stationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
 						}
 						//log.Println("adding inventory to traffic adding", song)
 
-						_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", artist, song, album, played[0:19])
+						_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", category, artist, song, album, played[0:19])
 						if trafficadderr != nil {
 							log.Println("[main] updating inventory " + trafficadderr.Error())
 							config.Send("messages."+*stationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")

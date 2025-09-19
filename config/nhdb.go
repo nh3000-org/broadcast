@@ -931,6 +931,7 @@ func PDFTrafficByAlbum() []core.Row {
 		full, fullerr = conn.Query(ctxsql, "select * from traffic where playedon >= '"+TrafficStart+"' and playedon <= '"+TrafficEnd+"' and album = '"+TrafficAlbum+"' order by album,playedon")
 	}
 	var rowid int
+	var category string
 	var artist string
 	var song string
 	var album string
@@ -944,6 +945,7 @@ func PDFTrafficByAlbum() []core.Row {
 		row.New(4).Add(
 			col.New(1),
 			text.NewCol(1, "Row", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
+			text.NewCol(2, "Category", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 			text.NewCol(2, "Campaign", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 			text.NewCol(2, "Artist", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 			text.NewCol(2, "Song", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
@@ -999,6 +1001,7 @@ func PDFTrafficByAlbum() []core.Row {
 				row.New(4).Add(
 					col.New(1),
 					text.NewCol(1, "Row", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
+					text.NewCol(2, "Category", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 					text.NewCol(2, "Campaign", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 					text.NewCol(2, "Artist", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
 					text.NewCol(2, "Song", props.Text{Size: 9, Align: align.Left, Style: fontstyle.Bold}),
@@ -1014,6 +1017,7 @@ func PDFTrafficByAlbum() []core.Row {
 		rline := row.New(6).Add(
 			col.New(1),
 			text.NewCol(1, strconv.Itoa(rowid), props.Text{Size: 8, Align: align.Left}),
+			text.NewCol(2, category, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(2, album, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(2, artist, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(2, song, props.Text{Size: 8, Align: align.Left}),
