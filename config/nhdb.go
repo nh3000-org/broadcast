@@ -1904,7 +1904,7 @@ func AlbumToArray() []string {
 func TrafficGetCountByDate(tc, td string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
-	log.Println("TrafficFetCountByDate start", tc, td)
+
 	rows, rowserr := conn.Query(ctxsql, "select count(*) from traffic  where category like '"+tc+"%' and playedon like '"+td+"%'")
 	if rowserr != nil {
 		log.Println("TrafficFetCountByDate rows error", tc, td, rowserr)
@@ -1919,7 +1919,7 @@ func TrafficGetCountByDate(tc, td string) int {
 	if rowserr != nil {
 		log.Println("TrafficFetCountByDate row error", rowserr)
 	}
-
+	log.Println("TrafficGetCountByDate start", tc, td, count)
 	conn.Release()
 	ctxsqlcan()
 	//log.Println("getrow ", count)

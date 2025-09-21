@@ -766,7 +766,7 @@ func main() {
 
 					}
 					// update statistics
-					if strings.HasPrefix(category, "ADS") || strings.HasPrefix(category, "NWS") || strings.HasPrefix(category, "DJ") || strings.HasPrefix(category, "PROMOS") || strings.HasPrefix(category, "IMAGINGID") {
+					if (strings.HasPrefix(category, "ADS") && playtheads) || strings.HasPrefix(category, "NWS") || strings.HasPrefix(category, "DJ") || strings.HasPrefix(category, "PROMOS") || strings.HasPrefix(category, "IMAGINGID") {
 
 						trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
 						if trafficaddconnerr != nil {

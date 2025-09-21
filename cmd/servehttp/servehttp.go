@@ -34,7 +34,6 @@ var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
-
 func chart(w http.ResponseWriter, r *http.Request) {
 
 	line := charts.NewLine()
@@ -48,10 +47,8 @@ func chart(w http.ResponseWriter, r *http.Request) {
 			Subtitle: "Series",
 		}))
 
-
 	var xdates []string // yyyy-mm-dd
 	var xdesc []string  // mm-dd
-
 
 	rd := r.FormValue("Days")
 	rangedays, err := strconv.Atoi(rd)
@@ -493,12 +490,13 @@ func ibuilder() string {
 	s.WriteString("    <input type=\"submit\" value=\"Upload stub.zip\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
+	s.WriteString("  <hr>\n")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/download\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Download stub.zip\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/chart\" method=\"post\">\n")
-
+	s.WriteString("  <hr>\n")
 	s.WriteString("  <label for=\"days\">History:</label>")
 	s.WriteString("  <select name=\"Days\" id=\"days\">")
 	s.WriteString("    <option value=\"7\">7 Days</option>")
@@ -513,9 +511,10 @@ func ibuilder() string {
 	s.WriteString("   <option value=\"DJ\">DJ Spots</option>")
 	s.WriteString("  </select>")
 
-	s.WriteString("    <input type=\"submit\" value=\"30 Day Chart\" />\n")
+	s.WriteString("    <input type=\"submit\" value=\"Line Chart\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
+	s.WriteString("  <hr>\n")
 	s.WriteString("</body>\n")
 	s.WriteString("</html>\n")
 
