@@ -1901,7 +1901,31 @@ func AlbumToArray() []string {
 	return AlbumArray
 
 }
+func TrafficGetCountByDate(tc, td string) int {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+	log.Println("TrafficFetCountByDate start", tc, td)
+	rows, rowserr := conn.Query(ctxsql, "select count(*) from traffic  where category like '"+tc+"%' and playedon like '"+td+"%'")
+	if rowserr != nil {
+		log.Println("TrafficFetCountByDate rows error", tc, td, rowserr)
+	}
+	var count = 0 //
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			log.Println("TrafficFetCountByDate scan", err)
+		}
+	}
+	if rowserr != nil {
+		log.Println("TrafficFetCountByDate row error", rowserr)
+	}
 
+	conn.Release()
+	ctxsqlcan()
+	//log.Println("getrow ", count)
+	return count
+
+}
 func getGrayColor() *props.Color {
 	return &props.Color{
 		Red:   200,
