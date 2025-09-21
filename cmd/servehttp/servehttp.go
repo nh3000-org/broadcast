@@ -64,7 +64,10 @@ func chart(w http.ResponseWriter, r *http.Request) {
 		xdesc = append(xdesc, dt[5:10])
 		log.Println("Setting Range", dt[0:10], dt[5:10])
 	}
-
+	dt := config.GetDateTime("0h")
+	xdates = append(xdates, dt[0:10])
+	xdesc = append(xdesc, dt[5:10])
+	log.Println("Setting Range", dt[0:10], dt[5:10])
 	c := r.FormValue("Categories")
 	log.Println("Categories", c)
 
@@ -508,6 +511,7 @@ func ibuilder() string {
 	s.WriteString("    <option value=\"ADS\">Advertising</option>")
 	s.WriteString("    <option value=\"PROMOS\">Promotions</option>")
 	s.WriteString("   <option value=\"NWS\">News Weather Sports</option>")
+	s.WriteString("   <option value=\"IMAGINGID\">Imaging Spots</option>")
 	s.WriteString("   <option value=\"DJ\">DJ Spots</option>")
 	s.WriteString("  </select>")
 
