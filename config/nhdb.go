@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"context"
 	"log"
 	"math/rand"
@@ -1868,6 +1869,41 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 	conn.Release()
 	ctxsqlcan()
 	return returnpo
+
+}
+
+func InventoryGetTrafficCountByAlbum(hours string) string {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+
+	if connerr != nil {
+		log.Println("InventoryGetTrafficCountByAlbum", connerr)
+		ctxsqlcan()
+		return ""
+	}
+	//log.Println("InventoryGetTrafficCount", artist, song, album)
+	newdate := GetDateTime("-" + hours + "h")
+
+	album := ""
+	newstring := bytes.NewBufferString(album)
+	rc, rowserr := conn.Query(ctxsql, "select unique album from traffic where playedon <'"+newdate+"'")
+	if rowserr != nil {
+		log.Println("InventoryGetTrafficCountByAlbum rowserr", rowserr)
+		conn.Release()
+		ctxsqlcan()
+		return ""
+	}
+	for rc.Next() {
+		err := rc.Scan(&album)
+		if err != nil {
+			log.Println("InventoryGetTrafficCount rowserr playedon", err)
+		}
+		newstring.WriteString("    <option value=\"" + album + "\">Promotions</option>\n")
+	}
+
+	conn.Release()
+	ctxsqlcan()
+	return newstring.String()
 
 }
 

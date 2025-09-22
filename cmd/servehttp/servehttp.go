@@ -407,7 +407,7 @@ func readPreferences() {
 
 	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
 
-	config.WebPassword = config.Decrypt(fmt.Sprintf("%v", cfg["WEBPASSWORD"]), MySecret)
+	//config.WebPassword = config.Decrypt(fmt.Sprintf("%v", cfg["WEBPASSWORD"]), MySecret)
 
 	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
 	log.Println(config.DBaddress)
@@ -536,6 +536,20 @@ func ibuilder() string {
 	s.WriteString("   <option value=\"NWS\">News Weather Sports</option>")
 	s.WriteString("   <option value=\"IMAGINGID\">Imaging Spots</option>")
 	s.WriteString("   <option value=\"DJ\">DJ Spots</option>")
+	s.WriteString("  </select>")
+
+	s.WriteString("  <form  action=\"" + config.WebAddress + "/ADS\" method=\"post\">\n")
+	s.WriteString("  <hr>\n")
+	s.WriteString("  <label for=\"days\">Ads History:</label>")
+	s.WriteString("  <select name=\"Days\" id=\"days\">")
+	s.WriteString("    <option value=\"7\">7 Days</option>")
+	s.WriteString("    <option value=\"14\">14 Days</option>")
+	s.WriteString("   <option value=\"28\">28 Days</option>")
+	s.WriteString("   <option value=\"90\">90 Days</option>")
+	s.WriteString("  </select>")
+	s.WriteString("  <label for=\"catgories\">Choose a Advertising Category:</label>")
+	s.WriteString("  <select name=\"Categories\" id=\"categories\">")
+	s.WriteString(config.InventoryGetTrafficCountByAlbum(config.GetDateTime("-2160")[0:11]))
 	s.WriteString("  </select>")
 
 	s.WriteString("    <input type=\"submit\" value=\"Line Chart\" />\n")
