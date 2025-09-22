@@ -79,7 +79,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	//for x := 0; x < len(c); x++ {
 	for d := 0; d < len(xdates); d++ {
 		//if strings.HasPrefix(c[x], "ADS") {
-		data := config.TrafficGetCountByAlbum(rd, c)
+		data := config.TrafficGetCountByAlbum(xdates[d], c)
 		items = append(items, opts.LineData{Value: data})
 		line.AddSeries(c, items)
 		//}

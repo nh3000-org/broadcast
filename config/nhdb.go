@@ -1871,7 +1871,7 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 	return returnpo
 
 }
-func TrafficGetCountByAlbum(hours, alb string) int {
+func TrafficGetCountByAlbum(date, alb string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, connerr := SQL.Pool.Acquire(ctxsql)
 
@@ -1881,11 +1881,11 @@ func TrafficGetCountByAlbum(hours, alb string) int {
 		return 0
 	}
 	//log.Println("InventoryGetTrafficCount", artist, song, album)
-	newdate := GetDateTime("-" + hours + "h")
+	//newdate := GetDateTime("-" + hours + "h")
 
 	count := 0
 
-	rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon like '"+newdate+"%' and album ='"+alb+"'")
+	rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon like '"+date+"%' and album ='"+alb+"'")
 	if rowserr != nil {
 		log.Println("TrafficGetCountByAlbum rowserr", rowserr)
 		conn.Release()
@@ -1897,7 +1897,7 @@ func TrafficGetCountByAlbum(hours, alb string) int {
 		if err != nil {
 			log.Println("TrafficGetCountByAlbum rowserr playedon", err)
 		}
-		log.Println("TrafficGetCountByAlbum ", hours, alb, count)
+		log.Println("TrafficGetCountByAlbum ", date, alb, count)
 
 	}
 
