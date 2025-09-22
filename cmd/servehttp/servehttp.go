@@ -609,7 +609,6 @@ func ibuilder() string {
 	s.WriteString("  <select name=\"Categories\" id=\"categories\">")
 	s.WriteString(config.TrafficGetAlbum(config.GetDateTime("-2160")[0:11]))
 	s.WriteString("  </select>")
-
 	s.WriteString("    <input type=\"submit\" value=\"ADS\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
