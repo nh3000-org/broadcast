@@ -16,6 +16,7 @@ import (
 	//"time"
 
 	"github.com/nh3000-org/broadcast/config"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
@@ -24,7 +25,7 @@ import (
 )
 
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
-
+var HashLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/config.hash"
 var authtoken = ""
 
 var isbusy = false
@@ -469,10 +470,32 @@ func login(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(ibusy()))
 		return
 	}
-	if config.WebPassword != r.FormValue("pword") {
+
+	hashdata, readerr := os.ReadFile(HashLocation)
+	if readerr != nil {
+		log.Println("ERROR Preferences readerr ", readerr)
+	}
+	var iserrors = false
+
+	//log.Println("pw ", MyPrefs.Password)
+	pwh, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("pword")), bcrypt.DefaultCost)
+	config.PasswordHash = string(pwh)
+	if err != nil {
+		iserrors = true
+		log.Println("Login Cant Open Password Hash", err)
+	}
+
+	// Comparing the password with the hash
+	errpw := bcrypt.CompareHashAndPassword([]byte(hashdata), []byte(r.FormValue("pword")))
+	if errpw != nil {
+		iserrors = true
+		log.Println("Login Bad Hash ", errpw, "ph", hashdata, "pt", r.FormValue("pword"))
+	}
+	if iserrors {
 		w.Write([]byte(ilogon()))
 		return
 	}
+
 	authtoken = r.RemoteAddr + "-" + uuid.New().String()
 
 	w.Write([]byte(ibuilder()))

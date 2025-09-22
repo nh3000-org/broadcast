@@ -14,6 +14,9 @@ require (
 )
 
 require (
+	fyne.io/fyne v1.4.3 // indirect
+	github.com/fyne-io/mobile v0.1.2 // indirect
+	github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jeandeaual/go-locale v0.0.0-20240223122105-ce5225dcaa49 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
