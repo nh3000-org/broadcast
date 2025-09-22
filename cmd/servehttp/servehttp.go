@@ -70,7 +70,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	xdesc = append(xdesc, dt[5:10])
 	//log.Println("Setting Range", dt[0:10], dt[5:10])
 	c := r.FormValue("Categories")
-	log.Println("ADS Categories", c)
+	//log.Println("ADS Categories", c)
 
 	//ycats := make(map[string]int) // ADS-xdates Count .....
 

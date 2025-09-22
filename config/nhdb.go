@@ -1897,7 +1897,7 @@ func TrafficGetCountByAlbum(date, alb string) int {
 		if err != nil {
 			log.Println("TrafficGetCountByAlbum rowserr playedon", err)
 		}
-		log.Println("TrafficGetCountByAlbum ", date, alb, count)
+		//log.Println("TrafficGetCountByAlbum ", date, alb, count)
 
 	}
 
