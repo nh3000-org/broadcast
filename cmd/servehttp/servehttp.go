@@ -55,7 +55,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	rangedays, err := strconv.Atoi(rd)
 	if err != nil {
 		rangedays = 7
-		log.Println("Chart Days Error", err)
+		log.Println("ADS Days Error", err)
 	}
 	for d := rangedays; d > 0; d-- {
 		hours := 24 * d
@@ -70,7 +70,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	xdesc = append(xdesc, dt[5:10])
 	//log.Println("Setting Range", dt[0:10], dt[5:10])
 	c := r.FormValue("Categories")
-	log.Println("Categories", c)
+	log.Println("ADS Categories", c)
 
 	//ycats := make(map[string]int) // ADS-xdates Count .....
 
@@ -79,7 +79,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	//for x := 0; x < len(c); x++ {
 	for d := 0; d < len(xdates); d++ {
 		//if strings.HasPrefix(c[x], "ADS") {
-		data := config.TrafficGetCountByAlbum(c, xdates[d])
+		data := config.TrafficGetCountByAlbum(rd, c)
 		items = append(items, opts.LineData{Value: data})
 		line.AddSeries(c, items)
 		//}

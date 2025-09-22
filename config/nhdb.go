@@ -1885,7 +1885,7 @@ func TrafficGetCountByAlbum(hours, alb string) int {
 
 	count := 0
 
-	rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon <'"+newdate+"' and album ='"+alb+"'")
+	rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon like '"+newdate+"%' and album ='"+alb+"'")
 	if rowserr != nil {
 		log.Println("TrafficGetCountByAlbum rowserr", rowserr)
 		conn.Release()
