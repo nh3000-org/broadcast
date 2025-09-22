@@ -35,6 +35,60 @@ var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
+func ADS(w http.ResponseWriter, r *http.Request) {
+
+	line := charts.NewLine()
+	items := make([]opts.LineData, 0)
+
+	// set some global options like Title/Legend/ToolTip or anything else
+	line.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
+		charts.WithTitleOpts(opts.Title{
+			Title:    "Ads",
+			Subtitle: "Series",
+		}))
+
+	var xdates []string // yyyy-mm-dd
+	var xdesc []string  // mm-dd
+
+	rd := r.FormValue("Days")
+	rangedays, err := strconv.Atoi(rd)
+	if err != nil {
+		rangedays = 7
+		log.Println("Chart Days Error", err)
+	}
+	for d := rangedays; d > 0; d-- {
+		hours := 24 * d
+		parm := "-" + strconv.Itoa(hours) + "h"
+		dt := config.GetDateTime(parm)
+		xdates = append(xdates, dt[0:10])
+		xdesc = append(xdesc, dt[5:10])
+		//log.Println("Setting Range", dt[0:10], dt[5:10])
+	}
+	dt := config.GetDateTime("0h")
+	xdates = append(xdates, dt[0:10])
+	xdesc = append(xdesc, dt[5:10])
+	//log.Println("Setting Range", dt[0:10], dt[5:10])
+	c := r.FormValue("Categories")
+	log.Println("Categories", c)
+
+	//ycats := make(map[string]int) // ADS-xdates Count .....
+
+	line.SetXAxis(xdesc)
+
+	//for x := 0; x < len(c); x++ {
+	for d := 0; d < len(xdates); d++ {
+		//if strings.HasPrefix(c[x], "ADS") {
+		data := config.TrafficGetCountByAlbum(c, xdates[d])
+		items = append(items, opts.LineData{Value: data})
+		line.AddSeries(c, items)
+		//}
+	}
+	//}
+	line.SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}))
+	line.Render(w)
+}
+
 func chart(w http.ResponseWriter, r *http.Request) {
 
 	line := charts.NewLine()
@@ -63,14 +117,14 @@ func chart(w http.ResponseWriter, r *http.Request) {
 		dt := config.GetDateTime(parm)
 		xdates = append(xdates, dt[0:10])
 		xdesc = append(xdesc, dt[5:10])
-		log.Println("Setting Range", dt[0:10], dt[5:10])
+		//log.Println("Setting Range", dt[0:10], dt[5:10])
 	}
 	dt := config.GetDateTime("0h")
 	xdates = append(xdates, dt[0:10])
 	xdesc = append(xdesc, dt[5:10])
-	log.Println("Setting Range", dt[0:10], dt[5:10])
+	//log.Println("Setting Range", dt[0:10], dt[5:10])
 	c := r.FormValue("Categories")
-	log.Println("Categories", c)
+	//log.Println("Categories", c)
 
 	//ycats := make(map[string]int) // ADS-xdates Count .....
 
@@ -443,6 +497,7 @@ func setupRoutes() {
 	http.HandleFunc("/download", downloadFile)
 	http.HandleFunc("/upload", uploadFile)
 	http.HandleFunc("/chart", chart)
+	http.HandleFunc("/ADS", ADS)
 	err := http.ListenAndServeTLS(":9000", "server.crt", "server.key", nil)
 	if err != nil {
 		log.Println("SSL ERROR ", err)
@@ -521,8 +576,9 @@ func ibuilder() string {
 	s.WriteString("    <input type=\"submit\" value=\"Download stub.zip\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
-	s.WriteString("  <form  action=\"" + config.WebAddress + "/chart\" method=\"post\">\n")
+
 	s.WriteString("  <hr>\n")
+	s.WriteString("  <form  action=\"" + config.WebAddress + "/chart\" method=\"post\">\n")
 	s.WriteString("  <label for=\"days\">History:</label>")
 	s.WriteString("  <select name=\"Days\" id=\"days\">")
 	s.WriteString("    <option value=\"7\">7 Days</option>")
@@ -537,6 +593,8 @@ func ibuilder() string {
 	s.WriteString("   <option value=\"IMAGINGID\">Imaging Spots</option>")
 	s.WriteString("   <option value=\"DJ\">DJ Spots</option>")
 	s.WriteString("  </select>")
+	s.WriteString("  <input type=\"submit\" value=\"Get Chart\" />\n")
+	s.WriteString("  </form>\n")
 
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/ADS\" method=\"post\">\n")
 	s.WriteString("  <hr>\n")
@@ -549,10 +607,10 @@ func ibuilder() string {
 	s.WriteString("  </select>")
 	s.WriteString("  <label for=\"catgories\">Choose a Advertising Category:</label>")
 	s.WriteString("  <select name=\"Categories\" id=\"categories\">")
-	s.WriteString(config.InventoryGetTrafficCountByAlbum(config.GetDateTime("-2160")[0:11]))
+	s.WriteString(config.TrafficGetAlbum(config.GetDateTime("-2160")[0:11]))
 	s.WriteString("  </select>")
 
-	s.WriteString("    <input type=\"submit\" value=\"Line Chart\" />\n")
+	s.WriteString("    <input type=\"submit\" value=\"ADS\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")

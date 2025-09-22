@@ -1871,13 +1871,47 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 	return returnpo
 
 }
-
-func InventoryGetTrafficCountByAlbum(hours string) string {
+func TrafficGetCountByAlbum(hours, alb string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, connerr := SQL.Pool.Acquire(ctxsql)
 
 	if connerr != nil {
-		log.Println("InventoryGetTrafficCountByAlbum", connerr)
+		log.Println("TrafficGetCountByAlbum", connerr)
+		ctxsqlcan()
+		return 0
+	}
+	//log.Println("InventoryGetTrafficCount", artist, song, album)
+	newdate := GetDateTime("-" + hours + "h")
+
+	count := 0
+
+	rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon <'"+newdate+"' and album ='"+alb+"'")
+	if rowserr != nil {
+		log.Println("TrafficGetCountByAlbum rowserr", rowserr)
+		conn.Release()
+		ctxsqlcan()
+		return 0
+	}
+	for rc.Next() {
+		err := rc.Scan(&count)
+		if err != nil {
+			log.Println("TrafficGetCountByAlbum rowserr playedon", err)
+		}
+		log.Println("TrafficGetCountByAlbum ", hours, alb, count)
+
+	}
+
+	conn.Release()
+	ctxsqlcan()
+	return count
+
+}
+func TrafficGetAlbum(hours string) string {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+
+	if connerr != nil {
+		log.Println("TrafficGetCountByAlbum", connerr)
 		ctxsqlcan()
 		return ""
 	}
@@ -1885,20 +1919,22 @@ func InventoryGetTrafficCountByAlbum(hours string) string {
 	newdate := GetDateTime("-" + hours + "h")
 
 	album := ""
+	category := ""
 	newstring := bytes.NewBufferString(album)
-	rc, rowserr := conn.Query(ctxsql, "select unique album from traffic where playedon <'"+newdate+"'")
+	rc, rowserr := conn.Query(ctxsql, "select distinct album,category from traffic where playedon <'"+newdate+"' and category ='ADS'")
 	if rowserr != nil {
-		log.Println("InventoryGetTrafficCountByAlbum rowserr", rowserr)
+		log.Println("TrafficGetCountByAlbum rowserr", rowserr)
 		conn.Release()
 		ctxsqlcan()
 		return ""
 	}
 	for rc.Next() {
-		err := rc.Scan(&album)
+		err := rc.Scan(&album, &category)
 		if err != nil {
-			log.Println("InventoryGetTrafficCount rowserr playedon", err)
+			log.Println("TrafficGetCountByAlbum rowserr playedon", err)
 		}
-		newstring.WriteString("    <option value=\"" + album + "\">Promotions</option>\n")
+		log.Println("TrafficGetCountByAlbum album", album)
+		newstring.WriteString("    <option value=\"" + album + "\">" + album + "</option>\n")
 	}
 
 	conn.Release()
