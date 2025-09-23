@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	//"time"
 
@@ -36,7 +37,9 @@ var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14,
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func ADS(w http.ResponseWriter, r *http.Request) {
-
+	if !checkauthorization(r.FormValue("Authorization")) {
+		ilogon()
+	}
 	line := charts.NewLine()
 	items := make([]opts.LineData, 0)
 
@@ -90,7 +93,9 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 }
 
 func chart(w http.ResponseWriter, r *http.Request) {
-
+	if !checkauthorization(r.FormValue("Authorization")) {
+		ilogon()
+	}
 	line := charts.NewLine()
 	items := make([]opts.LineData, 0)
 
@@ -143,6 +148,9 @@ func chart(w http.ResponseWriter, r *http.Request) {
 	line.Render(w)
 }
 func uploadFile(w http.ResponseWriter, r *http.Request) {
+	if !checkauthorization(r.FormValue("Authorization")) {
+		ilogon()
+	}
 	isbusy = true
 	importHome := "/opt/radio/upload/stub"
 
@@ -386,6 +394,9 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Upload File")
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
+	if !checkauthorization(r.FormValue("Authorization")) {
+		ilogon()
+	}
 	isbusy = true
 	log.Println("Download Stub")
 	pmuerr := r.ParseForm()
@@ -508,7 +519,20 @@ func main() {
 	fmt.Println("Waiting for Input")
 	setupRoutes()
 }
-
+func checkauthorization(authtoken string) bool {
+	frombrowser := config.Decrypt(authtoken, MySecret)[0:19]
+	st, sterr := time.Parse(time.DateTime, frombrowser)
+	now := time.Now()
+	log.Println("checkauthorization token  ", frombrowser)
+	if sterr != nil {
+		log.Println("checkauthorization time parse frombrowser "+sterr.Error(), " startson", frombrowser)
+	}
+	if now.Before(st) {
+		log.Println("checkauthorization token expired ")
+		return true
+	}
+	return false
+}
 func login(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
@@ -550,13 +574,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(ilogon()))
 		return
 	}
-
-	authtoken = r.RemoteAddr + "-" + uuid.New().String()
-
-	w.Write([]byte(ibuilder()))
+	// check aut token expiry
+	authtoken = config.GetDateTime("1h")[0:19] + "-" + r.RemoteAddr + "-" + uuid.New().String()
+	tobrowser := config.Encrypt(authtoken, MySecret)
+	w.Write([]byte(ibuilder(tobrowser)))
 }
 
-func ibuilder() string {
+func ibuilder(authtoken string) string {
 
 	var s bytes.Buffer
 	s.WriteString("<!DOCTYPE html>\n")
@@ -594,10 +618,11 @@ func ibuilder() string {
 	s.WriteString("   <option value=\"DJ\">DJ Spots</option>")
 	s.WriteString("  </select>")
 	s.WriteString("  <input type=\"submit\" value=\"Get Chart\" />\n")
+	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
+	s.WriteString("  <hr>\n")
 
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/ADS\" method=\"post\">\n")
-	s.WriteString("  <hr>\n")
 	s.WriteString("  <label for=\"days\">Ads History:</label>")
 	s.WriteString("  <select name=\"Days\" id=\"days\">")
 	s.WriteString("    <option value=\"7\">7 Days</option>")
@@ -613,6 +638,14 @@ func ibuilder() string {
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
+
+	s.WriteString("  <form  action=\"" + config.WebAddress + "/counts\" method=\"post\">\n")
+
+	s.WriteString("    <input type=\"submit\" value=\"counts\" />\n")
+	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
+	s.WriteString("  </form>\n")
+	s.WriteString("  <hr>\n")
+
 	s.WriteString("</body>\n")
 	s.WriteString("</html>\n")
 
