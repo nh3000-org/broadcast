@@ -14,8 +14,6 @@ import (
 	"strings"
 	"time"
 
-	//"time"
-
 	"github.com/nh3000-org/broadcast/config"
 	"golang.org/x/crypto/bcrypt"
 
@@ -88,6 +86,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 		//}
 	}
 	//}
+	line.PageTitle = "Advertising Line Chart"
 	line.SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}))
 	line.Render(w)
 }
@@ -144,9 +143,42 @@ func chart(w http.ResponseWriter, r *http.Request) {
 		//}
 	}
 	//}
+	line.PageTitle = "History Chart"
 	line.SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}))
 	line.Render(w)
 }
+
+func counts(w http.ResponseWriter, r *http.Request) {
+	if !checkauthorization(r.FormValue("Authorization")) {
+		ilogon()
+	}
+	pie := charts.NewPie()
+
+	// set some global options like Title/Legend/ToolTip or anything else
+	pie.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
+		charts.WithTitleOpts(opts.Title{
+			Title:    "Music",
+			Subtitle: "Distribution",
+		}))
+
+	destinations := []opts.PieData{{Name: "CURRENTS", Value: config.InventoryGetCount("CURRENTS")},
+		{Name: "RECURRENTS", Value: config.InventoryGetCount("RECURRENTS")},
+		{Name: "PROMOS", Value: config.InventoryGetCount("PROMOS")},
+		{Name: "ADS", Value: config.InventoryGetCount("ADS")},
+		{Name: "IMAGINGID", Value: config.InventoryGetCount("IMAGINGID")}}
+
+	pie.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeChalk}),
+		charts.WithTitleOpts(opts.Title{Title: "Inventory Distributions"}),
+	)
+	pie.AddSeries("distributions", destinations)
+
+	pie.PageTitle = "Distribution Chart"
+
+	pie.Render(w)
+}
+
 func uploadFile(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		ilogon()
@@ -509,6 +541,7 @@ func setupRoutes() {
 	http.HandleFunc("/upload", uploadFile)
 	http.HandleFunc("/chart", chart)
 	http.HandleFunc("/ADS", ADS)
+	http.HandleFunc("/counts", counts)
 	err := http.ListenAndServeTLS(":9000", "server.crt", "server.key", nil)
 	if err != nil {
 		log.Println("SSL ERROR ", err)
@@ -640,8 +673,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("  <hr>\n")
 
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/counts\" method=\"post\">\n")
-
-	s.WriteString("    <input type=\"submit\" value=\"counts\" />\n")
+	s.WriteString("    <input type=\"submit\" value=\"Inventory counts\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
@@ -662,7 +694,7 @@ func ilogon() string {
 	s.WriteString("</head>\n")
 	s.WriteString("  <form action=\"" + config.WebAddress + "/login\" method=\"post\">\n")
 	s.WriteString("    <label for=\"pword\"> Password:</label>\n")
-	s.WriteString("    <input type=\"text\" id=\"pw\" name=\"pword\"><br><br>\n")
+	s.WriteString("    <input type=\"password\" id=\"pw\" name=\"pword\"><br><br>\n")
 	s.WriteString("    <input type=\"submit\" value=\"Try Password\">\n")
 	s.WriteString("  </form>\n")
 

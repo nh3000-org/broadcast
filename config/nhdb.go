@@ -678,6 +678,88 @@ func InventoryGet() {
 	ctxsqlcan()
 
 }
+func InventoryGetC() {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	InventoryStore = make(map[int]InventoryStruct)
+	rows, rowserr := conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
+	var row int         // rowid
+	var category string // category
+	var artist string   // artist
+	var song string     // song
+	var album string    // Album
+	var songlength int  // song length
+	var rndorder string // assigned weekly
+	var startson string
+	var expireson string
+	var adstimeslots []string
+	var adsdayslots []string
+	var adsmaxspins int
+	var adsmaxspinsperhour int
+	var lastplayed string
+	var dateadded string
+	var spinstoday int    // cleared daily at day reset
+	var spinsweek int     // spins weekly at week reset
+	var spinstotal int    // total spins
+	var sourcelink string // link to source
+	for rows.Next() {
+		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins,
+			&adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
+		if err != nil {
+			log.Println("InventoryGet Get Inventory row:", err)
+		}
+		ds := InventoryStruct{}
+		ds.Row = row
+		ds.Category = category
+		ds.Artist = artist
+		ds.Song = song
+		ds.Album = album
+		ds.Songlength = songlength
+		ds.Rndorder = rndorder
+		ds.Song = song
+		ds.Startson = startson
+		ds.Expireson = expireson
+		ds.Lastplayed = lastplayed
+		ds.Dateadded = dateadded
+		ds.AdsTimeSlots = adstimeslots
+		ds.AdsDaySlots = adsdayslots
+		ds.AdsMaxSpins = adsmaxspins
+		ds.AdsMaxSpinsPerHour = adsmaxspinsperhour
+		ds.Spinstoday = spinstoday
+		ds.Spinsweek = spinsweek
+		ds.Spinstotal = spinstotal
+		ds.Sourcelink = sourcelink
+		InventoryStore[len(InventoryStore)] = ds
+
+	}
+	if rowserr != nil {
+		log.Println("InventoryGet Get Inventory row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+
+}
+func InventoryGetCount(cat string) int {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	rows, rowserr := conn.Query(ctxsql, "select count(*) from inventory  where category = '"+cat+"'")
+	count := 0
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			log.Println("InventoryGetCount  row:", err)
+		}
+
+	}
+	if rowserr != nil {
+		log.Println("InventoryGetCount row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+	return count
+}
 func InventoryUpdateRNDORDER() {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
