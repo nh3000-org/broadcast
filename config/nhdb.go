@@ -587,6 +587,26 @@ func ScheduleCopy(dayfrom, dayto string) {
 
 	ctxsqlcan()
 }
+func ScheduleGetCount(cat string) int {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	rows, rowserr := conn.Query(ctxsql, "select sum(spinstoplay) from schedule  where categories = '"+cat+"'")
+	count := 0
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			log.Println("ScheduleGetCount  row:", err)
+		}
+
+	}
+	if rowserr != nil {
+		log.Println("ScheduleGetCount row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+	return count
+}
 
 //	type ATS struct {
 //		Slot string // ads time slots 00-23

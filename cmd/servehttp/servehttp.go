@@ -178,7 +178,36 @@ func counts(w http.ResponseWriter, r *http.Request) {
 
 	pie.Render(w)
 }
+func schedcounts(w http.ResponseWriter, r *http.Request) {
+	if !checkauthorization(r.FormValue("Authorization")) {
+		ilogon()
+	}
+	pie := charts.NewPie()
 
+	// set some global options like Title/Legend/ToolTip or anything else
+	pie.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
+		charts.WithTitleOpts(opts.Title{
+			Title:    "Music",
+			Subtitle: "Distribution",
+		}))
+
+	destinations := []opts.PieData{{Name: "CURRENTS", Value: config.InventoryGetCount("CURRENTS")},
+		{Name: "RECURRENTS", Value: config.ScheduleGetCount("RECURRENTS")},
+		{Name: "PROMOS", Value: config.ScheduleGetCount("PROMOS")},
+		{Name: "ADS", Value: config.ScheduleGetCount("ADS")},
+		{Name: "IMAGINGID", Value: config.ScheduleGetCount("IMAGINGID")}}
+
+	pie.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeChalk}),
+		charts.WithTitleOpts(opts.Title{Title: "Schedule Distributions"}),
+	)
+	pie.AddSeries("distributions", destinations)
+
+	pie.PageTitle = "Schedule Distribution Chart"
+
+	pie.Render(w)
+}
 func uploadFile(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		ilogon()
@@ -542,6 +571,8 @@ func setupRoutes() {
 	http.HandleFunc("/chart", chart)
 	http.HandleFunc("/ADS", ADS)
 	http.HandleFunc("/counts", counts)
+	http.HandleFunc("/schedcounts", schedcounts)
+
 	err := http.ListenAndServeTLS(":9000", "server.crt", "server.key", nil)
 	if err != nil {
 		log.Println("SSL ERROR ", err)
@@ -674,6 +705,12 @@ func ibuilder(authtoken string) string {
 
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/counts\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Inventory counts\" />\n")
+	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
+	s.WriteString("  </form>\n")
+	s.WriteString("  <hr>\n")
+
+	s.WriteString("  <form  action=\"" + config.WebAddress + "/schedcounts\" method=\"post\">\n")
+	s.WriteString("    <input type=\"submit\" value=\"Schedule counts\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
