@@ -192,7 +192,7 @@ func schedcounts(w http.ResponseWriter, r *http.Request) {
 			Subtitle: "Distribution",
 		}))
 
-	destinations := []opts.PieData{{Name: "CURRENTS", Value: config.InventoryGetCount("CURRENTS")},
+	destinations := []opts.PieData{{Name: "CURRENTS", Value: config.ScheduleGetCount("CURRENTS")},
 		{Name: "RECURRENTS", Value: config.ScheduleGetCount("RECURRENTS")},
 		{Name: "PROMOS", Value: config.ScheduleGetCount("PROMOS")},
 		{Name: "ADS", Value: config.ScheduleGetCount("ADS")},
