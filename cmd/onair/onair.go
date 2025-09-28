@@ -27,6 +27,7 @@ var playinghour string // 00 .. 23
 var schedday string    // MON .. SUN
 var schedhour string   // 00 .. 23
 var logto bool
+var tohcount int
 
 //var moh = 0
 
@@ -114,6 +115,14 @@ var tohinverr error
 var tohinvupdconn *pgxpool.Conn
 var toherrinventoryupd error
 
+var pidgetconn *pgxpool.Conn
+var pidnextget error
+var pidrows pgx.Rows
+var pidrowserr error
+var pidinverr error
+var pidinvupdconn *pgxpool.Conn
+var piderrinventoryupd error
+
 func adjustToTopOfHour() {
 
 	tohmin = float64(time.Now().Minute())
@@ -123,7 +132,7 @@ func adjustToTopOfHour() {
 	log.Println("[TOH] time min", tohmin, "left", tohleft, "spins", tohspins)
 	if tohleft > 50 {
 		tohspins = 0
-		getNextHourPart()
+		//getNextHourPart()
 		return
 	}
 	if tohspins > 1 {
@@ -131,7 +140,7 @@ func adjustToTopOfHour() {
 			log.Println("[TOH]", "DAY", playingday, "HOUR", playinghour, "SPINS", tohspins)
 		}
 		tohgetconn, _ = config.SQL.Pool.Acquire(context.Background())
-		_, tohnextget = tohgetconn.Conn().Prepare(context.Background(), "toh", "select * from inventory where category = 'RECURRENTS' limit 30")
+		_, tohnextget = tohgetconn.Conn().Prepare(context.Background(), "toh", "select * from inventory where category = 'RECURRENTS' order by lastplayed, rndorder limit 30")
 		if tohnextget != nil {
 			log.Println("[TOH] nextgetconn", tohnextget)
 			config.Send("messages."+StationId, "[TOH] Prepare Next Get TOH "+tohnextget.Error(), "onair")
@@ -146,7 +155,7 @@ func adjustToTopOfHour() {
 
 			tohinverr = tohrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
 			if logto {
-				log.Println("[adjustTtoherroTopOfHour] playing", tohspins, artist, song)
+				log.Println("[TOH] ", tohspins, artist, song)
 			}
 			//log.Println("processing inventory song get"+song, " schedule", playingday, playinghour, categories)
 			if tohinverr != nil {
@@ -164,38 +173,8 @@ func adjustToTopOfHour() {
 			spinstoday++
 			spinstotal, _ = strconv.Atoi(total)
 			spinstotal++
-			lp = time.Now()
 
-			played = strings.Replace(played, "YYYY", strconv.Itoa(lp.Year()), 1)
-			month = strconv.Itoa(int(lp.Month()))
-			if len(month) == 1 {
-				month = "0" + month
-			}
-			played = strings.Replace(played, "MM", month, 1)
-			day = strconv.Itoa(int(lp.Day()))
-			if len(day) == 1 {
-				day = "0" + day
-			}
-			played = strings.Replace(played, "DD", day, 1)
-
-			hours = strconv.Itoa(int(lp.Hour()))
-			if len(hours) == 1 {
-				hours = "0" + hours
-			}
-			played = strings.Replace(played, "HH", hours, 1)
-
-			min = strconv.Itoa(int(lp.Minute()))
-			if len(min) == 1 {
-				min = "0" + min
-			}
-			played = strings.Replace(played, "mm", min, 1)
-
-			sec = strconv.Itoa(int(lp.Second()))
-			if len(sec) == 1 {
-				sec = "0" + sec
-			}
-			played = strings.Replace(played, "SS", sec, 1)
-
+			played = config.GetDateTime("0h")
 			//log.Println("last played", played, " schedule", playingday, playinghour, categories)
 			tohinvupdconn, _ = config.SQL.Pool.Acquire(context.Background())
 			_, toherrinventoryupd = tohinvupdconn.Conn().Prepare(context.Background(), "tohinventoryupdate", "update inventory set spinstoday = $1, spinsweek = $2, spinstotal = $3, lastplayed = $4, songlength= $5 where rowid = $6")
@@ -210,8 +189,13 @@ func adjustToTopOfHour() {
 				config.Send("messages."+StationId, "Inventory Update TOH "+toherrinventoryupd.Error(), "onair")
 			}
 			tohinvupdconn.Release()
+			addToTraffic("FILLTOTOH", artist, song, album, played[0:19])
 			if tohspins < 1 {
 				break
+			}
+
+			if tohspins%2 == 0 {
+				playImagingId()
 			}
 		}
 
@@ -219,6 +203,74 @@ func adjustToTopOfHour() {
 
 	}
 	getNextHourPart()
+}
+
+//var pidaddconn *pgxpool.Conn
+//var pidaddconnerr error
+//var errpidadd *pgxpool.Conn
+//var pidadderr error
+
+func playImagingId() {
+	/* 	if logto {
+		log.Println("[PID]", "DAY", playingday, "HOUR", playinghour)
+	} */
+	pidgetconn, _ = config.SQL.Pool.Acquire(context.Background())
+	_, pidnextget = pidgetconn.Conn().Prepare(context.Background(), "pid", "select * from inventory where category = 'IMAGINGID' order by lastplayed, rndorder limit 1")
+	if pidnextget != nil {
+		log.Println("[PID] nextgetconn", pidnextget)
+		config.Send("messages."+StationId, "[PID] Prepare Next Get TOH "+pidnextget.Error(), "onair")
+	}
+	pidrows, pidrowserr = pidgetconn.Query(context.Background(), "pid")
+	if pidrowserr != nil {
+		config.Send("messages."+StationId, "[PID] Prepare Inventory Read PID "+pidrowserr.Error(), "onair")
+		log.Fatal("Error reading inventory PID", pidrowserr, " cat: ", categories)
+	}
+
+	for pidrows.Next() {
+
+		pidinverr = pidrows.Scan(&rowid, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins, &adsmaxspinsperhour, &lastplayed, &dateadded, &today, &week, &total, &sourcelink)
+		if logto {
+			log.Println("[PID] ", tohspins, artist, song)
+		}
+		//log.Println("processing inventory song get"+song, " schedule", playingday, playinghour, categories)
+		if pidinverr != nil {
+			log.Println("[PIDd] processing inventory song get " + pidinverr.Error())
+			config.Send("messages."+StationId, "[playImagingId] Inventory Song Get PID "+pidinverr.Error(), "onair")
+		}
+		// play the item
+		config.SendONAIRmp3(artist + " - " + album + " - " + song)
+		itemlength = Play(otoctx, rowid, category)
+
+		// update statistics
+		spinsweek, _ = strconv.Atoi(week)
+		spinsweek++
+		spinstoday, _ = strconv.Atoi(today)
+		spinstoday++
+		spinstotal, _ = strconv.Atoi(total)
+		spinstotal++
+
+		played = config.GetDateTime("0h")
+		//log.Println("last played", played, " schedule", playingday, playinghour, categories)
+		pidinvupdconn, _ = config.SQL.Pool.Acquire(context.Background())
+		_, piderrinventoryupd = pidinvupdconn.Conn().Prepare(context.Background(), "pidinventoryupdate", "update inventory set spinstoday = $1, spinsweek = $2, spinstotal = $3, lastplayed = $4, songlength= $5 where rowid = $6")
+		if piderrinventoryupd != nil {
+			log.Println("[PID] Prepare inventory upd", piderrinventoryupd, " PID", playingday, playinghour, categories)
+			config.Send("messages."+StationId, "[PID] Prepare Inventory Update "+piderrinventoryupd.Error(), "onair")
+		}
+
+		_, piderrinventoryupd = pidinvupdconn.Exec(context.Background(), "pidinventoryupdate", spinstoday, spinsweek, spinstotal, played, itemlength, rowid)
+		if piderrinventoryupd != nil {
+			log.Println("[PID] updating inventory "+toherrinventoryupd.Error(), " PID ", playingday, playinghour, categories)
+			config.Send("messages."+StationId, "Inventory Update PID "+piderrinventoryupd.Error(), "onair")
+		}
+		pidinvupdconn.Release()
+
+		addToTraffic("FILLTOTOH", artist, song, album, played[0:19])
+
+	}
+
+	pidgetconn.Release()
+
 }
 func getNextDay() {
 	clearSpinsPerDayCount()
@@ -477,12 +529,36 @@ func readPreferences() {
 	config.NewPGSQL()
 }
 
+// add to traffic
+func addToTraffic(category, artist, song, album, playedon string) {
+	trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
+	if trafficaddconnerr != nil {
+		log.Println("[main] Prepare trafficadd", trafficaddconnerr)
+		config.Send("messages."+StationId, "[main] Prepare trafficadd conn "+trafficaddconnerr.Error(), "onair")
+
+	}
+	_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (category,artist, album,song,playedon) values($1,$2,$3,$4,$5)")
+	if errtrafficadd != nil {
+		log.Println("[main] Prepare trafficadd", errtrafficadd)
+		config.Send("messages."+StationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
+	}
+	//log.Println("adding inventory to traffic adding", song)
+
+	_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", category, artist, song, album, played[0:19])
+	if trafficadderr != nil {
+		log.Println("[main] updating inventory " + trafficadderr.Error())
+		config.Send("messages."+StationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
+	}
+	trafficaddconn.Release()
+}
+
 var itemlength = 0
 var StationId = ""
 var spinstoplay int
 var spinstoplayerr error
 var invupdconn *pgxpool.Conn
 var trafficaddconn *pgxpool.Conn
+
 var invdelconn *pgxpool.Conn
 var errinventorygetschedule error
 var errinventoryupd error
@@ -766,27 +842,9 @@ func main() {
 
 					}
 					// update statistics
+					played := config.GetDateTime("0h")
 					if (strings.HasPrefix(category, "ADS") && playtheads) || strings.HasPrefix(category, "NWS") || strings.HasPrefix(category, "DJ") || strings.HasPrefix(category, "PROMOS") || strings.HasPrefix(category, "IMAGINGID") {
-
-						trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
-						if trafficaddconnerr != nil {
-							log.Println("[main] Prepare trafficadd", trafficaddconnerr)
-							config.Send("messages."+*stationId, "[main] Prepare trafficadd conn "+trafficaddconnerr.Error(), "onair")
-
-						}
-						_, errtrafficadd = trafficaddconn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (category,artist, album,song,playedon) values($1,$2,$3,$4,$5)")
-						if errtrafficadd != nil {
-							log.Println("[main] Prepare trafficadd", errtrafficadd)
-							config.Send("messages."+*stationId, "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
-						}
-						//log.Println("adding inventory to traffic adding", song)
-
-						_, trafficadderr = trafficaddconn.Exec(context.Background(), "trafficadd", category, artist, song, album, played[0:19])
-						if trafficadderr != nil {
-							log.Println("[main] updating inventory " + trafficadderr.Error())
-							config.Send("messages."+*stationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
-						}
-						trafficaddconn.Release()
+						addToTraffic(category, artist, song, album, played[0:19])
 
 					}
 					spinsweek, _ = strconv.Atoi(week)
@@ -795,7 +853,6 @@ func main() {
 					spinstoday++
 					spinstotal, _ = strconv.Atoi(total)
 					spinstotal++
-					played := config.GetDateTime("0h")
 
 					//log.Println("last played", played, " schedule", playingday, playinghour, categories)
 					invupdconn, _ = config.SQL.Pool.Acquire(context.Background())

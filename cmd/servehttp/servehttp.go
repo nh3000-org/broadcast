@@ -165,6 +165,7 @@ func counts(w http.ResponseWriter, r *http.Request) {
 	destinations := []opts.PieData{{Name: "CURRENTS", Value: config.InventoryGetCount("CURRENTS")},
 		{Name: "RECURRENTS", Value: config.InventoryGetCount("RECURRENTS")},
 		{Name: "PROMOS", Value: config.InventoryGetCount("PROMOS")},
+		{Name: "FILLTOTOH", Value: config.InventoryGetCount("FILLTOTOH")},
 		{Name: "ADS", Value: config.InventoryGetCount("ADS")},
 		{Name: "IMAGINGID", Value: config.InventoryGetCount("IMAGINGID")}}
 
