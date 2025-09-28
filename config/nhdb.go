@@ -1982,7 +1982,7 @@ func TrafficGetCountByAlbum(date, alb string) int {
 		ctxsqlcan()
 		return 0
 	}
-	//log.Println("InventoryGetTrafficCount", artist, song, album)
+	//log.Println("InventoryGetTrafficCount", date, alb)
 	//newdate := GetDateTime("-" + hours + "h")
 
 	count := 0
@@ -2017,13 +2017,13 @@ func TrafficGetAlbum(hours string) string {
 		ctxsqlcan()
 		return ""
 	}
-	//log.Println("InventoryGetTrafficCount", artist, song, album)
-	newdate := GetDateTime("-" + hours + "h")
+
+	newdate := GetDateTime(hours + "h")
 
 	album := ""
 	category := ""
 	newstring := bytes.NewBufferString(album)
-	rc, rowserr := conn.Query(ctxsql, "select distinct album,category from traffic where playedon <'"+newdate+"' and category ='ADS'")
+	rc, rowserr := conn.Query(ctxsql, "select distinct album,category from traffic where playedon > '"+newdate+"' and category <> 'FILLTOTOH'")
 	if rowserr != nil {
 		log.Println("TrafficGetAlbum rowserr", rowserr)
 		conn.Release()
@@ -2035,7 +2035,7 @@ func TrafficGetAlbum(hours string) string {
 		if err != nil {
 			log.Println("TrafficGetAlbum rowserr playedon", err)
 		}
-		//log.Println("TrafficGetCountByAlbum album", album)
+
 		newstring.WriteString("    <option value=\"" + album + "\">" + album + "</option>\n")
 	}
 

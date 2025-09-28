@@ -70,7 +70,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	xdates = append(xdates, dt[0:10])
 	xdesc = append(xdesc, dt[5:10])
 	//log.Println("Setting Range", dt[0:10], dt[5:10])
-	c := r.FormValue("Categories")
+	c := r.FormValue("Categories1")
 	//log.Println("ADS Categories", c)
 
 	//ycats := make(map[string]int) // ADS-xdates Count .....
@@ -83,6 +83,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 		data := config.TrafficGetCountByAlbum(xdates[d], c)
 		items = append(items, opts.LineData{Value: data})
 		line.AddSeries(c, items)
+		//log.Println("add series", c, items)
 		//}
 	}
 	//}
@@ -197,6 +198,7 @@ func schedcounts(w http.ResponseWriter, r *http.Request) {
 		{Name: "RECURRENTS", Value: config.ScheduleGetCount("RECURRENTS")},
 		{Name: "PROMOS", Value: config.ScheduleGetCount("PROMOS")},
 		{Name: "ADS", Value: config.ScheduleGetCount("ADS")},
+		{Name: "FILLTOTOH", Value: config.InventoryGetCount("FILLTOTOH")},
 		{Name: "IMAGINGID", Value: config.ScheduleGetCount("IMAGINGID")}}
 
 	pie.SetGlobalOptions(
@@ -655,30 +657,36 @@ func ibuilder(authtoken string) string {
 	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
 	s.WriteString(" <title>Content Provider</title>\n")
 	s.WriteString("</head>\n")
+
 	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"" + config.WebAddress + "/upload\" method=\"post\">\n")
 	s.WriteString("    <input type=\"file\" name=\"stub\" />\n")
 	s.WriteString("    <input type=\"submit\" value=\"Upload stub.zip\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
+
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/download\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Download stub.zip\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 
 	s.WriteString("  <hr>\n")
+
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/chart\" method=\"post\">\n")
+
 	s.WriteString("  <label for=\"days\">History:</label>")
 	s.WriteString("  <select name=\"Days\" id=\"days\">")
 	s.WriteString("    <option value=\"7\">7 Days</option>")
 	s.WriteString("    <option value=\"14\">14 Days</option>")
 	s.WriteString("   <option value=\"28\">28 Days</option>")
 	s.WriteString("  </select>")
+
 	s.WriteString("  <label for=\"catgories\">Choose a Category:</label>")
 	s.WriteString("  <select name=\"Categories\" id=\"categories\">")
 	s.WriteString("    <option value=\"ADS\">Advertising</option>")
 	s.WriteString("    <option value=\"PROMOS\">Promotions</option>")
 	s.WriteString("   <option value=\"NWS\">News Weather Sports</option>")
+	s.WriteString("   <option value=\"FILLTOTOH\">Top Of Hour</option>")
 	s.WriteString("   <option value=\"IMAGINGID\">Imaging Spots</option>")
 	s.WriteString("   <option value=\"DJ\">DJ Spots</option>")
 	s.WriteString("  </select>")
@@ -695,9 +703,9 @@ func ibuilder(authtoken string) string {
 	s.WriteString("   <option value=\"28\">28 Days</option>")
 	s.WriteString("   <option value=\"90\">90 Days</option>")
 	s.WriteString("  </select>")
-	s.WriteString("  <label for=\"catgories\">Choose a Advertising Category:</label>")
-	s.WriteString("  <select name=\"Categories\" id=\"categories\">")
-	s.WriteString(config.TrafficGetAlbum(config.GetDateTime("-2160")[0:11]))
+	s.WriteString("  <label for=\"catgories1\">Choose a Advertising Category:</label>")
+	s.WriteString("  <select name=\"Categories1\" id=\"categories1\">")
+	s.WriteString(config.TrafficGetAlbum("-2160"))
 	s.WriteString("  </select>")
 	s.WriteString("    <input type=\"submit\" value=\"ADS\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
