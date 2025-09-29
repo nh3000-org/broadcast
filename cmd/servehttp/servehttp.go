@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/nh3000-org/broadcast/config"
 	"golang.org/x/crypto/bcrypt"
@@ -36,7 +35,8 @@ const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func ADS(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
-		ilogon()
+		w.Write([]byte(ilogon()))
+		return
 	}
 	line := charts.NewLine()
 	items := make([]opts.LineData, 0)
@@ -94,7 +94,8 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 
 func chart(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
-		ilogon()
+		w.Write([]byte(ilogon()))
+		return
 	}
 	line := charts.NewLine()
 	items := make([]opts.LineData, 0)
@@ -151,7 +152,8 @@ func chart(w http.ResponseWriter, r *http.Request) {
 
 func counts(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
-		ilogon()
+		w.Write([]byte(ilogon()))
+		return
 	}
 	pie := charts.NewPie()
 
@@ -182,7 +184,8 @@ func counts(w http.ResponseWriter, r *http.Request) {
 }
 func schedcounts(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
-		ilogon()
+		w.Write([]byte(ilogon()))
+		return
 	}
 	pie := charts.NewPie()
 
@@ -211,9 +214,18 @@ func schedcounts(w http.ResponseWriter, r *http.Request) {
 
 	pie.Render(w)
 }
+func cleartraffic(w http.ResponseWriter, r *http.Request) {
+	if !checkauthorization(r.FormValue("Authorization")) {
+		w.Write([]byte(ilogon()))
+		return
+	}
+
+	w.Write([]byte(config.TrafficClear() + " Traffic Records Deleted"))
+}
 func uploadFile(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
-		ilogon()
+		w.Write([]byte(ilogon()))
+		return
 	}
 	isbusy = true
 	importHome := "/opt/radio/upload/stub"
@@ -459,7 +471,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 }
 func downloadFile(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
-		ilogon()
+		w.Write([]byte(ilogon()))
+		return
 	}
 	isbusy = true
 	log.Println("Download Stub")
@@ -539,7 +552,7 @@ func readPreferences() {
 	//config.WebPassword = config.Decrypt(fmt.Sprintf("%v", cfg["WEBPASSWORD"]), MySecret)
 
 	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
-	log.Println(config.DBaddress)
+	//log.Println(config.DBaddress)
 
 	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
 	config.NatsAlias = config.Decrypt(fmt.Sprintf("%v", cfg["NatsAlias"]), MySecret)
@@ -548,7 +561,7 @@ func readPreferences() {
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
 
-	log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
+	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
 	config.NewPGSQL()
 }
@@ -575,6 +588,7 @@ func setupRoutes() {
 	http.HandleFunc("/ADS", ADS)
 	http.HandleFunc("/counts", counts)
 	http.HandleFunc("/schedcounts", schedcounts)
+	http.HandleFunc("/cleartraffic", cleartraffic)
 
 	err := http.ListenAndServeTLS(":9000", "server.crt", "server.key", nil)
 	if err != nil {
@@ -587,18 +601,16 @@ func main() {
 	setupRoutes()
 }
 func checkauthorization(authtoken string) bool {
-	frombrowser := config.Decrypt(authtoken, MySecret)[0:19]
-	st, sterr := time.Parse(time.DateTime, frombrowser)
-	now := time.Now()
-	log.Println("checkauthorization token  ", frombrowser)
-	if sterr != nil {
-		log.Println("checkauthorization time parse frombrowser "+sterr.Error(), " startson", frombrowser)
-	}
-	if now.Before(st) {
+	st := config.Decrypt(authtoken, MySecret)[0:19]
+
+	expires := config.GetDateTime("1h")[0:19]
+	log.Println("checkauthorization token  ", "expires", expires, "token", st)
+
+	if st > expires {
 		log.Println("checkauthorization token expired ")
-		return true
+		return false
 	}
-	return false
+	return true
 }
 func login(w http.ResponseWriter, r *http.Request) {
 
@@ -607,7 +619,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 	userdata = userdata + "=====================================\n"
 	userdata = userdata + "Forwarded: " + r.Header.Get("X-Forwarded-For") + "\n"
 	userdata = userdata + "RemoteAddr: " + r.RemoteAddr + "\n"
-	userdata = userdata + "Password: " + r.FormValue("pword") + "\n"
 	userdata = userdata + "Agent: " + r.UserAgent() + "\n"
 	userdata = userdata + "=====================================\n"
 	log.Println(userdata)
@@ -642,7 +653,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// check aut token expiry
-	authtoken = config.GetDateTime("1h")[0:19] + "-" + r.RemoteAddr + "-" + uuid.New().String()
+	authtoken = config.GetDateTime("0h")[0:19] + "-" + r.RemoteAddr + "-" + uuid.New().String()
 	tobrowser := config.Encrypt(authtoken, MySecret)
 	w.Write([]byte(ibuilder(tobrowser)))
 }
@@ -658,6 +669,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString(" <title>Content Provider</title>\n")
 	s.WriteString("</head>\n")
 
+	s.WriteString("  <label>Upload Content</label><br>")
 	s.WriteString("  <form enctype=\"multipart/form-data\" action=\"" + config.WebAddress + "/upload\" method=\"post\">\n")
 	s.WriteString("    <input type=\"file\" name=\"stub\" />\n")
 	s.WriteString("    <input type=\"submit\" value=\"Upload stub.zip\" />\n")
@@ -665,22 +677,21 @@ func ibuilder(authtoken string) string {
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
 
+	s.WriteString("  <label>Download a Stub</label><br>")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/download\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Download stub.zip\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
-
 	s.WriteString("  <hr>\n")
 
+	s.WriteString("  <label>Category History</label><br>")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/chart\" method=\"post\">\n")
-
 	s.WriteString("  <label for=\"days\">History:</label>")
 	s.WriteString("  <select name=\"Days\" id=\"days\">")
 	s.WriteString("    <option value=\"7\">7 Days</option>")
 	s.WriteString("    <option value=\"14\">14 Days</option>")
 	s.WriteString("   <option value=\"28\">28 Days</option>")
 	s.WriteString("  </select>")
-
 	s.WriteString("  <label for=\"catgories\">Choose a Category:</label>")
 	s.WriteString("  <select name=\"Categories\" id=\"categories\">")
 	s.WriteString("    <option value=\"ADS\">Advertising</option>")
@@ -695,6 +706,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
 
+	s.WriteString("  <label>Advertising History</label><br>")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/ADS\" method=\"post\">\n")
 	s.WriteString("  <label for=\"days\">Ads History:</label>")
 	s.WriteString("  <select name=\"Days\" id=\"days\">")
@@ -712,14 +724,23 @@ func ibuilder(authtoken string) string {
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
 
+	s.WriteString("  <label>Inventory Counts</label><br>")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/counts\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Inventory counts\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")
 
+	s.WriteString("  <label>Schedule Counts</label><br>")
 	s.WriteString("  <form  action=\"" + config.WebAddress + "/schedcounts\" method=\"post\">\n")
 	s.WriteString("    <input type=\"submit\" value=\"Schedule counts\" />\n")
+	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
+	s.WriteString("  </form>\n")
+	s.WriteString("  <hr>\n")
+
+	s.WriteString("  <label>Clear Traffic History</label><br>")
+	s.WriteString("  <form  action=\"" + config.WebAddress + "/cleartraffic\" method=\"post\">\n")
+	s.WriteString("    <input type=\"submit\" value=\"Clear Traffic Over 1 Year Old\" />\n")
 	s.WriteString("    <input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n")
 	s.WriteString("  </form>\n")
 	s.WriteString("  <hr>\n")

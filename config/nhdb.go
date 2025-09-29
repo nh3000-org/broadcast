@@ -2008,6 +2008,46 @@ func TrafficGetCountByAlbum(date, alb string) int {
 	return count
 
 }
+func TrafficClear() string {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+
+	if connerr != nil {
+		log.Println("TrafficClear", connerr)
+		ctxsqlcan()
+		return ""
+	}
+
+	newdate := GetDateTime("8760h")[0:19]
+	count := 0
+	rc, rowserrc := conn.Query(ctxsql, "select count(*) fromtraffic where playedon > '"+newdate+"'")
+	if rowserrc != nil {
+		log.Println("TrafficClear rowserr", rowserrc)
+		conn.Release()
+		ctxsqlcan()
+		return ""
+	}
+	for rc.Next() {
+		err := rc.Scan(&count)
+		if err != nil {
+			log.Println("TrafficCount rowserr playedon", err)
+		}
+
+	}
+	_, rowserr := conn.Query(ctxsql, "delete  traffic where playedon > '"+newdate+"'")
+	if rowserr != nil {
+		log.Println("TrafficGetAlbum rowserr", rowserr)
+		conn.Release()
+		ctxsqlcan()
+		return ""
+	}
+
+	conn.Release()
+	ctxsqlcan()
+	return strconv.Itoa(count)
+
+}
+
 func TrafficGetAlbum(hours string) string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, connerr := SQL.Pool.Acquire(ctxsql)
@@ -2093,7 +2133,7 @@ func TrafficGetCountByDate(tc, td string) int {
 	if rowserr != nil {
 		log.Println("TrafficFetCountByDate row error", rowserr)
 	}
-	log.Println("TrafficGetCountByDate start", tc, td, count)
+	//log.Println("TrafficGetCountByDate start", tc, td, count)
 	conn.Release()
 	ctxsqlcan()
 	//log.Println("getrow ", count)
