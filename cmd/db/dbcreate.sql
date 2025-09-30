@@ -404,7 +404,7 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','10','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','11','DJPM-142-PLAYONCE',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','12','RECURRENTS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','13','IMAGINGID',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','14','ADS',4);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','15','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','16','IMAGINGID',1);
@@ -430,7 +430,7 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','01','STATIONID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','02','PROMOS',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','03','CURRENTS',2);
+insert into schedule (days,hours,position,categor	r.ies,spinstoplay) values('MON', '16','03','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','04','DJPM-161-PLAYONCE',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','05','ADS',4);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','06','RECURRENTS',2);
@@ -621,7 +621,7 @@ create table inventory (
 );
 create index inventorybyartist on inventory (artist,song);
 create index inventorybycategorysong on inventory (category,song);
-create index inventoryplayget on inventory (category,lastplayed,rndorder);
+create index inventoryplayget on inventory (categ	r.ory,lastplayed,rndorder);
 create table traffic (
   rowid serial primary key,
   category varchar(64) not null,
