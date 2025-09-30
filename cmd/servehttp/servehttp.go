@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/nh3000-org/broadcast/config"
 	"golang.org/x/crypto/bcrypt"
@@ -601,12 +602,18 @@ func main() {
 	setupRoutes()
 }
 func checkauthorization(authtoken string) bool {
-	st := config.Decrypt(authtoken, MySecret)[0:19]
+	frombrowser, sterr := time.Parse(time.DateTime, config.Decrypt(authtoken, MySecret)[0:19])
+	if sterr != nil {
+		log.Println("checkauthorization st ", sterr)
+	}
+	now, err2 := time.Parse(time.DateTime, config.GetDateTime("0h")[0:19])
+	if err2 != nil {
+		log.Println("checkauthorization oldest ", err2)
+	}
+	dif := now.Sub(frombrowser)
+	log.Println("checkauthorization token  ", "frombrowser", frombrowser, "now", now)
 
-	expires := config.GetDateTime("1h")[0:19]
-	log.Println("checkauthorization token  ", "expires", expires, "token", st)
-
-	if st > expires {
+	if dif.Minutes() > 15 {
 		log.Println("checkauthorization token expired ")
 		return false
 	}
@@ -751,6 +758,7 @@ func ibuilder(authtoken string) string {
 	return s.String()
 }
 func ilogon() string {
+	log.Println("ilogon")
 	var s bytes.Buffer
 	s.WriteString("<!DOCTYPE html>\n")
 	s.WriteString("<html lang=\"en\">\n")
