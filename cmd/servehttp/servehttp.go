@@ -662,6 +662,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	// check aut token expiry
 	authtoken = config.GetDateTime("0h")[0:19] + "-" + r.RemoteAddr + "-" + uuid.New().String()
 	tobrowser := config.Encrypt(authtoken, MySecret)
+
 	w.Write([]byte(ibuilder(tobrowser)))
 }
 
