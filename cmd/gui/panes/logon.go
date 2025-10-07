@@ -330,8 +330,6 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 			config.NatsAlias = alias.Text
 
-			config.WebPassword = webpassword.Text
-
 			config.WebAddress = webaddress.Text
 
 			config.NatsServer = server.Text

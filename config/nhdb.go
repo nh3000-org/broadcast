@@ -635,13 +635,28 @@ type InventoryStruct struct {
 
 var InventoryStore = make(map[int]InventoryStruct)
 var SelectedInventory int
+var igeterr error
+var igetrowserr error
+var igetrows pgx.Rows
 
 func InventoryGet() {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
+	_, igeterr = conn.Conn().Prepare(context.Background(), "iget", "select * from inventory  order by category,artist,song")
+	if igeterr != nil {
+		log.Println("[PID] nextgetconn", igeterr)
+		Send("messages."+"StationId", "[IGET] Prepare Next Get TOH "+igeterr.Error(), "onair")
+	}
+
+	igetrows, igetrowserr = conn.Query(context.Background(), "iget")
+	if igetrowserr != nil {
+		Send("messages."+"InventoryGet", "[IGET] Prepare Inventory Read PID "+igetrowserr.Error(), "onair")
+		log.Fatal("Error reading inventory IGET", igetrowserr)
+	}
+
 	InventoryStore = make(map[int]InventoryStruct)
-	rows, rowserr := conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
+	//rows, rowserr := conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
 	var row int         // rowid
 	var category string // category
 	var artist string   // artist
@@ -661,8 +676,8 @@ func InventoryGet() {
 	var spinsweek int     // spins weekly at week reset
 	var spinstotal int    // total spins
 	var sourcelink string // link to source
-	for rows.Next() {
-		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins,
+	for igetrows.Next() {
+		err := igetrows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins,
 			&adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
 		if err != nil {
 			log.Println("InventoryGet Get Inventory row:", err)
@@ -691,9 +706,7 @@ func InventoryGet() {
 		InventoryStore[len(InventoryStore)] = ds
 
 	}
-	if rowserr != nil {
-		log.Println("InventoryGet Get Inventory row error", rowserr)
-	}
+
 	conn.Release()
 	ctxsqlcan()
 
@@ -918,6 +931,7 @@ func InventoryAdd(category string, artist string, song string, album string, son
 	iactxsql, iactxsqlcan = context.WithTimeout(context.Background(), 1*time.Minute)
 
 	iadconn, _ = SQL.Pool.Acquire(iactxsql)
+
 	iadrows, iadrowserr = iadconn.Query(iactxsql, "select count(*) from inventory  where (category = $1 and artist = $2 and song = $3 and album = $4)", category, artist, song, album)
 
 	if iadrowserr != nil {
