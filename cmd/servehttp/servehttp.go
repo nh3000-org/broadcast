@@ -243,13 +243,6 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if authtoken != r.FormValue("Authorization") {
-		log.Println("File Upload Authorization", authtoken, "form", r.FormValue("Authorization"))
-		w.Write([]byte(ilogon()))
-		isbusy = false
-		return
-	}
-
 	file, handler, reqerr := r.FormFile("stub")
 	if reqerr != nil {
 		w.Write([]byte("File Upload Error r.FormFile"))
@@ -484,12 +477,6 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	if authtoken != r.FormValue("Authorization") {
-		log.Println("File Download Authorization")
-		isbusy = false
-		w.Write([]byte(ilogon()))
-		return
-	}
 	importHome := "/opt/radio/blankstub"
 	log.Println("Download File: ", importHome)
 	config.CategoriesWriteStub(false)
@@ -698,7 +685,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	     <tr style=\"background-color: #44778f77;\">\n")
 	s.WriteString("           <form  action=\"" + config.WebAddress + "/download\" method=\"post\">\n")
 	s.WriteString("              <td colspan=\"1\"><input type=\"submit\" value=\"Download stub.zip\" style=\"color: #06660377;\" /></td>\n")
-	s.WriteString("              <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+	s.WriteString("              <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 	s.WriteString("	             <td colspan=\"6\">Download a stub file.<br>The file is in zip format. Use this to build content</td>\n")
 	s.WriteString("           </form>\n")
 	s.WriteString("	     </tr>\n")
