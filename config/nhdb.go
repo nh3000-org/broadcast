@@ -2032,9 +2032,9 @@ func TrafficClear() string {
 		return ""
 	}
 
-	newdate := GetDateTime("8760h")[0:19]
+	newdate := GetDateTime("-8760h")[0:19]
 	count := 0
-	rc, rowserrc := conn.Query(ctxsql, "select count(*) fromtraffic where playedon > '"+newdate+"'")
+	rc, rowserrc := conn.Query(ctxsql, "select count(*) from traffic where playedon < '"+newdate+"'")
 	if rowserrc != nil {
 		log.Println("TrafficClear rowserr", rowserrc)
 		conn.Release()
@@ -2046,16 +2046,17 @@ func TrafficClear() string {
 		if err != nil {
 			log.Println("TrafficCount rowserr playedon", err)
 		}
+		log.Println("TrafficClear record count", count)
 
 	}
-	_, rowserr := conn.Query(ctxsql, "delete  traffic where playedon > '"+newdate+"'")
+	_, rowserr := conn.Query(ctxsql, "delete  from traffic where playedon < '"+newdate+"'")
 	if rowserr != nil {
 		log.Println("TrafficGetAlbum rowserr", rowserr)
 		conn.Release()
 		ctxsqlcan()
 		return ""
 	}
-
+	log.Println("TrafficClear records deleted", count)
 	conn.Release()
 	ctxsqlcan()
 	return strconv.Itoa(count)
