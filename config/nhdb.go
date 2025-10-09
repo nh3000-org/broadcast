@@ -711,83 +711,38 @@ func InventoryGet() {
 	ctxsqlcan()
 
 }
-func InventoryGetC() {
-	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
-	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	InventoryStore = make(map[int]InventoryStruct)
-	rows, rowserr := conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
-	var row int         // rowid
-	var category string // category
-	var artist string   // artist
-	var song string     // song
-	var album string    // Album
-	var songlength int  // song length
-	var rndorder string // assigned weekly
-	var startson string
-	var expireson string
-	var adstimeslots []string
-	var adsdayslots []string
-	var adsmaxspins int
-	var adsmaxspinsperhour int
-	var lastplayed string
-	var dateadded string
-	var spinstoday int    // cleared daily at day reset
-	var spinsweek int     // spins weekly at week reset
-	var spinstotal int    // total spins
-	var sourcelink string // link to source
-	for rows.Next() {
-		err := rows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins,
-			&adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
-		if err != nil {
-			log.Println("InventoryGet Get Inventory row:", err)
-		}
-		ds := InventoryStruct{}
-		ds.Row = row
-		ds.Category = category
-		ds.Artist = artist
-		ds.Song = song
-		ds.Album = album
-		ds.Songlength = songlength
-		ds.Rndorder = rndorder
-		ds.Song = song
-		ds.Startson = startson
-		ds.Expireson = expireson
-		ds.Lastplayed = lastplayed
-		ds.Dateadded = dateadded
-		ds.AdsTimeSlots = adstimeslots
-		ds.AdsDaySlots = adsdayslots
-		ds.AdsMaxSpins = adsmaxspins
-		ds.AdsMaxSpinsPerHour = adsmaxspinsperhour
-		ds.Spinstoday = spinstoday
-		ds.Spinsweek = spinsweek
-		ds.Spinstotal = spinstotal
-		ds.Sourcelink = sourcelink
-		InventoryStore[len(InventoryStore)] = ds
+var igetcounterr error
+var igetcountrowserr error
+var igetcountrows pgx.Rows
 
-	}
-	if rowserr != nil {
-		log.Println("InventoryGet Get Inventory row error", rowserr)
-	}
-	conn.Release()
-	ctxsqlcan()
-
-}
 func InventoryGetCount(cat string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	rows, rowserr := conn.Query(ctxsql, "select count(*) from inventory  where category = '"+cat+"'")
+	_, igetcounterr = conn.Conn().Prepare(context.Background(), "igetcount", "select count(*) from inventory  where category = $1")
+	if igeterr != nil {
+		log.Println("[PID] nextgetconn", igeterr)
+		Send("messages."+"InventoryGetCount", "[IGETCOUNT] Prepare Get Count "+igetcounterr.Error(), "http")
+	}
+
+	igetcountrows, igetcountrowserr = conn.Query(context.Background(), "igetcount", cat)
+	if igetcountrowserr != nil {
+		Send("messages."+"InventoryGetCount", "[IGETCOUNT] Prepare Inventory Read PID "+igetcountrowserr.Error(), "http")
+		log.Fatal("Error reading inventory IGETGOUNT", igetcountrowserr)
+	}
+
+	//igetcountrows, igetcountrowserr = conn.Query(ctxsql, "select count(*) from inventory  where category = '"+cat+"'")
 	count := 0
-	for rows.Next() {
-		err := rows.Scan(&count)
+	for igetcountrows.Next() {
+		err := igetcountrows.Scan(&count)
 		if err != nil {
 			log.Println("InventoryGetCount  row:", err)
 		}
 
 	}
-	if rowserr != nil {
-		log.Println("InventoryGetCount row error", rowserr)
+	if igetcountrowserr != nil {
+		log.Println("InventoryGetCount row error", igetcountrowserr)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -797,7 +752,7 @@ func InventoryUpdateRNDORDER() {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	InventoryStore = make(map[int]InventoryStruct)
+	//InventoryStore = make(map[int]InventoryStruct)
 	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory")
 	var row int // rowid
 
@@ -835,15 +790,32 @@ func InventoryUpdateRNDORDER() {
 	ctxsqlcan()
 
 }
+
+var igetrowerr error
+var igetrowrowserr error
+var igetrowrows pgx.Rows
+
 func InventoryGetRow(category, artist, song, album string) string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where category = '"+category+"'and artist='"+artist+"' and song='"+song+"' and album='"+album+"'")
+	_, igetrowerr = conn.Conn().Prepare(context.Background(), "igetrow", "select rowid from inventory  where category = '"+category+"'and artist='"+artist+"' and song='"+song+"' and album='"+album+"'")
+	if igetrowerr != nil {
+		log.Println("[PID] nextgetconn", igeterr)
+		Send("messages."+"InventoryGetCount", "[IGETROW] Prepare Get Count "+igetrowerr.Error(), "http")
+	}
+
+	igetrowrows, igetrowrowserr = conn.Query(context.Background(), "igetrow", category, artist, song, album)
+	if igetcountrowserr != nil {
+		Send("messages."+"InventoryGetCount", "[IGETROW] Prepare Inventory Read PID "+igetrowrowserr.Error(), "http")
+		log.Fatal("Error reading inventory IGETROW", igetrowrowserr)
+	}
+
+	//	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where category = '"+category+"'and artist='"+artist+"' and song='"+song+"' and album='"+album+"'")
 	var row int // rowid
 
-	for rows.Next() {
-		err := rows.Scan(&row)
+	for igetrowrows.Next() {
+		err := igetrowrows.Scan(&row)
 		if err != nil {
 			log.Println("InventoryGetRow Inventory row", err)
 			conn.Release()
@@ -852,8 +824,8 @@ func InventoryGetRow(category, artist, song, album string) string {
 		}
 
 	}
-	if rowserr != nil {
-		log.Println("InventoryGet Get Inventory row error", rowserr)
+	if igetrowrowserr != nil {
+		log.Println("InventoryGet Get Row Inventory row error", igetrowrowserr)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -861,26 +833,43 @@ func InventoryGetRow(category, artist, song, album string) string {
 	return strconv.Itoa(row)
 
 }
+
+var igetiderr error
+var igetrowiderr error
+var igetrowid pgx.Rows
+
 func InventoryGetRowByRow(rowin string) string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where rowid = '"+rowin+"'")
+	_, igetiderr = conn.Conn().Prepare(context.Background(), "igetrowid", "select rowid from inventory  where rowid = '"+rowin+"'")
+	if igetiderr != nil {
+		log.Println("[PID] nextgetconn", igetiderr)
+		Send("messages."+"InventoryGetCount", "[IGETROW] Prepare Get Count "+igetiderr.Error(), "http")
+	}
+
+	igetrowid, igetrowiderr = conn.Query(context.Background(), "igetrowid", rowin)
+	if igetrowiderr != nil {
+		Send("messages."+"InventoryGetByID", "[IGETROW] Prepare Inventory Read PID "+igetrowiderr.Error(), "http")
+		log.Fatal("Error reading inventory IGETID", igetrowiderr)
+	}
+
+	//rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where rowid = '"+rowin+"'")
 	var row int // rowid
 
-	for rows.Next() {
-		err := rows.Scan(&row)
+	for igetrowid.Next() {
+		err := igetrowid.Scan(&row)
 		if err != nil {
-			log.Println("InventoryGetRow Inventory row", err)
+			log.Println("InventoryGetID Inventory row", err)
 			conn.Release()
 			ctxsqlcan()
 			return ""
 		}
 
 	}
-	if rowserr != nil {
+	/* 	if rowserr != nil {
 		log.Println("InventoryGet Get Inventory row error", rowserr)
-	}
+	} */
 	conn.Release()
 	ctxsqlcan()
 	//log.Println("getrow ", row)
