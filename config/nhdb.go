@@ -842,7 +842,7 @@ func InventoryGetRowByRow(rowin string) string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	_, igetiderr = conn.Conn().Prepare(context.Background(), "igetrowid", "select rowid from inventory  where rowid = '"+rowin+"'")
+	_, igetiderr = conn.Conn().Prepare(context.Background(), "igetrowid", "select rowid from inventory  where rowid = $1")
 	if igetiderr != nil {
 		log.Println("[PID] nextgetconn", igetiderr)
 		Send("messages."+"InventoryGetCount", "[IGETROW] Prepare Get Count "+igetiderr.Error(), "http")

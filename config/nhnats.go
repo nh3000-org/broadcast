@@ -646,10 +646,25 @@ func ReceiveMESSAGE() {
 	}
 }
 
+type OA struct {
+	Artist              string
+	Album               string
+	Song                string
+	Length              string
+	SchedRow            string
+	SchedDay            string
+	SchedHour           string
+	SchedPosition       string
+	SchedCategory       string
+	SchedSpinsToPlay    string
+	SchedSpinsLefToPlay string
+}
+
+var OAJSON = OA{}
+
 func ReceiveONAIRMP3() {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
-	defer cancel()
+	ctx := context.Background()
 
 	mp3msg, mp3err := NATS.OnAirmp3.Watch(ctx, "OnAirmp3")
 	if mp3err != nil {
@@ -660,11 +675,19 @@ func ReceiveONAIRMP3() {
 
 		kve := <-mp3msg.Updates()
 		if kve != nil {
+			errum := json.Unmarshal(kve.Value(), &OAJSON)
+			if errum != nil {
+				log.Println("ReceiveONAIRMP3", errum)
+				Send("messages."+NatsAlias, "Receive On Air mp3 ", errum.Error())
+
+			}
 			runtime.GC()
 			runtime.ReadMemStats(&memoryStats)
+
 			if FyneMainWin != nil {
-				FyneMainWin.SetTitle("On Air MP3 " + string(kve.Value()) + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+				FyneMainWin.SetTitle("On Air MP3 " + OAJSON.Artist + " - " + OAJSON.Song + " - " + OAJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 			}
+
 		}
 	}
 }
