@@ -1,4 +1,4 @@
-package dj
+package main
 
 // Copyright 2012-2023 The NH3000 Authors
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +13,14 @@ package dj
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"runtime"
+	"strconv"
 
 	"strings"
 
@@ -24,7 +28,8 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
-	"github.com/nh3000-org/broadcast/cmd/gui/panes"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/nh3000-org/broadcast/config"
 
 	"fyne.io/fyne/v2/widget"
@@ -32,22 +37,31 @@ import (
 
 var TopWindow fyne.Window
 
-type Pane struct {
-	Title, Intro string
-	Icon         fyne.Resource
-	View         func(w fyne.Window) fyne.CanvasObject
-	SupportWeb   bool
+type DJ struct {
+	Artist              string
+	Album               string
+	Song                string
+	Length              string
+	SchedRow            string
+	SchedDay            string
+	SchedHour           string
+	SchedPosition       string
+	SchedCategory       string
+	SchedSpinsToPlay    string
+	SchedSpinsLefToPlay string
 }
 
-//var Panes = map[string]Pane{}
-//var PanesIndex = map[string][]string{}
-
+var DJJSON = DJ{}
+var memoryStats runtime.MemStats
+var ctxmain context.Context
+var ctxmaincan context.CancelFunc
+var w fyne.Window
 func main() {
 
 	var a = app.NewWithID("org.nh3000.nh3000")
 	config.FyneApp = a
-	var w = a.NewWindow("NH3000")
-	config.FyneMainWin = w
+	w = a.NewWindow("NH3000")
+
 	config.PreferedLanguage = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		config.PreferedLanguage = "eng"
@@ -69,39 +83,138 @@ func main() {
 
 	TopWindow = w
 	w.SetMaster()
+	logLifecycle()
 	config.NewPGSQL()
 	intro := widget.NewLabel(config.GetLangs("mn-intro-1") + "\n" + "nats.io" + config.GetLangs("mn-intro-2"))
 	intro.Wrapping = fyne.TextWrapWord
-	var Panes = map[string]Pane{
-		"logon":      {config.GetLangs("ls-title"), "", theme.LoginIcon(), panes.LogonScreen, true},
-		"messages":   {config.GetLangs("ms-title"), "", theme.MailSendIcon(), panes.MessagesScreen, true},
-		"reports":    {config.GetLangs("rpts"), "", theme.ListIcon(), panes.ReportsScreen, true},
-		"inventory":  {config.GetLangs("ra-inv"), "", theme.ListIcon(), panes.InventoryScreen, true},
-		"schedule":   {config.GetLangs("ra-sched"), "", theme.ListIcon(), panes.ScheduleScreen, true},
-		"categories": {config.GetLangs("ra-cats"), "", theme.ListIcon(), panes.CategoriesScreen, true},
-		"hours":      {config.GetLangs("ra-hours"), "", theme.ListIcon(), panes.HoursScreen, true},
-		"days":       {config.GetLangs("ra-days"), "", theme.ListIcon(), panes.DaysScreen, true},
-		"settings":   {config.GetLangs("ss-title"), "", theme.SettingsIcon(), panes.SettingsScreen, true},
-		"password":   {config.GetLangs("ps-title"), "", theme.DocumentIcon(), panes.PasswordScreen, true},
-		"encdec":     {config.GetLangs("es-title"), "", theme.CheckButtonIcon(), panes.EncdecScreen, true},
+
+	natserr := config.NewNatsJS()
+	if natserr != nil {
+		log.Fatal("Could not connect to NATS ")
 	}
 
-	config.FyneMainWin.SetContent(container.NewAppTabs(
-		container.NewTabItemWithIcon(Panes["logon"].Title, Panes["logon"].Icon, panes.LogonScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["messages"].Title, Panes["messages"].Icon, panes.MessagesScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["reports"].Title, Panes["reports"].Icon, panes.ReportsScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["inventory"].Title, Panes["inventory"].Icon, panes.InventoryScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["schedule"].Title, Panes["schedule"].Icon, panes.ScheduleScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["categories"].Title, Panes["categories"].Icon, panes.CategoriesScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["hours"].Title, Panes["hours"].Icon, panes.HoursScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["days"].Title, Panes["days"].Icon, panes.DaysScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["encdec"].Title, Panes["encdec"].Icon, panes.EncdecScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["settings"].Title, Panes["settings"].Icon, panes.SettingsScreen(config.FyneMainWin)),
-		container.NewTabItemWithIcon(Panes["password"].Title, Panes["password"].Icon, panes.PasswordScreen(config.FyneMainWin)),
-	))
+	password := widget.NewPasswordEntry()
+	password.SetPlaceHolder(config.GetLangs("ls-password"))
+	TPbutton := widget.NewButtonWithIcon(config.GetLangs("ls-trypass"), theme.LoginIcon(), func() {
 
-	config.FyneMainWin.Resize(fyne.NewSize(640, 480))
-	config.FyneMainWin.ShowAndRun()
+		var iserrors = false
+		ph, _ := config.LoadHashWithDefault("config.hash", "123456")
+
+		//log.Println("pw ", MyPrefs.Password)
+		pwh, err := bcrypt.GenerateFromPassword([]byte(password.Text), bcrypt.DefaultCost)
+		config.PasswordHash = string(pwh)
+		if err != nil {
+			iserrors = true
+
+			log.Println("pw cant gen hash")
+		}
+
+		// Comparing the password with the hash
+		errpw := bcrypt.CompareHashAndPassword([]byte(ph), []byte(password.Text))
+		if errpw != nil {
+			iserrors = true
+
+			log.Println("pw bad hash ", errpw, "ph", ph, "pt", password.Text)
+		}
+		if !iserrors {
+			log.Println("dj youre in")
+			readPreferences()
+			config.SetupNATS()
+		}
+
+	})
+	vertbox := container.NewVBox(
+
+		widget.NewLabelWithStyle(config.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		password,
+		TPbutton,
+
+		widget.NewLabel(""),
+		//		themes,
+
+	)
+
+	w.SetContent(vertbox)
+
+	w.Resize(fyne.NewSize(640, 480))
+	w.ShowAndRun()
+	ctxmain, ctxmaincan = context.WithCancel(context.Background())
+
+	mp3msg, mp3err := config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
+	if mp3err != nil {
+		log.Println("ReceiveONAIRMP3", mp3err)
+		config.Send("messages."+"DJ", "Receive On Air mp3 ", "DJ")
+	}
+	for {
+		runtime.GC()
+		runtime.ReadMemStats(&memoryStats)
+		kve := <-mp3msg.Updates()
+		if kve != nil {
+			errum := json.Unmarshal(kve.Value(), &DJJSON)
+			if errum != nil {
+				log.Println("DJ ReceiveONAIRMP3", errum)
+				config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
+
+			}
+			runtime.GC()
+			runtime.ReadMemStats(&memoryStats)
+
+			if w != nil {
+				w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+			}
+
+		}
+	}
+
 }
 
+var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
+const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
+
+func readPreferences() {
+	// read config preferences.json
+	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	if readerr != nil {
+		log.Println("ERROR Preferences readerr ", readerr)
+	}
+	// parse json
+	var cfg map[string]any
+	errunmarshal := json.Unmarshal(jsondata, &cfg)
+	if errunmarshal != nil {
+		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
+	}
+
+	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+
+	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
+	//log.Println(config.DBaddress)
+
+	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
+
+	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
+	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
+	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
+	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
+
+	//log.Println("CONFIG AdsMaxMinutes", config.AdsMaxMinutes)
+	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
+	config.NewNatsJS()
+	config.NewPGSQL()
+}
+func logLifecycle() {
+
+	config.FyneApp.Lifecycle().SetOnStopped(func() {
+		if config.LoggedOn {
+			//config.Send("messages."+config.NatsAlias, config.GetLangs("ls-dis"), config.NatsAlias)
+			ctxmaincan()
+
+			//config.DevCancel = true
+
+			//config.DeleteConsumer("MESSAGES", "messages")
+			//config.DeleteConsumer("DEVICES", "devices")
+		}
+	})
+
+}
