@@ -17,19 +17,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	tc "image/color"
 	"log"
 	"os"
 	"runtime"
 	"strconv"
-
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/nh3000-org/broadcast/config"
 
 	"fyne.io/fyne/v2/widget"
@@ -55,13 +59,15 @@ var DJJSON = DJ{}
 var memoryStats runtime.MemStats
 var ctxmain context.Context
 var ctxmaincan context.CancelFunc
+var a fyne.App
 var w fyne.Window
+var onairmp3 jetstream.KeyValue
+
 func main() {
 
-	var a = app.NewWithID("org.nh3000.nh3000")
-	config.FyneApp = a
+	a = app.NewWithID("org.nh3000.nh3000")
 	w = a.NewWindow("NH3000")
-
+	config.FyneApp = a
 	config.PreferedLanguage = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
 		config.PreferedLanguage = "eng"
@@ -72,21 +78,18 @@ func main() {
 	if strings.HasPrefix(os.Getenv("LANG"), "hn") {
 		config.PreferedLanguage = "hin"
 	}
-	config.PreferedLanguage = config.Decrypt(config.FyneApp.Preferences().StringWithFallback("PreferedLanguage", config.Encrypt(config.PreferedLanguage, config.MySecret)), config.MySecret)
+	//config.PreferedLanguage = config.Decrypt(config.FyneApp.Preferences().StringWithFallback("PreferedLanguage", config.Encrypt(config.PreferedLanguage, config.MySecret)), config.MySecret)
 	MyLogo, iconerr := fyne.LoadResourceFromPath("Icon.png")
 	if iconerr != nil {
 		log.Println("Icon.png error ", iconerr.Error())
 	}
 	config.Selected = config.Dark
-	config.FyneApp.Settings().SetTheme(config.MyTheme{})
-	config.FyneApp.SetIcon(MyLogo)
+	a.Settings().SetTheme(config.MyTheme{})
+	a.SetIcon(MyLogo)
 
 	TopWindow = w
 	w.SetMaster()
 	logLifecycle()
-	config.NewPGSQL()
-	intro := widget.NewLabel(config.GetLangs("mn-intro-1") + "\n" + "nats.io" + config.GetLangs("mn-intro-2"))
-	intro.Wrapping = fyne.TextWrapWord
 
 	natserr := config.NewNatsJS()
 	if natserr != nil {
@@ -117,15 +120,45 @@ func main() {
 			log.Println("pw bad hash ", errpw, "ph", ph, "pt", password.Text)
 		}
 		if !iserrors {
-			log.Println("dj youre in")
 			readPreferences()
-			config.SetupNATS()
+			config.NewNatsJS()
+			config.NewPGSQL()
+			ctxmain, ctxmaincan = context.WithCancel(context.Background())
+			mp3msg, mp3err := config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
+
+			if mp3err != nil {
+				log.Println("ReceiveONAIRMP3", mp3err)
+				config.Send("messages."+"DJ", "Receive On Air mp3 ", "DJ")
+			}
+			//log.Println("ReceiveONAIRMP3 waiting")
+
+			for {
+				runtime.GC()
+				runtime.ReadMemStats(&memoryStats)
+				kve := <-mp3msg.Updates()
+				//log.Println("ReceiveONAIRMP3", kve)
+				if kve != nil {
+					errum := json.Unmarshal(kve.Value(), &DJJSON)
+					if errum != nil {
+						log.Println("DJ ReceiveONAIRMP3", errum)
+						config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
+
+					}
+
+					if w != nil {
+						w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+					}
+					drawgGui(DJJSON)
+
+				}
+			}
+
 		}
 
 	})
 	vertbox := container.NewVBox(
 
-		widget.NewLabelWithStyle(config.GetLangs("ls-clogon"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("DJ Console", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		password,
 		TPbutton,
 
@@ -138,33 +171,72 @@ func main() {
 
 	w.Resize(fyne.NewSize(640, 480))
 	w.ShowAndRun()
-	ctxmain, ctxmaincan = context.WithCancel(context.Background())
 
-	mp3msg, mp3err := config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
-	if mp3err != nil {
-		log.Println("ReceiveONAIRMP3", mp3err)
-		config.Send("messages."+"DJ", "Receive On Air mp3 ", "DJ")
-	}
-	for {
-		runtime.GC()
-		runtime.ReadMemStats(&memoryStats)
-		kve := <-mp3msg.Updates()
-		if kve != nil {
-			errum := json.Unmarshal(kve.Value(), &DJJSON)
-			if errum != nil {
-				log.Println("DJ ReceiveONAIRMP3", errum)
-				config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
-
-			}
-			runtime.GC()
-			runtime.ReadMemStats(&memoryStats)
-
-			if w != nil {
-				w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
-			}
-
+}
+func drawgGui(oa DJ) {
+	progress := widget.NewProgressBar()
+	progress.Min = 0
+	m, _ := strconv.ParseFloat(oa.Length, 64)
+	progress.Max = m
+	green := tc.RGBA{0, 255, 0, 255}
+	//blue := tc.RGBA{0, 0, 255, 255}
+	go func() {
+		for i := 1.0; i <= m; i++ {
+			time.Sleep(time.Second)
+			progress.SetValue(i)
 		}
-	}
+	}()
+	artisth := canvas.NewText("Artist", tc.White)
+	songh := canvas.NewText("Song", tc.White)
+	albumh := canvas.NewText("Album", tc.White)
+	lengthh := canvas.NewText("Length", tc.White)
+
+	artist := canvas.NewText(oa.Artist, green)
+	song := canvas.NewText(oa.Song, green)
+	album := canvas.NewText(oa.Album, green)
+	length := canvas.NewText(oa.Length, green)
+
+	asalgridhead := container.New(layout.NewGridLayout(4), artisth, songh, albumh, lengthh)
+	asalgrid := container.New(layout.NewGridLayout(4), artist, song, album, length)
+
+	categoryh := canvas.NewText("Category", tc.White)
+	dayh := canvas.NewText("Day", tc.White)
+	hourh := canvas.NewText("Hour", tc.White)
+	positionh := canvas.NewText("Position", tc.White)
+
+	category := canvas.NewText(oa.SchedCategory, green)
+	day := canvas.NewText(oa.SchedDay, green)
+	hour := canvas.NewText(oa.SchedHour, green)
+	position := canvas.NewText(oa.SchedPosition, green)
+	cdhpgridhead := container.New(layout.NewGridLayout(4), categoryh, dayh, hourh, positionh)
+	cdhpgrid := container.New(layout.NewGridLayout(4), category, day, hour, position)
+
+	stph := canvas.NewText("Spins To Play", tc.White)
+	sltph := canvas.NewText("Spins Left To Play", tc.White)
+	stp := canvas.NewText(oa.SchedSpinsToPlay, green)
+	sltp := canvas.NewText(oa.SchedSpinsLefToPlay, green)
+	ssgridhead := container.New(layout.NewGridLayout(2), stph, sltph)
+	ssgrid := container.New(layout.NewGridLayout(2), stp, sltp)
+	comminguph := canvas.NewText("Comming Up", tc.White)
+	commingup := container.New(layout.NewGridLayout(1), comminguph)
+	vertbox := container.NewVBox(
+		widget.NewLabel(" "),
+		asalgridhead,
+		asalgrid,
+		widget.NewLabel(" "),
+		cdhpgridhead,
+		cdhpgrid,
+		widget.NewLabel(" "),
+		ssgridhead,
+		ssgrid,
+		widget.NewLabel(" "),
+		container.NewVBox(progress),
+		widget.NewLabel(" "),
+		comminguph,
+		commingup,
+	)
+
+	w.SetContent(vertbox)
 
 }
 
@@ -205,7 +277,7 @@ func readPreferences() {
 }
 func logLifecycle() {
 
-	config.FyneApp.Lifecycle().SetOnStopped(func() {
+	a.Lifecycle().SetOnStopped(func() {
 		if config.LoggedOn {
 			//config.Send("messages."+config.NatsAlias, config.GetLangs("ls-dis"), config.NatsAlias)
 			ctxmaincan()
