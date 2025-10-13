@@ -174,8 +174,6 @@ func main() {
 
 }
 
-var s = 0
-
 func drawgGui(oa DJ) {
 	progress := widget.NewProgressBar()
 	progress.Min = 0
@@ -236,6 +234,9 @@ func drawgGui(oa DJ) {
 	custph := canvas.NewText("Next Spins", tc.White)
 	cugridhead := container.New(layout.NewGridLayout(5), cucath, cudayh, cuhourh, cuposh, custph)
 
+	if oa.SchedPosition == "0" || oa.SchedPosition == "00" {
+		oa.SchedPosition = "99"
+	}
 	config.ScheduleGetPlan(oa.SchedDay, oa.SchedHour, oa.SchedPosition)
 
 	cucat1 := canvas.NewText(config.SchedulePlan[0].Category, green)
