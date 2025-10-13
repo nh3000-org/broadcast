@@ -510,6 +510,61 @@ func ScheduleGet() {
 	ctxsqlcan()
 
 }
+
+var SchedulePlan = make(map[int]ScheduleStruct)
+var sgeterr error
+var sgetrows pgx.Rows
+var sgetrowserr error
+
+func ScheduleGetPlan(day, hour, pos string) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	_, sgeterr = conn.Conn().Prepare(context.Background(), "sget", "select * from schedule where days = $1 and hours = $2 and position > $3  order by days,hours,position limit 3")
+	if sgeterr != nil {
+		log.Println("[SGP] ngetplanconn", sgeterr)
+		Send("messages."+"StationId", "[SGET] Prepare Next Get TOH "+sgeterr.Error(), "onair")
+	}
+
+	sgetrows, sgetrowserr = conn.Query(context.Background(), "sget", day, hour, pos)
+	if sgetrowserr != nil {
+		Send("messages."+"InventoryGet", "[SGET] Prepare Schedule Read PID "+sgetrowserr.Error(), "onair")
+		log.Fatal("Error reading schedule SGET", igetrowserr)
+	}
+
+	SchedulePlan = make(map[int]ScheduleStruct)
+	//sgetrows, sgetrowserr := conn.Query(ctxsql, "select * from schedule order by days,hours,position where day = ")
+	var rowid int
+	var days string
+	var hours string
+	var position string
+	var categories string
+	var spinstoplay int
+	for sgetrows.Next() {
+
+		err := sgetrows.Scan(&rowid, &days, &hours, &position, &categories, &spinstoplay)
+		if err != nil {
+			log.Println("ScheduleGet Get Schedule row", err)
+		}
+		ds := ScheduleStruct{}
+		ds.Row = rowid
+		ds.Days = days
+		ds.Hours = hours
+		ds.Position = position
+		ds.Category = categories
+		ds.Spinstoplay = spinstoplay
+
+		SchedulePlan[len(SchedulePlan)] = ds
+
+	}
+	if sgetrowserr != nil {
+		log.Println("ScheduleGet Get Schedule row error", sgetrowserr)
+	}
+
+	conn.Release()
+	ctxsqlcan()
+
+}
 func ScheduleDelete(row int) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)

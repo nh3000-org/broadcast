@@ -173,19 +173,30 @@ func main() {
 	w.ShowAndRun()
 
 }
+
+var s = 0
+
 func drawgGui(oa DJ) {
 	progress := widget.NewProgressBar()
 	progress.Min = 0
 	m, _ := strconv.ParseFloat(oa.Length, 64)
 	progress.Max = m
 	green := tc.RGBA{0, 255, 0, 255}
-	//blue := tc.RGBA{0, 0, 255, 255}
+	if strings.HasPrefix("DJ", oa.SchedCategory) {
+		oa.Length = "300"
+	}
+	if strings.HasPrefix("NWS", oa.SchedCategory) {
+		oa.Length = "60"
+	}
+
+	//var pleft  canvas.NewText
 	go func() {
 		for i := 1.0; i <= m; i++ {
 			time.Sleep(time.Second)
 			progress.SetValue(i)
 		}
 	}()
+
 	artisth := canvas.NewText("Artist", tc.White)
 	songh := canvas.NewText("Song", tc.White)
 	albumh := canvas.NewText("Album", tc.White)
@@ -217,8 +228,41 @@ func drawgGui(oa DJ) {
 	sltp := canvas.NewText(oa.SchedSpinsLefToPlay, green)
 	ssgridhead := container.New(layout.NewGridLayout(2), stph, sltph)
 	ssgrid := container.New(layout.NewGridLayout(2), stp, sltp)
-	comminguph := canvas.NewText("Comming Up", tc.White)
-	commingup := container.New(layout.NewGridLayout(1), comminguph)
+
+	cucath := canvas.NewText("Next Category", tc.White)
+	cudayh := canvas.NewText("Day", tc.White)
+	cuhourh := canvas.NewText("Hour", tc.White)
+	cuposh := canvas.NewText("Next Position", tc.White)
+	custph := canvas.NewText("Next Spins", tc.White)
+	cugridhead := container.New(layout.NewGridLayout(5), cucath, cudayh, cuhourh, cuposh, custph)
+
+	config.ScheduleGetPlan(oa.SchedDay, oa.SchedHour, oa.SchedPosition)
+
+	cucat1 := canvas.NewText(config.SchedulePlan[0].Category, green)
+	cuday1 := canvas.NewText(config.SchedulePlan[0].Days, green)
+	cuhour1 := canvas.NewText(config.SchedulePlan[0].Hours, green)
+	cupos1 := canvas.NewText(config.SchedulePlan[0].Position, green)
+	nextspins1 := strconv.Itoa(config.SchedulePlan[0].Spinstoplay)
+	custp1 := canvas.NewText(nextspins1, green)
+	cugrid1 := container.New(layout.NewGridLayout(5), cucat1, cuday1, cuhour1, cupos1, custp1)
+
+	cucat2 := canvas.NewText(config.SchedulePlan[1].Category, green)
+	cuday2 := canvas.NewText(config.SchedulePlan[1].Days, green)
+	cuhour2 := canvas.NewText(config.SchedulePlan[1].Hours, green)
+	cupos2 := canvas.NewText(config.SchedulePlan[1].Position, green)
+	nextspins2 := strconv.Itoa(config.SchedulePlan[1].Spinstoplay)
+	custp2 := canvas.NewText(nextspins2, green)
+	cugrid2 := container.New(layout.NewGridLayout(5), cucat2, cuday2, cuhour2, cupos2, custp2)
+
+	cucat3 := canvas.NewText(config.SchedulePlan[2].Category, green)
+	cuday3 := canvas.NewText(config.SchedulePlan[2].Days, green)
+	cuhour3 := canvas.NewText(config.SchedulePlan[2].Hours, green)
+	cupos3 := canvas.NewText(config.SchedulePlan[2].Position, green)
+	nextspins3 := strconv.Itoa(config.SchedulePlan[2].Spinstoplay)
+	custp3 := canvas.NewText(nextspins3, green)
+	cugrid3 := container.New(layout.NewGridLayout(5), cucat3, cuday3, cuhour3, cupos3, custp3)
+	progresgrid := container.New(layout.NewGridLayout(1), progress)
+
 	vertbox := container.NewVBox(
 		widget.NewLabel(" "),
 		asalgridhead,
@@ -230,10 +274,12 @@ func drawgGui(oa DJ) {
 		ssgridhead,
 		ssgrid,
 		widget.NewLabel(" "),
-		container.NewVBox(progress),
+		progresgrid,
 		widget.NewLabel(" "),
-		comminguph,
-		commingup,
+		cugridhead,
+		cugrid1,
+		cugrid2,
+		cugrid3,
 	)
 
 	w.SetContent(vertbox)
