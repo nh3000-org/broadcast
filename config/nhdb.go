@@ -2054,7 +2054,7 @@ var igettcbaerr error
 func TrafficGetCountByAlbum(date, alb string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, connerr := SQL.Pool.Acquire(ctxsql)
-	log.Println("TrafficGetCountByAlbum", date, alb)
+
 	if connerr != nil {
 		log.Println("TrafficGetCountByAlbum", connerr)
 		ctxsqlcan()
