@@ -1984,6 +1984,10 @@ func PDFInventoryByCategory(cat string) []core.Row {
 	return contentsRow
 }
 
+var igettcerr error
+var igettccountrowserr error
+var igettccountrows pgx.Rows
+
 func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, connerr := SQL.Pool.Acquire(ctxsql)
@@ -1999,15 +2003,28 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 
 	returnpo := make(map[string]int)
 	playedon := ""
-	rc, rowserr := conn.Query(ctxsql, "select playedon from traffic where artist='"+artist+"' and song = '"+song+"' and album = '"+album+"' order by playedon desc")
+
+	_, igettcerr = conn.Conn().Prepare(context.Background(), "igettccount", "select playedon from traffic where artist= $1 and song = $2 and album = $3 order by playedon desc")
+	if igettcerr != nil {
+		log.Println("[IGTC] nextgetconn", igeterr)
+		Send("messages."+"InventoryGetCount", "[IGTC] Prepare Get Count "+igetcounterr.Error(), "http")
+	}
+
+	rows, rowserr := conn.Query(context.Background(), "igettccount", artist, song, album)
+	if igetcountrowserr != nil {
+		Send("messages."+"InventoryGetCount", "[IGTC] Prepare Inventory Read PID "+igetcountrowserr.Error(), "http")
+		log.Fatal("Error reading inventory IGTC", igettccountrowserr)
+	}
+
+	// 	rows, rowserr := conn.Query(ctxsql, "select playedon from traffic where artist='"+artist+"' and song = '"+song+"' and album = '"+album+"' order by playedon desc")
 	if rowserr != nil {
 		log.Println("InventoryGetTrafficCount rowserr", rowserr)
 		conn.Release()
 		ctxsqlcan()
 		return returnpo
 	}
-	for rc.Next() {
-		err := rc.Scan(&playedon)
+	for rows.Next() {
+		err := igettccountrows.Scan(&playedon)
 		if err != nil {
 			log.Println("InventoryGetTrafficCount rowserr playedon", err)
 		}
@@ -2031,29 +2048,40 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 	return returnpo
 
 }
+
+var igettcbaerr error
+
 func TrafficGetCountByAlbum(date, alb string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, connerr := SQL.Pool.Acquire(ctxsql)
-
+	log.Println("TrafficGetCountByAlbum", date, alb)
 	if connerr != nil {
 		log.Println("TrafficGetCountByAlbum", connerr)
 		ctxsqlcan()
 		return 0
 	}
-	//log.Println("InventoryGetTrafficCount", date, alb)
-	//newdate := GetDateTime("-" + hours + "h")
 
 	count := 0
+	_, igettcbaerr = conn.Conn().Prepare(context.Background(), "igettcbacount", "select count(*)  from traffic where playedon like $1 and album = $2")
+	if igettcbaerr != nil {
+		log.Println("[IGTCBA] nextgetconn", igettcbaerr)
+		Send("messages."+"InventoryGetCount", "[IGTCBA] Prepare Get Count "+igettcbaerr.Error(), "http")
+	}
 
-	rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon like '"+date+"%' and album ='"+alb+"'")
+	rows, rowserr := conn.Query(context.Background(), "igettcbacount", "%"+date+"%", alb)
+	if igetcountrowserr != nil {
+		Send("messages."+"InventoryGetCount", "[IGTCBA] Prepare Inventory Read PID "+igetcountrowserr.Error(), "http")
+		log.Fatal("Error reading inventory IGTCBA", igettccountrowserr)
+	}
+	//rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon like '"+date+"%' and album ='"+alb+"'")
 	if rowserr != nil {
 		log.Println("TrafficGetCountByAlbum rowserr", rowserr)
 		conn.Release()
 		ctxsqlcan()
 		return 0
 	}
-	for rc.Next() {
-		err := rc.Scan(&count)
+	for rows.Next() {
+		err := rows.Scan(&count)
 		if err != nil {
 			log.Println("TrafficGetCountByAlbum rowserr playedon", err)
 		}
