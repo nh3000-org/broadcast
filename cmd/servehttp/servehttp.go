@@ -685,7 +685,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	     <tr style=\"background-color: #11d4e277;\">\n")
 	s.WriteString("           <form  action=\"" + config.WebAddress + "/download\" method=\"post\">\n")
 	s.WriteString("              <td colspan=\"1\"><input type=\"submit\" value=\"Download stub.zip\" style=\"color: #4c14e477;\" /></td>\n")
-	s.WriteString("              <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+	s.WriteString("              <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 	s.WriteString("	             <td colspan=\"6\">Download a stub file.<br>The file is in zip format. Use this to build content</td>\n")
 	s.WriteString("           </form>\n")
 	s.WriteString("	     </tr>\n")
