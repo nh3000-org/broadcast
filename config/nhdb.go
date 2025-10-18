@@ -597,6 +597,7 @@ func ScheduleAdd(days string, hours string, position string, categories string, 
 	conn.Release()
 	ctxsqlcan()
 }
+
 func ScheduleCopy(dayfrom, dayto string) {
 	log.Println("ScheduleCopy ", dayfrom, dayto)
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
@@ -642,21 +643,37 @@ func ScheduleCopy(dayfrom, dayto string) {
 
 	ctxsqlcan()
 }
+
+var sgetcounterr error
+var sgetcountrowserr error
+var sgetcountrows pgx.Rows
+
 func ScheduleGetCount(cat string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	rows, rowserr := conn.Query(ctxsql, "select sum(spinstoplay) from schedule  where categories = '"+cat+"'")
+	_, sgetcounterr = conn.Conn().Prepare(context.Background(), "sgetcount", "select sum(spinstoplay) from schedule  where categories = $1")
+	if sgetcounterr != nil {
+		log.Println("[SGETCOUNT] nextgetconn", sgetcounterr)
+		Send("messages."+"InventoryGetCount", "[SGETCOUNT] Prepare Get Count "+sgetcounterr.Error(), "http")
+	}
+
+	sgetcountrows, sgetcountrowserr = conn.Query(context.Background(), "sgetcount", cat)
+	if igetcountrowserr != nil {
+		Send("messages."+"InventoryGetCount", "[SGETCOUNT] Prepare Inventory Read PID "+sgetcountrowserr.Error(), "http")
+		log.Fatal("Error reading schedule SGETGOUNT", sgetcountrowserr)
+	}
+
 	count := 0
-	for rows.Next() {
-		err := rows.Scan(&count)
+	for sgetcountrows.Next() {
+		err := sgetcountrows.Scan(&count)
 		if err != nil {
 			log.Println("ScheduleGetCount  row:", err)
 		}
 
 	}
-	if rowserr != nil {
-		log.Println("ScheduleGetCount row error", rowserr)
+	if sgetcountrowserr != nil {
+		log.Println("ScheduleGetCount row error", sgetcountrowserr)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -776,8 +793,8 @@ func InventoryGetCount(cat string) int {
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
 	_, igetcounterr = conn.Conn().Prepare(context.Background(), "igetcount", "select count(*) from inventory  where category = $1")
-	if igeterr != nil {
-		log.Println("[PID] nextgetconn", igeterr)
+	if igetcounterr != nil {
+		log.Println("[IGETCOUNT] nextgetconn", igetcounterr)
 		Send("messages."+"InventoryGetCount", "[IGETCOUNT] Prepare Get Count "+igetcounterr.Error(), "http")
 	}
 
