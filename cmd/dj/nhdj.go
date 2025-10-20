@@ -133,8 +133,7 @@ func main() {
 			//log.Println("ReceiveONAIRMP3 waiting")
 
 			for {
-				runtime.GC()
-				runtime.ReadMemStats(&memoryStats)
+
 				kve := <-mp3msg.Updates()
 				//log.Println("ReceiveONAIRMP3", kve)
 				if kve != nil {
@@ -144,7 +143,8 @@ func main() {
 						config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
 
 					}
-
+					runtime.GC()
+					runtime.ReadMemStats(&memoryStats)
 					if w != nil {
 						w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
 					}
@@ -174,12 +174,15 @@ func main() {
 
 }
 
+var ttp float64
+var green = tc.RGBA{0, 255, 0, 255}
+
 func drawgGui(oa DJ) {
 	progress := widget.NewProgressBar()
 	progress.Min = 0
-	m, _ := strconv.ParseFloat(oa.Length, 64)
-	progress.Max = m
-	green := tc.RGBA{0, 255, 0, 255}
+	ttp, _ = strconv.ParseFloat(oa.Length, 64)
+	progress.Max = ttp
+
 	if strings.HasPrefix("DJ", oa.SchedCategory) {
 		oa.Length = "300"
 	}
@@ -189,7 +192,7 @@ func drawgGui(oa DJ) {
 
 	//var pleft  canvas.NewText
 	go func() {
-		for i := 1.0; i <= m; i++ {
+		for i := 1.0; i <= ttp; i++ {
 			time.Sleep(time.Second)
 			progress.SetValue(i)
 		}

@@ -2199,7 +2199,7 @@ func AlbumToArray() []string {
 		ctxsqlcan()
 		return nil
 	}
-	AlbumArray := []string{}
+	AlbumArray = []string{}
 	rows, rowserr := conn.Query(ctxsql, "select distinct album from traffic order by album")
 	var album string
 
@@ -2219,28 +2219,41 @@ func AlbumToArray() []string {
 	return AlbumArray
 
 }
+
+var igettcbderr error
+var igettcbdrowserr error
+var igettcbdrows pgx.Rows
+
 func TrafficGetCountByDate(tc, td string) int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	rows, rowserr := conn.Query(ctxsql, "select count(*) from traffic  where category like '"+tc+"%' and playedon like '"+td+"%'")
-	if rowserr != nil {
-		log.Println("TrafficFetCountByDate rows error", tc, td, rowserr)
+	_, igettcbderr = conn.Conn().Prepare(context.Background(), "igettcbd", "select count(*) from traffic  where category like $1 and playedon like $2")
+	if igeterr != nil {
+		log.Println("[IGTCBD] nextgetconn", igettcbderr)
+		Send("messages."+"StationId", "[IGET] Prepare Next Get TOH "+igettcbderr.Error(), "onair")
 	}
+
+	igettcbdrows, igettcbdrowserr = conn.Query(context.Background(), "igettcbd", "%"+tc+"%", "%"+td+"%")
+	if igettcbdrowserr != nil {
+		Send("messages."+"TrafficGet", "[IGTCBD] Prepare Traffic Read  "+igettcbdrowserr.Error(), "onair")
+		log.Fatal("Error reading traffic IGTCBD", igettcbdrowserr)
+	}
+
 	var count = 0 //
-	for rows.Next() {
-		err := rows.Scan(&count)
+	for igettcbdrows.Next() {
+		err := igettcbdrows.Scan(&count)
 		if err != nil {
-			log.Println("TrafficFetCountByDate scan", err)
+			log.Println("TrafficGetCountByDate scan", err)
 		}
 	}
-	if rowserr != nil {
-		log.Println("TrafficFetCountByDate row error", rowserr)
+	if igettcbdrowserr != nil {
+		log.Println("TrafficGetCountByDate row error", igettcbdrowserr)
 	}
-	//log.Println("TrafficGetCountByDate start", tc, td, count)
+
 	conn.Release()
 	ctxsqlcan()
-	//log.Println("getrow ", count)
+
 	return count
 
 }
