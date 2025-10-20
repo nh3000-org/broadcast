@@ -494,12 +494,12 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			l.SetText(config.InventoryStore[id.Row].Album)
 		}
 	})
-	List.SetColumnWidth(0, 64)
-	List.SetColumnWidth(1, 132)
-	List.SetColumnWidth(2, 132)
-	List.SetColumnWidth(3, 132)
-	List.SetColumnWidth(4, 132)
-	List.SetColumnWidth(5, 132)
+	List.SetColumnWidth(0, 32)
+	List.SetColumnWidth(1, 170)
+	List.SetColumnWidth(2, 128)
+	List.SetColumnWidth(3, 96)
+	List.SetColumnWidth(4, 96)
+	List.SetColumnWidth(5, 32)
 
 	config.FyneInventoryList = List
 	List.OnSelected = func(id widget.TableCellID) {
@@ -615,7 +615,8 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		edsongsz.SetText("0")
 		edintrosz.SetText("0")
 		edoutrosz.SetText("0")
-
+		edlength.SetText("0")
+		edorder.SetText("000000")
 		edstartson.SetText("2023-12-31 00:00:00")
 		edexpires.SetText("9999-12-31 00:00:00")
 

@@ -64,7 +64,7 @@ func CategoriesScreen(win fyne.Window) fyne.CanvasObject {
 		}
 	})
 	List.SetColumnWidth(0, 64)
-	List.SetColumnWidth(1, 132)
+	List.SetColumnWidth(1, 180)
 	List.SetColumnWidth(2, 132)
 
 	config.FyneCategoryList = List

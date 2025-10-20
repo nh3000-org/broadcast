@@ -101,18 +101,34 @@ type DaysStruct struct {
 var DaysStore = make(map[int]DaysStruct)
 var SelectedDay int
 
+var igetdayserr error
+var igetdaysrowserr error
+var igetdaysrows pgx.Rows
+
 func DaysGet() {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	DaysStore = make(map[int]DaysStruct)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
-	rows, rowserr := conn.Query(ctxsql, "select * from days order by dayofweek")
+
+	_, igetdayserr = conn.Conn().Prepare(context.Background(), "igetdays", "select * from days order by dayofweek")
+	if igetdayserr != nil {
+		log.Println("[IGETDAYS] nextgetconn", igetdayserr)
+		Send("messages."+"StationId", "[IGETDAYS] Prepare Next Get TOH "+igetdayserr.Error(), "onair")
+	}
+
+	igetdaysrows, igetdaysrowserr = conn.Query(context.Background(), "igetdays")
+	if igetdaysrowserr != nil {
+		Send("messages."+"DaysGet", "[IGETDAYS] Prepare Inventory Read PID "+igetdaysrowserr.Error(), "onair")
+		log.Fatal("Error reading days IGETDAYS", igetdaysrowserr)
+	}
+
 	var rowid int
 	var day string
 	var desc string
 	var dow int
-	for rows.Next() {
+	for igetdaysrows.Next() {
 
-		err := rows.Scan(&rowid, &day, &desc, &dow)
+		err := igetdaysrows.Scan(&rowid, &day, &desc, &dow)
 		if err != nil {
 			log.Println("DaysGet GetDays row", err)
 		}
@@ -124,8 +140,8 @@ func DaysGet() {
 		DaysStore[len(DaysStore)] = ds
 		//log.Println("GetDays Got", day, desc)
 	}
-	if rowserr != nil {
-		log.Println("DaysGet GetDays row error", rowserr)
+	if igetdaysrowserr != nil {
+		log.Println("DaysGet GetDays row error", igetdaysrows)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -174,17 +190,33 @@ type HoursStruct struct {
 
 var HoursStore = make(map[int]HoursStruct)
 var SelectedHour int
+var igethourserr error
+var igethoursrowserr error
+var igethoursrows pgx.Rows
 
 func HoursGet() {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 	HoursStore = make(map[int]HoursStruct)
-	rows, rowserr := conn.Query(ctxsql, "select * from hours order by id")
+
+	_, igethourserr = conn.Conn().Prepare(context.Background(), "igethours", "select * from hours order by id")
+	if igethourserr != nil {
+		log.Println("[IGETHOURS] nextgetconn", igetcaterr)
+		Send("messages."+"StationId", "[IGETHOURS] Prepare Next Get TOH "+igethourserr.Error(), "onair")
+	}
+
+	igethoursrows, igethoursrowserr = conn.Query(context.Background(), "igethours")
+	if igetdaysrowserr != nil {
+		Send("messages."+"CatGet", "[IGETHOURS] Prepare Hours Read PID "+igethoursrowserr.Error(), "onair")
+		log.Fatal("Error reading days IGETHOURS", igethoursrowserr)
+	}
+
+	//rows, rowserr := conn.Query(ctxsql, "select * from hours order by id")
 	var rowid int
 	var id string
 	var desc string
-	for rows.Next() {
-		err := rows.Scan(&rowid, &id, &desc)
+	for igethoursrows.Next() {
+		err := igethoursrows.Scan(&rowid, &id, &desc)
 		if err != nil {
 			log.Println("HoursGet GetHours row", err)
 		}
@@ -196,8 +228,8 @@ func HoursGet() {
 		HoursStore[len(HoursStore)] = ds
 
 	}
-	if rowserr != nil {
-		log.Println("HoursGet Gethours row error", rowserr)
+	if igethoursrowserr != nil {
+		log.Println("HoursGet Gethours row error", igethoursrowserr)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -245,17 +277,32 @@ type CategoriesStruct struct {
 
 var CategoriesStore = make(map[int]CategoriesStruct)
 var SelectedCategory int
+var igetcaterr error
+var igetcatrowserr error
+var igetcatrows pgx.Rows
 
 func CategoriesGet() {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 	CategoriesStore = make(map[int]CategoriesStruct)
-	rows, rowserr := conn.Query(ctxsql, "select * from categories order by id")
+
+	_, igetcaterr = conn.Conn().Prepare(context.Background(), "igetcat", "select * from categories order by id")
+	if igetcaterr != nil {
+		log.Println("[IGETCAT] nextgetconn", igetcaterr)
+		Send("messages."+"StationId", "[IGETCAT] Prepare Next Get TOH "+igetcaterr.Error(), "onair")
+	}
+
+	igetcatrows, igetcatrowserr = conn.Query(context.Background(), "igetcat")
+	if igetcatrowserr != nil {
+		Send("messages."+"CatGet", "[IGETCAT] Prepare Inventory Read PID "+igetcatrowserr.Error(), "onair")
+		log.Fatal("Error reading days IGETCAT", igetcatrowserr)
+	}
+
 	var rowid int
 	var id string
 	var desc string
-	for rows.Next() {
-		err := rows.Scan(&rowid, &id, &desc)
+	for igetcatrows.Next() {
+		err := igetcatrows.Scan(&rowid, &id, &desc)
 		if err != nil {
 			log.Println("CategoriesGet Get Categories row", err)
 		}
@@ -267,8 +314,8 @@ func CategoriesGet() {
 		CategoriesStore[len(CategoriesStore)] = ds
 
 	}
-	if rowserr != nil {
-		log.Println("CategoriesGet Get Categories row error", rowserr)
+	if igetcatrowserr != nil {
+		log.Println("CategoriesGet Get Categories row error", igetcatrowserr)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -401,25 +448,40 @@ func CategoriesWriteStub(withinventory bool) string {
 }
 
 var CategoryArray []string
+var igetctaerr error
+var igetctarowserr error
+var igetctarows pgx.Rows
 
 func CategoriesToArray() []string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 	CategoryArray = []string{}
-	rows, rowserr := conn.Query(ctxsql, "select * from categories order by id")
+
+	_, igetctaerr = conn.Conn().Prepare(context.Background(), "igetcta", "select * from categories order by id")
+	if igetctaerr != nil {
+		log.Println("[IGETCTA] nextgetconn", igetctaerr)
+		Send("messages."+"StationId", "[IGETCTA] Prepare Cattoarray "+igetctaerr.Error(), "onair")
+	}
+	igetctarows, igetctarowserr = conn.Query(context.Background(), "igetcta")
+	if igetctarowserr != nil {
+		Send("messages."+"CatGet", "[IGETCTA] Prepare igetcta "+igetctarowserr.Error(), "onair")
+		log.Fatal("Error reading days IGETCTA", igetctarowserr)
+	}
+
+	//rows, rowserr := conn.Query(ctxsql, "select * from categories order by id")
 	var rowid int
 	var id string
 	var desc string
-	for rows.Next() {
-		err := rows.Scan(&rowid, &id, &desc)
+	for igetctarows.Next() {
+		err := igetctarows.Scan(&rowid, &id, &desc)
 		if err != nil {
 			log.Println("CategoryArray Get Categories to Array row", err)
 		}
 		CategoryArray = append(CategoryArray, id)
 
 	}
-	if rowserr != nil {
-		log.Println("CategoryArray Get Categories to Array row error", rowserr)
+	if igetctarowserr != nil {
+		log.Println("CategoryArray Get Categories to Array row error", igetctarowserr)
 	}
 	conn.Release()
 	ctxsqlcan()
@@ -964,7 +1026,7 @@ func InventoryDelete(row int) {
 func InventoryUpdate(row int, category string, artist string, song string, album string, songlength int, rndorder string, startson string, expireson string, adstimeslots []string, adsdayslots []string, adsmaxspins int, adsmaxspinsperhour int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int, sourcelink string) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
-	_, rowserr := conn.Exec(ctxsql, "update inventory set category =$1, artist = $2, song = $3, album = $4, songlength = $5, rndorder = $6, startson = $7,expireson = $8, adstimeslots = $9, adsdayslots = $10,adsmaxspins = $11, adsmaxspinsperhour = $12,lastplayed = $13, dateadded = $14, spinstoday = $15, spinsweek = $16, spinstotal = $17 , sourcelink = $18 where rowid = $18", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsdayslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink, row)
+	_, rowserr := conn.Exec(ctxsql, "update inventory set category =$1, artist = $2, song = $3, album = $4, songlength = $5, rndorder = $6, startson = $7,expireson = $8, adstimeslots = $9, adsdayslots = $10,adsmaxspins = $11, adsmaxspinsperhour = $12,lastplayed = $13, dateadded = $14, spinstoday = $15, spinsweek = $16, spinstotal = $17 , sourcelink = $18 where rowid = $19", category, artist, song, album, songlength, rndorder, startson, expireson, adstimeslots, adsdayslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, sourcelink, row)
 
 	if rowserr != nil {
 		log.Println("Inventory Update Inventory row error", rowserr)
