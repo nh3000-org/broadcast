@@ -586,6 +586,11 @@ func setupRoutes() {
 }
 
 func main() {
+	fmt.Println("Writing Startup index.html")
+	err := os.WriteFile("/opt/radio/publichtml/index.html", []byte(istartup()), 0644)
+	if err != nil {
+		log.Println("FAILED to Write Startup File", err)
+	}
 	fmt.Println("Waiting for Input")
 	setupRoutes()
 }
@@ -802,6 +807,36 @@ func ibusy() string {
 	s.WriteString("<body>\n")
 	s.WriteString("  <label> System in use try again later/label>\n")
 
+	s.WriteString("</body>\n")
+	s.WriteString("</html>\n")
+
+	return s.String()
+}
+func istartup() string {
+	authtoken = ""
+	var s bytes.Buffer
+	s.WriteString("<!DOCTYPE html>\n")
+	s.WriteString("<html lang=\"en\">\n")
+	s.WriteString("<head>\n")
+	s.WriteString(" <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n")
+	s.WriteString(" <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" />\n")
+	s.WriteString(" <link rel=\"icon\" type=\"image/x-icon\" href=\"logo.png\">\n")
+	s.WriteString(" <title>Authenticate</title>\n")
+	s.WriteString("</head>\n")
+	s.WriteString("<body>\n")
+	s.WriteString("  \n")
+	s.WriteString("  <form action=\"" + config.WebAddress + "/continue\" method=\"post\">\n")
+	s.WriteString("  <table>\n")
+	s.WriteString("  <tr>\n")
+	s.WriteString("  <th colspan=\"1\"><img src=\"logo.png\" alt=\"Broadcast Radio\"></th>\n")
+	s.WriteString("  <th colspan=\"2\">Broadcat Web Interface</th>\n")
+	s.WriteString("  </tr>\n")
+	s.WriteString("  <tr>\n")
+	s.WriteString("  <td colspan=\"1\"><label>Authorized Users only</label></td>\n")
+	s.WriteString("  <td colspan=\"3\"><input type=\"submit\" value=\"Continue\"></td>\n")
+	s.WriteString("  </tr>\n")
+	s.WriteString("  </table>\n")
+	s.WriteString("  </form>\n")
 	s.WriteString("</body>\n")
 	s.WriteString("</html>\n")
 
