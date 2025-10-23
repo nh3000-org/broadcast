@@ -823,6 +823,7 @@ func main() {
 							// TODO FORCE ADDS
 							//log.Println("ADS PLAYING 1 per hour:")
 							//targetmaxspinsperhour = 1
+							log.Println("ADS count from history v", v, "max", targetmaxspinsperhour, artist, song, album)
 							if v == targetmaxspinsperhour {
 								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour, artist, song, album)
 								playtheads = false
