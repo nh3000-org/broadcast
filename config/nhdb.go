@@ -69,7 +69,7 @@ func NewPGSQL() error {
 		return pterr
 	}
 	TheDB := "postgresql://" + DBuser + ":" + DBpassword + "@" + DBaddress
-	log.Println(TheDB)
+
 	mydb, mydberr := pgxpool.ParseConfig(TheDB)
 	//log.Println("DB: ", TheDB)
 	if mydberr != nil {

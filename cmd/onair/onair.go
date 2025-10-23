@@ -93,7 +93,7 @@ func playNext() {
 			config.Send("messages.NEXT", "Inventory Song Get "+nexterr.Error(), "onair")
 		}
 		// play the item
-		config.SendONAIRmp3(string(OnAir2Json(artist, album , song,songlength,rowid,days, hours, position, category,toplay, strconv.Itoa(spinstoplay))))
+		config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 		//config.SendONAIRmp3(artist + " - " + album + " - " + song)
 		itemlength = Play(otoctx, rowid, category)
 
@@ -165,7 +165,7 @@ func adjustToTopOfHour() {
 			}
 			// play the item
 
-			config.SendONAIRmp3(string(OnAir2Json(artist, album , song,songlength,"0",playingday, playinghour, "0", "FILTOTOH","0", strconv.Itoa(tohspins))))
+			config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, "0", playingday, playinghour, "0", "FILTOTOH", "0", strconv.Itoa(tohspins))))
 			//			config.SendONAIRmp3(artist + " - " + album + " - " + song)
 			itemlength = Play(otoctx, rowid, category)
 			tohspins--
@@ -241,7 +241,7 @@ func playImagingId() {
 			config.Send("messages."+StationId, "[playImagingId] Inventory Song Get PID "+pidinverr.Error(), "onair")
 		}
 		// play the item
-		config.SendONAIRmp3(string(OnAir2Json(artist, album , song,songlength,rowid,playingday, playinghour, "0", category,"0", "1")))
+		config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, playingday, playinghour, "0", category, "0", "1")))
 		//config.SendONAIRmp3(artist + " - " + album + " - " + song)
 		itemlength = Play(otoctx, rowid, category)
 
@@ -823,13 +823,13 @@ func main() {
 							// TODO FORCE ADDS
 							//log.Println("ADS PLAYING 1 per hour:")
 							//targetmaxspinsperhour = 1
-							if v >= targetmaxspinsperhour {
+							if v == targetmaxspinsperhour {
 								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour, artist, song, album)
 								playtheads = false
 							}
 						}
 						if playtheads {
-                            config.SendONAIRmp3(string(OnAir2Json(artist, album , song,songlength,rowid,days, hours, position, category,toplay, strconv.Itoa(spinstoplay))))
+							config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 							//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 							itemlength = Play(otoctx, rowid, category)
@@ -838,7 +838,7 @@ func main() {
 
 					} else {
 						// play the item
-						config.SendONAIRmp3(string(OnAir2Json(artist, album , song,songlength,rowid,days, hours, position, category,toplay, strconv.Itoa(spinstoplay))))
+						config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 						// handle ads time slots, max spins, and max minutes
 						log.Println(category + ": " + artist + " - " + album + " - " + song)
@@ -972,42 +972,42 @@ func main() {
 }
 
 type Onairjson struct {
-	Artist        string
-	Album         string
-	Song          string
-	Length        string
-	SchedRow      string
-	SchedDay      string
-	SchedHour     string
-	SchedPosition string
-	SchedCategory string
-	SchedSpinsToPlay string
+	Artist              string
+	Album               string
+	Song                string
+	Length              string
+	SchedRow            string
+	SchedDay            string
+	SchedHour           string
+	SchedPosition       string
+	SchedCategory       string
+	SchedSpinsToPlay    string
 	SchedSpinsLefToPlay string
 }
 
 var OAJ = Onairjson{}
 var OAJDATA []byte
 var OAJDATAERR error
+
 func OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, categories, toplay, spinstoplay string) []byte {
 
-OAJ = Onairjson{
-	Artist:        artist,
-	Album:         album,
-	Song:          song,
-	Length:        songlength,
-	SchedRow:      rowid,
-	SchedDay:      days,
-	SchedHour:     hours,
-	SchedPosition: position,
-	SchedCategory: categories,
-	SchedSpinsToPlay: toplay,
-	SchedSpinsLefToPlay: spinstoplay,
+	OAJ = Onairjson{
+		Artist:              artist,
+		Album:               album,
+		Song:                song,
+		Length:              songlength,
+		SchedRow:            rowid,
+		SchedDay:            days,
+		SchedHour:           hours,
+		SchedPosition:       position,
+		SchedCategory:       categories,
+		SchedSpinsToPlay:    toplay,
+		SchedSpinsLefToPlay: spinstoplay,
+	}
+	OAJDATA, OAJDATAERR := json.Marshal(OAJ)
+	if OAJDATAERR != nil {
+		log.Println("OnAir2Json marshalling error", OAJDATAERR)
+	}
 
-}
-OAJDATA,OAJDATAERR := json.Marshal(OAJ)
-if OAJDATAERR != nil {
-  log.Println("OnAir2Json marshalling error", OAJDATAERR)
-}
-
-return OAJDATA
+	return OAJDATA
 }
