@@ -56,12 +56,14 @@ func ReportsScreen(win fyne.Window) fyne.CanvasObject {
 	TrafEnd.SetText(te)
 
 	laalbum := widget.NewLabel("Campaign (Album): ")
-	selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
+	//selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
 
 	trafficreport := widget.NewButton("Traffic", func() {
+		selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
 		donebutton := widget.NewButtonWithIcon("Done", theme.ContentCopyIcon(), func() {
 			config.TrafficStart = TrafStart.Text
 			config.TrafficEnd = TrafEnd.Text
+			//selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
 			config.TrafficAlbum = selalbum.Selected
 			config.ToPDF("TrafficReport", "ADMIN")
 			cmd := exec.Command("xdg-open", "TrafficReport.pdf")
@@ -72,6 +74,7 @@ func ReportsScreen(win fyne.Window) fyne.CanvasObject {
 			}
 
 		})
+
 		databox := container.NewGridWithRows((7),
 			widget.NewLabel("Start"),
 			TrafStart,

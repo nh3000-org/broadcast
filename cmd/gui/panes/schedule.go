@@ -28,7 +28,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 	edpos := widget.NewSelect([]string{"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"}, func(string) {})
 
 	lacategory := widget.NewLabel("Category to Pick From: ")
-	edcategory := widget.NewSelect(config.CategoriesToArray(), func(string) {})
+	//edcategory := widget.NewSelect(config.CategoriesToArray(), func(string) {})
 
 	laspins := widget.NewLabel("Spins to Play From Category: ")
 	edspins := widget.NewSelect([]string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"}, func(string) {})
@@ -58,12 +58,12 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 	gridday := container.New(layout.NewGridLayoutWithRows(2), laday, edday)
 	gridhour := container.New(layout.NewGridLayoutWithRows(2), lahour, edhour)
 	gridpos := container.New(layout.NewGridLayoutWithRows(2), lapos, edpos)
-	gridcat := container.New(layout.NewGridLayoutWithRows(2), lacategory, edcategory)
+	gridcat := container.New(layout.NewGridLayoutWithRows(2), lacategory, EDcategory)
 	gridspins := container.New(layout.NewGridLayoutWithRows(2), laspins, edspins)
 	saveaddbutton := widget.NewButtonWithIcon("Add Schedule Item", theme.ContentCopyIcon(), func() {
 		myspins, _ := strconv.Atoi(edspins.Selected)
 
-		config.ScheduleAdd(edday.Selected, edhour.Selected, edpos.Selected, edcategory.Selected, myspins)
+		config.ScheduleAdd(edday.Selected, edhour.Selected, edpos.Selected, EDcategory.Selected, myspins)
 		config.ScheduleGet()
 		config.FyneScheduleList.Refresh()
 	})
@@ -104,7 +104,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		edday.SetSelected(config.ScheduleStore[id.Row].Days)
 		edhour.SetSelected(config.ScheduleStore[id.Row].Hours)
 		edpos.SetSelected(config.ScheduleStore[id.Row].Position)
-		edcategory.SetSelected(config.ScheduleStore[id.Row].Category)
+		EDcategory.SetSelected(config.ScheduleStore[id.Row].Category)
 		edspins.SetSelected(strconv.Itoa(config.ScheduleStore[id.Row].Spinstoplay))
 		edrow.SetText(strconv.Itoa(config.ScheduleStore[id.Row].Row))
 		edrow.Disable()
@@ -117,7 +117,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		savebutton := widget.NewButtonWithIcon("Save Schedule", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 			myspins, _ := strconv.Atoi(edspins.Selected)
-			config.ScheduleUpdate(myrow, edday.Selected, edhour.Selected, edpos.Selected, edcategory.Selected, myspins)
+			config.ScheduleUpdate(myrow, edday.Selected, edhour.Selected, edpos.Selected, EDcategory.Selected, myspins)
 			config.ScheduleGet()
 			config.FyneScheduleList.Refresh()
 		})

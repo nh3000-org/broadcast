@@ -43,24 +43,7 @@ func MessagesScreen(win fyne.Window) fyne.CanvasObject {
 		delete(config.NatsMessagesIndex, selecteduuid)
 		config.FyneMessageList.Refresh()
 	})
-	/* 	List := widget.NewList(
-	   		func() int {
-	   			return len(config.NatsMessages)
-	   		},
-	   		func() fyne.CanvasObject {
-	   			return container.NewHBox(widget.NewLabel("Template Object"))
-	   		},
-	   		func(id widget.ListItemID, item fyne.CanvasObject) {
 
-	   			mymessage := config.NatsMessages[id].MSmessage
-	   			if len(config.NatsMessages[id].MSmessage) > 100 {
-	   				mymessageshort := strings.ReplaceAll(config.NatsMessages[id].MSmessage, "\n", ".")
-	   				mymessage = mymessageshort[0:100]
-	   			}
-	   			item.(*fyne.Container).Objects[0].(*widget.Label).SetText(config.NatsMessages[id].MSsubject + "." + mymessage)
-	   		},
-	   	)
-	*/
 	List := widget.NewTable(func() (int, int) {
 		return len(config.NatsMessages), 3
 	}, func() fyne.CanvasObject {

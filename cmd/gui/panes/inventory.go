@@ -24,6 +24,7 @@ var songerr error
 var pberr error
 var shadowCategory string
 
+
 func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	config.FyneInventoryWin = win
@@ -36,8 +37,9 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
 
 	lacategory := widget.NewLabel("Category: ")
-	edcategory := widget.NewSelect(config.CategoriesToArray(), func(string) {})
-	gridcategory := container.New(layout.NewGridLayoutWithRows(2), lacategory, edcategory)
+	//EDcategory = widget.NewSelect([]string{}, func(string) {})
+	//edcategory := widget.NewSelect(config.CategoriesToArray(), func(string) {})
+	gridcategory := container.New(layout.NewGridLayoutWithRows(2), lacategory, EDcategory)
 
 	laartist := widget.NewLabel("Artist: ")
 	edartist := widget.NewEntry()
@@ -444,7 +446,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	})
 	gridfile := container.New(layout.NewGridLayoutWithColumns(3), openSong, openSongIntro, openSongOutro)
 	bucket := "mp3"
-	if strings.Contains(edcategory.Selected, "VIDEO") {
+	if strings.Contains(EDcategory.Selected, "VIDEO") {
 		bucket = "mp4"
 	}
 	openSongsz := strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text)))
@@ -462,7 +464,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		total, _ := strconv.Atoi(edspinstotal.Text)
 		addsmaxspins, _ := strconv.Atoi(edadsmaxspins.Selected)
 		addsmaxspinsperhour, _ := strconv.Atoi(edadsmaxspinsperhour.Selected)
-		rowreturned := config.InventoryAdd(edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, edadsdayslot.Selected, addsmaxspins, addsmaxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
+		rowreturned := config.InventoryAdd(EDcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, edadsdayslot.Selected, addsmaxspins, addsmaxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
 		row := strconv.Itoa(rowreturned)
 		edrow.SetText(row)
 		openSong.Enable()
@@ -510,7 +512,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 		edrow.SetText(strconv.Itoa(config.InventoryStore[id.Row].Row))
 		edrow.Disable()
-		edcategory.SetSelected(config.InventoryStore[id.Row].Category)
+		EDcategory.SetSelected(config.InventoryStore[id.Row].Category)
 		shadowCategory = config.InventoryStore[id.Row].Category
 		edartist.SetText(config.InventoryStore[id.Row].Artist)
 		edsong.SetText(config.InventoryStore[id.Row].Song)
@@ -530,7 +532,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		edlastplayed.SetText(config.InventoryStore[id.Row].Lastplayed)
 		edlinks.SetText(config.InventoryStore[id.Row].Sourcelink)
 		bucket := "mp3"
-		if strings.Contains(edcategory.Selected, "VIDEO") {
+		if strings.Contains(EDcategory.Selected, "VIDEO") {
 			bucket = "mp4"
 		}
 		edsongsz.SetText("Song Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text))))
@@ -554,11 +556,11 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			var total, _ = strconv.Atoi(edspinstotal.Text)
 			var maxspins, _ = strconv.Atoi(edadsmaxspins.Selected)
 			var maxspinsperhour, _ = strconv.Atoi(edadsmaxspinsperhour.Selected)
-			config.InventoryUpdate(myrow, edcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, edadsdayslot.Selected, maxspins, maxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
+			config.InventoryUpdate(myrow, EDcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, edadsdayslot.Selected, maxspins, maxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
 			config.InventoryGet()
 			config.FyneInventoryList.Refresh()
 			if shadowCategory == "CURRENTS" {
-				if edcategory.Selected != "CURRENTS" {
+				if EDcategory.Selected != "CURRENTS" {
 					// delete intro/outro
 					config.DeleteBucket("MP3", strconv.Itoa(myrow)+"INTRO.mp3")
 					config.DeleteBucket("MP3", strconv.Itoa(myrow)+"OUTRO.mp3")

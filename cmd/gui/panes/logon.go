@@ -17,7 +17,7 @@ import (
 
 	"github.com/nh3000-org/broadcast/config"
 )
-
+var EDcategory = widget.NewSelect([]string{}, func(string) {})
 func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	errors := widget.NewLabel("...")
@@ -338,6 +338,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			config.NatsCaroot = ca.Text
 			config.NatsClientcert = cc.Text
 			config.NatsClientkey = ck.Text
+			log.Println(dbaddress.Text)
 			config.DBaddress = dbaddress.Text
 			config.DBuser = dbuser.Text
 			config.DBpassword = dbpassword.Text
@@ -380,6 +381,8 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			if natserr != nil {
 				log.Fatal("Could not connect to NATS ")
 			}
+			config.NewPGSQL()
+			EDcategory.SetOptions(config.CategoriesToArray())
 			config.SetupNATS()
 			go config.ReceiveMESSAGE()
 			go config.ReceiveONAIRMP3()

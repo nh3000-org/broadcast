@@ -62,7 +62,10 @@ var ctxmaincan context.CancelFunc
 var a fyne.App
 var w fyne.Window
 var onairmp3 jetstream.KeyValue
-
+var errum error
+var mp3msg jetstream.KeyWatcher
+var mp3err error
+var kve jetstream.KeyValueEntry
 func main() {
 
 	a = app.NewWithID("org.nh3000.nh3000")
@@ -124,7 +127,7 @@ func main() {
 			config.NewNatsJS()
 			config.NewPGSQL()
 			ctxmain, ctxmaincan = context.WithCancel(context.Background())
-			mp3msg, mp3err := config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
+			mp3msg, mp3err = config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
 
 			if mp3err != nil {
 				log.Println("ReceiveONAIRMP3", mp3err)
@@ -134,10 +137,10 @@ func main() {
 
 			for {
 
-				kve := <-mp3msg.Updates()
+				kve = <-mp3msg.Updates()
 				//log.Println("ReceiveONAIRMP3", kve)
 				if kve != nil {
-					errum := json.Unmarshal(kve.Value(), &DJJSON)
+					errum = json.Unmarshal(kve.Value(), &DJJSON)
 					if errum != nil {
 						log.Println("DJ ReceiveONAIRMP3", errum)
 						config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
@@ -174,8 +177,12 @@ func main() {
 
 }
 
+var tl float64
 var ttp float64
 var green = tc.RGBA{0, 255, 0, 255}
+var nextspins1 string
+var nextspins2 string
+var nextspins3 string
 
 func drawgGui(oa DJ) {
 	progress := widget.NewProgressBar()
@@ -183,18 +190,18 @@ func drawgGui(oa DJ) {
 	ttp, _ = strconv.ParseFloat(oa.Length, 64)
 	progress.Max = ttp
 
-	if strings.HasPrefix("DJ", oa.SchedCategory) {
+	if strings.HasPrefix("DJ", oa.SchedCategory) && (oa.Length == "0" || oa.Length == "00") {
 		oa.Length = "300"
 	}
-	if strings.HasPrefix("NWS", oa.SchedCategory) {
+	if strings.HasPrefix("NWS", oa.SchedCategory) && (oa.Length == "0" || oa.Length == "00") {
 		oa.Length = "60"
 	}
 
 	//var pleft  canvas.NewText
 	go func() {
-		for i := 1.0; i <= ttp; i++ {
+		for tl = 1.0; tl <= ttp; tl++ {
 			time.Sleep(time.Second)
-			progress.SetValue(i)
+			progress.SetValue(tl)
 		}
 	}()
 
@@ -246,7 +253,7 @@ func drawgGui(oa DJ) {
 	cuday1 := canvas.NewText(config.SchedulePlan[0].Days, green)
 	cuhour1 := canvas.NewText(config.SchedulePlan[0].Hours, green)
 	cupos1 := canvas.NewText(config.SchedulePlan[0].Position, green)
-	nextspins1 := strconv.Itoa(config.SchedulePlan[0].Spinstoplay)
+	nextspins1 = strconv.Itoa(config.SchedulePlan[0].Spinstoplay)
 	custp1 := canvas.NewText(nextspins1, green)
 	cugrid1 := container.New(layout.NewGridLayout(5), cucat1, cuday1, cuhour1, cupos1, custp1)
 
@@ -254,7 +261,7 @@ func drawgGui(oa DJ) {
 	cuday2 := canvas.NewText(config.SchedulePlan[1].Days, green)
 	cuhour2 := canvas.NewText(config.SchedulePlan[1].Hours, green)
 	cupos2 := canvas.NewText(config.SchedulePlan[1].Position, green)
-	nextspins2 := strconv.Itoa(config.SchedulePlan[1].Spinstoplay)
+	nextspins2 = strconv.Itoa(config.SchedulePlan[1].Spinstoplay)
 	custp2 := canvas.NewText(nextspins2, green)
 	cugrid2 := container.New(layout.NewGridLayout(5), cucat2, cuday2, cuhour2, cupos2, custp2)
 
@@ -262,7 +269,7 @@ func drawgGui(oa DJ) {
 	cuday3 := canvas.NewText(config.SchedulePlan[2].Days, green)
 	cuhour3 := canvas.NewText(config.SchedulePlan[2].Hours, green)
 	cupos3 := canvas.NewText(config.SchedulePlan[2].Position, green)
-	nextspins3 := strconv.Itoa(config.SchedulePlan[2].Spinstoplay)
+	nextspins3 = strconv.Itoa(config.SchedulePlan[2].Spinstoplay)
 	custp3 := canvas.NewText(nextspins3, green)
 	cugrid3 := container.New(layout.NewGridLayout(5), cucat3, cuday3, cuhour3, cupos3, custp3)
 	progresgrid := container.New(layout.NewGridLayout(1), progress)
