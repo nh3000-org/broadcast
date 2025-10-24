@@ -2103,7 +2103,7 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 		return returnpo
 	}
 	for rows.Next() {
-		err := igettccountrows.Scan(&playedon)
+		err := rows.Scan(&playedon)
 		if err != nil {
 			log.Println("InventoryGetTrafficCount rowserr playedon", err)
 		}
@@ -2116,7 +2116,7 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 
 		myvalue = returnpo[mykey]
 		returnpo[mykey] = myvalue + 1
-		//log.Println("InventoryGetTrafficCount rowserr mykey", mykey, " value ", myvalue)
+		log.Println("InventoryGetTrafficCount rowserr mykey", mykey, " value ", myvalue)
 
 		// increment counter
 
