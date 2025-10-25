@@ -810,20 +810,20 @@ func main() {
 
 						if playtheads {
 							//log.Println("ADS check max spins per hour:", adsmaxspinsperhour, "hour part", playinghour, artist, song, album)
-							timenow := time.RFC3339
+							//timenow := time.RFC3339
 							targetmaxspinsperhour, err := strconv.Atoi(adsmaxspinsperhour)
 							if err != nil {
 								log.Println("ADS targetmaxspinsperhour:", targetmaxspinsperhour, err, artist, song, album)
 							}
 							pomap := config.InventoryGetTrafficCount(artist, song, album)
 
-							tdate := timenow[0:8]
+							tdate := config.GetDateTime("0h")[0:10]
 
-							v := pomap[tdate+playinghour]
+							v := pomap[tdate+"."+playinghour]
 							// TODO FORCE ADDS
 							//log.Println("ADS PLAYING 1 per hour:")
 							//targetmaxspinsperhour = 1
-							log.Println("ADS count from history v", v, "max", targetmaxspinsperhour, artist, song, album)
+							//log.Println("ADS count from history v", v, "max", targetmaxspinsperhour, artist, song, album, tdate+"."+playinghour)
 							if v == targetmaxspinsperhour {
 								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour, artist, song, album)
 								playtheads = false

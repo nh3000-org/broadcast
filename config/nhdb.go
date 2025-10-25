@@ -2065,7 +2065,8 @@ func PDFInventoryByCategory(cat string) []core.Row {
 
 var igettcerr error
 var igettccountrowserr error
-var igettccountrows pgx.Rows
+
+//var igettcountrows pgx.Rows
 
 func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
@@ -2111,12 +2112,12 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 		// get date and hourpart yyyy-mm-dd-HP from yyyy-mm-dd HH:mm:ss
 		mykey = playedon[0:10]
 		// now get hourpart
-		myhp = playedon[12:14]
+		myhp = playedon[11:13]
 		mykey = mykey + "." + myhp
 
-		myvalue = returnpo[mykey]
-		returnpo[mykey] = myvalue + 1
-		log.Println("InventoryGetTrafficCount rowserr mykey", mykey, " value ", myvalue)
+		myvalue = returnpo[mykey] + 1
+		returnpo[mykey] = myvalue
+		//log.Println("InventoryGetTrafficCount rows  mykey", mykey, " value ", myvalue)
 
 		// increment counter
 
