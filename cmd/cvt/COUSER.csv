@@ -1,0 +1,4 @@
+USERID,USERPASSWORD,USERAUTHORITY,USERRESTRICTION,LASTUSERNAME,LASTCHANGEDATE,
+scott@cyberviewsolutions.com,1unicorn,5,*ALL,Administrator,2012.11.30 20:21:50,
+ADMIN,waverider,5,*ALL,Administrator,2012.11.30 21:25:23,
+SU,waverider,5,*ALL,Administrator,2012.11.30 21:26:47,
