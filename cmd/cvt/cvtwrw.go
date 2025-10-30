@@ -83,7 +83,7 @@ func createInventory(data [][]string, importdir string) {
 			}
 			var art = ""
 			var song = ""
-			if rec.invtype == "001" || rec.invtype == "002" || rec.invtype == "907" {
+			if rec.invtype == "001" || rec.invtype == "002" || rec.invtype == "907" || rec.invtype == "901" {
 				artstring := strings.Split(rec.invartist, "-")
 				if len(artstring) >= 2 {
 					art = artstring[0]
@@ -104,14 +104,18 @@ func createInventory(data [][]string, importdir string) {
 				if rec.invtype == "907" {
 					cat = "IMAGINGID"
 				}
+				if rec.invtype == "901" {
+					cat = "STATIONID"
+				}
 				length, _ := strconv.Atoi(rec.invlength)
 				added := config.GetDateTime("0h")
-				rowreturned := config.InventoryAdd(cat, art, song, "", length, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "CVT")
+				rowreturned := config.InventoryAdd(cat, art, song, "", length, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
 				row := strconv.Itoa(rowreturned)
 				if row != "0" {
 					songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
 					if songerr != nil {
-						config.Send("messages."+config.NatsAlias, "Put Bucket Song Read Error", config.NatsAlias)
+						log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
+						config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
 					}
 					if songerr == nil {
 						pberr := config.PutBucket("mp3", row, songbytes)
@@ -119,7 +123,8 @@ func createInventory(data [][]string, importdir string) {
 							songbytes = []byte("")
 						}
 						if pberr != nil {
-							config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+							log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+							config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
 						}
 					}
 					if cat == "CURRENTS" {
@@ -128,8 +133,8 @@ func createInventory(data [][]string, importdir string) {
 							//log.Println("importing intro", rowreturned)
 							songbytes, songerr = os.ReadFile(importdir + rec.invid + "INTRO.mp3")
 							if songerr != nil {
-								log.Println("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
-								config.Send("messages."+config.NatsAlias, "Put Bucket Intro Read Error", config.NatsAlias)
+								log.Println("messages."+"cvtwrrw", "Put Bucket Intro Read Error", "cvtwrrw", songerr)
+								config.Send("messages."+"cvtwrrw", "Put Bucket Intro Read Error", "cvtwrrw")
 							}
 							if songerr == nil {
 								//log.Println("putting intro", rowreturned+"INTRO")
@@ -138,8 +143,8 @@ func createInventory(data [][]string, importdir string) {
 									songbytes = []byte("")
 								}
 								if pberr != nil {
-									log.Println("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
-									config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+									log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+									config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
 								}
 							}
 						}
@@ -148,10 +153,10 @@ func createInventory(data [][]string, importdir string) {
 						rowreturned := config.InventoryGetRow(cat, art, song, "")
 						if len(rowreturned) > 0 {
 							//log.Println("importing outro", rowreturned)
-							songbytes, songerr = os.ReadFile(importdir + rec.invid + "OUTRO.mp3")
+							songbytes, songerr = os.ReadFile(importdir + rec.invid + "EXTRO.mp3")
 							if songerr != nil {
-								log.Println("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
-								config.Send("messages."+config.NatsAlias, "Put Bucket Outro Read Error", config.NatsAlias)
+								log.Println("messages."+"cvtwrrw", "Put Bucket Outro Read Error", "cvtwrrw", songerr)
+								config.Send("messages."+"cvtwrrw", "Put Bucket Outro Read Error", "cvtwrrw")
 							}
 							if songerr == nil {
 								//log.Println("putting outro", rowreturned+"OUTRO")
@@ -160,8 +165,8 @@ func createInventory(data [][]string, importdir string) {
 									songbytes = []byte("")
 								}
 								if pberr != nil {
-									log.Println("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
-									config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+									log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+									config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
 								}
 							}
 						}
@@ -197,6 +202,7 @@ func main() {
 
 	csvdata.Close()
 }
+
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
@@ -228,7 +234,7 @@ func readPreferences() {
 	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
 
 	//log.Println("CONFIG AdsMaxMinutes", config.AdsMaxMinutes)
-	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
+	log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
 	config.NewPGSQL()
 }

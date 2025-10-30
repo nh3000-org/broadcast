@@ -933,7 +933,7 @@ func InventoryGetRow(category, artist, song, album string) string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
-	_, igetrowerr = conn.Conn().Prepare(context.Background(), "igetrow", "select rowid from inventory  where category = '"+category+"'and artist='"+artist+"' and song='"+song+"' and album='"+album+"'")
+	_, igetrowerr = conn.Conn().Prepare(context.Background(), "igetrow", "select rowid from inventory  where category = $1 and artist=$2 and song=$3 and album=$4")
 	if igetrowerr != nil {
 		log.Println("[PID] nextgetconn", igeterr)
 		Send("messages."+"InventoryGetCount", "[IGETROW] Prepare Get Count "+igetrowerr.Error(), "http")

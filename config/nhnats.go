@@ -342,7 +342,7 @@ func GetBucket(bucket, id, station string) []byte {
 		//gbdata, gberr := NATS.Obsmp3.GetBytes(id)
 
 		if gberr != nil {
-			log.Panicln("Bucket MP3 Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
+			log.Println("Bucket MP3 Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
 			Send("messages."+station, "Bucket MP3 Missing "+" bucket "+bucket+" id "+id+" error: "+gberr.Error(), "nats")
 		}
 		runtime.GC()
