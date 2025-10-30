@@ -128,7 +128,7 @@ func adjustToTopOfHour() {
 
 	tohmin = float64(time.Now().Minute())
 	tohleft = 60 - tohmin
-	tohspinsf = tohleft / 3.30
+	tohspinsf = tohleft / 3.55
 	tohspins = int(tohspinsf)
 	log.Println("[TOH] time min", tohmin, "left", tohleft, "spins", tohspins)
 	if tohleft > 50 {
