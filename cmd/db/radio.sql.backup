@@ -1000,6 +1000,13 @@ CREATE INDEX inventorybycategorysong ON public.inventory USING btree (category, 
 
 
 --
+-- Name: inventoryplayget; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX inventoryplayget ON public.inventory USING btree (category, lastplayed, rndorder);
+
+
+--
 -- Name: scheduleindex; Type: INDEX; Schema: public; Owner: postgres
 --
 

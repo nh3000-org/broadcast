@@ -107,71 +107,78 @@ func createInventory(data [][]string, importdir string) {
 				if rec.invtype == "901" {
 					cat = "STATIONID"
 				}
-				length, _ := strconv.Atoi(rec.invlength)
-				added := config.GetDateTime("0h")
-				rowreturned := config.InventoryAdd(cat, art, song, "", length, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
-				row := strconv.Itoa(rowreturned)
-				if row != "0" {
-					songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
-					if songerr != nil {
-						log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
-						config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
-					}
-					if songerr == nil {
-						pberr := config.PutBucket("mp3", row, songbytes)
-						if pberr == nil {
-							songbytes = []byte("")
+				var skip = false
+				if strings.Contains(rec.invid, "INTRO") || strings.Contains(rec.invid, "EXTRO") {
+					skip = true
+				}
+				if !skip {
+					lengthFloat, _ := strconv.ParseFloat(strings.TrimSpace(rec.invlength), 64)
+					//length, _ := strconv.Atoi(rec.invlength)
+					added := config.GetDateTime("0h")
+					rowreturned := config.InventoryAdd(cat, art, song, "", int(lengthFloat), "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
+					row := strconv.Itoa(rowreturned)
+					if row != "0" {
+						songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
+						if songerr != nil {
+							log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
+							config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
 						}
-						if pberr != nil {
-							log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
-							config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
-						}
-					}
-					if cat == "CURRENTS" {
-						rowreturned := config.InventoryGetRow(cat, art, song, "")
-						if len(rowreturned) > 0 {
-							//log.Println("importing intro", rowreturned)
-							songbytes, songerr = os.ReadFile(importdir + rec.invid + "INTRO.mp3")
-							if songerr != nil {
-								log.Println("messages."+"cvtwrrw", "Put Bucket Intro Read Error", "cvtwrrw", songerr)
-								config.Send("messages."+"cvtwrrw", "Put Bucket Intro Read Error", "cvtwrrw")
+						if songerr == nil {
+							pberr := config.PutBucket("mp3", row, songbytes)
+							if pberr == nil {
+								songbytes = []byte("")
 							}
-							if songerr == nil {
-								//log.Println("putting intro", rowreturned+"INTRO")
-								pberr := config.PutBucket("mp3", rowreturned+"INTRO", songbytes)
-								if pberr == nil {
-									songbytes = []byte("")
-								}
-								if pberr != nil {
-									log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
-									config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
-								}
+							if pberr != nil {
+								log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+								config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
 							}
 						}
-					}
-					if cat == "CURRENTS" {
-						rowreturned := config.InventoryGetRow(cat, art, song, "")
-						if len(rowreturned) > 0 {
-							//log.Println("importing outro", rowreturned)
-							songbytes, songerr = os.ReadFile(importdir + rec.invid + "EXTRO.mp3")
-							if songerr != nil {
-								log.Println("messages."+"cvtwrrw", "Put Bucket Outro Read Error", "cvtwrrw", songerr)
-								config.Send("messages."+"cvtwrrw", "Put Bucket Outro Read Error", "cvtwrrw")
-							}
-							if songerr == nil {
-								//log.Println("putting outro", rowreturned+"OUTRO")
-								pberr := config.PutBucket("mp3", rowreturned+"OUTRO", songbytes)
-								if pberr == nil {
-									songbytes = []byte("")
+						if cat == "CURRENTS" {
+							rowreturned := config.InventoryGetRow(cat, art, song, "")
+							if len(rowreturned) > 0 {
+								//log.Println("importing intro", rowreturned)
+								songbytes, songerr = os.ReadFile(importdir + rec.invid + "INTRO.mp3")
+								if songerr != nil {
+									log.Println("messages."+"cvtwrrw", "Put Bucket Intro Read Error", "cvtwrrw", songerr)
+									config.Send("messages."+"cvtwrrw", "Put Bucket Intro Read Error", "cvtwrrw")
 								}
-								if pberr != nil {
-									log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
-									config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
+								if songerr == nil {
+									//log.Println("putting intro", rowreturned+"INTRO")
+									pberr := config.PutBucket("mp3", rowreturned+"INTRO", songbytes)
+									if pberr == nil {
+										songbytes = []byte("")
+									}
+									if pberr != nil {
+										log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+										config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
+									}
 								}
 							}
 						}
-					}
+						if cat == "CURRENTS" {
+							rowreturned := config.InventoryGetRow(cat, art, song, "")
+							if len(rowreturned) > 0 {
+								//log.Println("importing outro", rowreturned)
+								songbytes, songerr = os.ReadFile(importdir + rec.invid + "EXTRO.mp3")
+								if songerr != nil {
+									log.Println("messages."+"cvtwrrw", "Put Bucket Outro Read Error", "cvtwrrw", songerr)
+									config.Send("messages."+"cvtwrrw", "Put Bucket Outro Read Error", "cvtwrrw")
+								}
+								if songerr == nil {
+									//log.Println("putting outro", rowreturned+"OUTRO")
+									pberr := config.PutBucket("mp3", rowreturned+"OUTRO", songbytes)
+									if pberr == nil {
+										songbytes = []byte("")
+									}
+									if pberr != nil {
+										log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+										config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
+									}
+								}
+							}
+						}
 
+					}
 				}
 
 			}
