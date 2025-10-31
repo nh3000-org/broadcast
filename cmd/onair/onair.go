@@ -657,6 +657,8 @@ func main() {
 	var toderr error
 	config.InventoryUpdateRNDORDER()
 	adjustToTopOfHour()
+	var playintro string
+	var playnum int
 	for {
 
 		runtime.GC()
@@ -839,16 +841,26 @@ func main() {
 
 					} else {
 						// play the item
+						// check for currents to play intro/outro
+						playintro = ""
+						if strings.HasPrefix(category, "ADS") {
+							playnum, _ = strconv.Atoi(played[18:19])
+							if playnum%2 == 0 {
+								playintro = "INTRO"
+							} else {
+								playintro = "OUTRO"
+							}
+						}
 						config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 						// handle ads time slots, max spins, and max minutes
 						log.Println(category + ": " + artist + " - " + album + " - " + song)
 
-						itemlength = Play(otoctx, rowid, category)
+						itemlength = Play(otoctx, rowid+playintro, category)
 
 					}
 					// update statistics
-					played := config.GetDateTime("0h")
+					played = config.GetDateTime("0h")
 					if (strings.HasPrefix(category, "ADS") && playtheads) || strings.HasPrefix(category, "NWS") || strings.HasPrefix(category, "DJ") || strings.HasPrefix(category, "PROMOS") || strings.HasPrefix(category, "IMAGINGID") {
 
 						addToTraffic(category, artist, song, album, played[0:19])
