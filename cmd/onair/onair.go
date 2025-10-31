@@ -843,7 +843,7 @@ func main() {
 						// play the item
 						// check for currents to play intro/outro
 						playintro = ""
-						if strings.HasPrefix(category, "ADS") {
+						if strings.HasPrefix(category, "CURRENTS") {
 							playnum, _ = strconv.Atoi(played[18:19])
 							if playnum%2 == 0 {
 								playintro = "INTRO"
