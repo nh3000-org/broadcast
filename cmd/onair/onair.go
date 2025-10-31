@@ -842,6 +842,8 @@ func main() {
 					} else {
 						// play the item
 						// check for currents to play intro/outro
+						//2025/10/31 18:25:50 Bucket MP3 Missing  bucket mp3 id 746INTRO error: nats: object not found
+						//    2025/10/31 18:25:50 Play mp3.NewDecoder failed:  EOF for song: 746INTRO
 						playintro = ""
 						if strings.HasPrefix(category, "CURRENTS") {
 							playnum, _ = strconv.Atoi(played[18:19])
