@@ -844,6 +844,8 @@ func main() {
 						// check for currents to play intro/outro
 						//2025/10/31 18:25:50 Bucket MP3 Missing  bucket mp3 id 746INTRO error: nats: object not found
 						//    2025/10/31 18:25:50 Play mp3.NewDecoder failed:  EOF for song: 746INTRO
+						//2025/11/01 07:00:50 Bucket MP3 Missing  bucket mp3 id 385INTRO error: nats: object not found
+						//2025/11/01 07:00:50 Play mp3.NewDecoder failed:  EOF for song: 385INTRO
 						playintro = ""
 						if strings.HasPrefix(category, "CURRENTS") {
 							playnum, _ = strconv.Atoi(played[18:19])
@@ -852,6 +854,9 @@ func main() {
 							} else {
 								playintro = "OUTRO"
 							}
+						}
+						if !config.CheckBucket("mp3", rowid, *stationId) {
+							playintro = ""
 						}
 						config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")

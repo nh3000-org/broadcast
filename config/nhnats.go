@@ -331,9 +331,32 @@ func PutBucket(bucket string, id string, data []byte) error {
 	return nil
 }
 
-//var gbdata []byte
-//var gberr error
 
+func CheckBucket(bucket, id, station string) bool {
+
+	if bucket == "mp3" {
+
+		_, gberr := NATS.Obsmp3.GetInfo(id)
+		//gbdata, gberr := NATS.Obsmp3.GetBytes(id)
+
+		if gberr != nil {
+			log.Println("Bucket MP3 Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
+			Send("messages."+station, "Bucket MP3 Missing "+" bucket "+bucket+" id "+id+" error: "+gberr.Error(), "nats")
+			return false
+		}
+
+	}
+	if bucket == "mp4" {
+		_, gberr := NATS.Obsmp4.GetInfo(id)
+
+		if gberr != nil {
+			log.Println("Bucket MP4 Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
+			Send("messages."+station, "Bucket MP4 Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
+			return false
+		}
+	}
+	return true
+}
 func GetBucket(bucket, id, station string) []byte {
 
 	if bucket == "mp3" {
