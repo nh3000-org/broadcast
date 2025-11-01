@@ -855,7 +855,7 @@ func main() {
 								playintro = "OUTRO"
 							}
 						}
-						if !config.CheckBucket("mp3", rowid, *stationId) {
+						if !config.CheckBucket("mp3", rowid+playintro, *stationId) {
 							playintro = ""
 						}
 						config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
