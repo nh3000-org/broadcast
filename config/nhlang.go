@@ -476,6 +476,10 @@ var MyLangs = map[string]string{
 	"eng-addsmm": "Advertising Max Minutes",
 	"spa-addsmm": "Minutos Máximos de Publicidad",
 	"hin-addsmm": "विज्ञापन अधिकतम मिनट",
+
+	"eng-buckettype": "Content Format Type",
+	"spa-buckettype": "Tipo de Formato de Contenido",
+	"hin-buckettype": "सामग्री प्रारूप प्रकार",
 }
 
 // do translation

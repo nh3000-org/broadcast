@@ -45,8 +45,10 @@ type Natsjs struct {
 
 	Obsmp3   nats.ObjectStore
 	Obsmp4   nats.ObjectStore
+	Obswav   nats.ObjectStore
 	OnAirmp3 jetstream.KeyValue
 	OnAirmp4 jetstream.KeyValue
+	OnAirwav jetstream.KeyValue
 	Ctx      context.Context
 	Ctxcan   context.CancelFunc
 }
@@ -61,7 +63,7 @@ type NatsjsREPORT struct {
 
 func NewNatsJS() error {
 	nnjsd := new(Natsjs)
-	nnjsctx, nnjsctxcan := context.WithTimeout(context.Background(), 2048*time.Hour)
+	nnjsctx, nnjsctxcan := context.WithTimeout(context.Background(), 87840*time.Hour)
 
 	natsopts := nats.Options{
 		//Name:           "OPTS-" + alias,
@@ -137,6 +139,17 @@ func NewNatsJS() error {
 	}
 
 	jsctx.CreateObjectStore(&nats.ObjectStoreConfig{
+		Bucket:      "wav",
+		Description: "WAVBucket",
+		Storage:     nats.FileStorage,
+	})
+
+	wavobs, waverrobs := jsctx.ObjectStore("wav")
+	if waverrobs != nil {
+		log.Println("SetupNATS ObjectStore wav ", waverrobs)
+	}
+
+	jsctx.CreateObjectStore(&nats.ObjectStoreConfig{
 		Bucket:      "mp4",
 		Description: "MP4Bucket",
 		Storage:     nats.FileStorage,
@@ -146,6 +159,7 @@ func NewNatsJS() error {
 	if mp4errobs != nil {
 		log.Println("SetupNATS ObjectStore mp4 ", mp4errobs)
 	}
+
 	onairmp3, kveerr := njsjetstream.CreateOrUpdateKeyValue(nnjsctx, jetstream.KeyValueConfig{
 		Bucket: "OnAirmp3",
 	})
@@ -160,6 +174,13 @@ func NewNatsJS() error {
 		log.Println("SetupNATS MP4 err", kveerr)
 	}
 
+	onairwav, kveerr := njsjetstream.CreateOrUpdateKeyValue(nnjsctx, jetstream.KeyValueConfig{
+		Bucket: "OnAirwav",
+	})
+	if kveerr != nil {
+		log.Println("SetupNATS WAV err", kveerr)
+	}
+
 	nnjsd.Ctxcan = nnjsctxcan
 	nnjsd.Ctx = nnjsctx
 	nnjsd.Jetstream = njsjetstream
@@ -167,9 +188,11 @@ func NewNatsJS() error {
 	nnjsd.Js = msgjs
 	nnjsd.OnAirmp3 = onairmp3
 	nnjsd.OnAirmp4 = onairmp4
+	nnjsd.OnAirwav = onairwav
 
 	nnjsd.Obsmp3 = mp3obs
 	nnjsd.Obsmp4 = mp4obs
+	nnjsd.Obswav = wavobs
 	NATS = nnjsd
 	return nil
 }
@@ -326,11 +349,17 @@ func PutBucket(bucket string, id string, data []byte) error {
 			return puterr
 		}
 	}
+	if bucket == "wav" {
+		_, puterr := NATS.Obswav.PutBytes(id, data)
+
+		if puterr != nil {
+			return puterr
+		}
+	}
 	runtime.GC()
 	runtime.ReadMemStats(&memoryStats)
 	return nil
 }
-
 
 func CheckBucket(bucket, id, station string) bool {
 
@@ -352,6 +381,15 @@ func CheckBucket(bucket, id, station string) bool {
 		if gberr != nil {
 			log.Println("Bucket MP4 Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
 			Send("messages."+station, "Bucket MP4 Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
+			return false
+		}
+	}
+	if bucket == "wav" {
+		_, gberr := NATS.Obswav.GetInfo(id)
+
+		if gberr != nil {
+			log.Println("Bucket WAV Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
+			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
 			return false
 		}
 	}
@@ -381,6 +419,15 @@ func GetBucket(bucket, id, station string) []byte {
 		runtime.GC()
 		return gbdata
 	}
+	if bucket == "wav" {
+		gbdata, gberr := NATS.Obswav.GetBytes(id)
+
+		if gberr != nil {
+			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
+		}
+		runtime.GC()
+		return gbdata
+	}
 	return nil
 }
 func TestBucket(bucket, id string) bool {
@@ -394,6 +441,14 @@ func TestBucket(bucket, id string) bool {
 	}
 	if bucket == "mp4" {
 		_, gberr := NATS.Obsmp4.GetBytes(id)
+
+		if gberr == nil {
+			return true
+		}
+
+	}
+	if bucket == "wav" {
+		_, gberr := NATS.Obswav.GetBytes(id)
 
 		if gberr == nil {
 			return true
@@ -423,7 +478,12 @@ func GetBucketSize(bucket, id string) uint64 {
 			return gbs.Size
 		}
 	}
-
+	if bucket == "wav" {
+		gbs, gbserr := NATS.Obswav.GetInfo(id)
+		if gbserr == nil {
+			return gbs.Size
+		}
+	}
 	return 0
 }
 
@@ -443,7 +503,14 @@ func DeleteBucket(bucket, id string) error {
 			return dbkverr
 		}
 	}
+	if bucket == "wav" {
+		dbkverr := NATS.Obswav.Delete(id)
+		if dbkverr != nil {
+			Send("messages."+NatsAlias, "Delete Bucket wav "+bucket+"-"+id+" "+dbkverr.Error(), NatsAlias)
 
+			return dbkverr
+		}
+	}
 	return nil
 }
 
@@ -515,13 +582,25 @@ func SendONAIRmp3(m string) {
 
 }
 func SendONAIRmp4(m string) {
-	//"station.mp3.*"
+	//"station.mp4.*"
 	log.Println(m)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	_, puterr := NATS.OnAirmp4.Put(ctx, "OnAirmp4", []byte(m))
 
 	if puterr != nil {
 		Send("messages."+NatsAlias, "Send On Air mp4 "+m+" "+puterr.Error(), NatsAlias)
+	}
+	cancel()
+
+}
+func SendONAIRwav(m string) {
+	//"station.wav.*"
+	log.Println(m)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	_, puterr := NATS.OnAirwav.Put(ctx, "OnAirwav", []byte(m))
+
+	if puterr != nil {
+		Send("messages."+NatsAlias, "Send On Air wav "+m+" "+puterr.Error(), NatsAlias)
 	}
 	cancel()
 
@@ -606,6 +685,14 @@ func SetupNATS() {
 		})
 		if misvideoerr != nil {
 			log.Println("SetupNATS Video Bucket ", misvideoerr)
+		}
+		_, miswaveoerr := jsmissingctx.CreateObjectStore(&nats.ObjectStoreConfig{
+			Bucket:      "wav",
+			Description: "WAVBucket",
+			Storage:     nats.FileStorage,
+		})
+		if miswaveoerr != nil {
+			log.Println("SetupNATS Video Bucket ", miswaveoerr)
 		}
 
 	}
@@ -714,7 +801,64 @@ func ReceiveONAIRMP3() {
 		}
 	}
 }
+func ReceiveONAIRMP4() {
 
+	ctx := context.Background()
+
+	mp4msg, mp4err := NATS.OnAirmp4.Watch(ctx, "OnAirmp4")
+	if mp4err != nil {
+		log.Println("ReceiveONAIRMP4", mp4err)
+		Send("messages."+NatsAlias, "Receive On Air mp4 ", NatsAlias)
+	}
+	for {
+
+		kve := <-mp4msg.Updates()
+		if kve != nil {
+			errum := json.Unmarshal(kve.Value(), &OAJSON)
+			if errum != nil {
+				log.Println("ReceiveONAIRMP4", errum)
+				Send("messages."+NatsAlias, "Receive On Air mp4 ", errum.Error())
+
+			}
+			runtime.GC()
+			runtime.ReadMemStats(&memoryStats)
+
+			if FyneMainWin != nil {
+				FyneMainWin.SetTitle("On Air MP4 " + OAJSON.Artist + " - " + OAJSON.Song + " - " + OAJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+			}
+
+		}
+	}
+}
+func ReceiveONAIRWAV() {
+
+	ctx := context.Background()
+
+	wavmsg, waverr := NATS.OnAirwav.Watch(ctx, "OnAirwav")
+	if waverr != nil {
+		log.Println("ReceiveONAIRWAV", waverr)
+		Send("messages."+NatsAlias, "Receive On Air wav ", NatsAlias)
+	}
+	for {
+
+		kve := <-wavmsg.Updates()
+		if kve != nil {
+			errum := json.Unmarshal(kve.Value(), &OAJSON)
+			if errum != nil {
+				log.Println("ReceiveONAIRWAV", errum)
+				Send("messages."+NatsAlias, "Receive On Air wav ", errum.Error())
+
+			}
+			runtime.GC()
+			runtime.ReadMemStats(&memoryStats)
+
+			if FyneMainWin != nil {
+				FyneMainWin.SetTitle("On Air WAV " + OAJSON.Artist + " - " + OAJSON.Song + " - " + OAJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+			}
+
+		}
+	}
+}
 func DeleteNatsMessage(seq uint64) {
 	dnmctx, dnmctxcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	dnmerr := NATS.Js.SecureDeleteMsg(dnmctx, seq)

@@ -186,8 +186,8 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			config.FyneApp.Preferences().SetString("WEBADDRESS", config.Encrypt(webaddress.Text, config.MySecret))
 			webaddressShadow = webaddress.Text
 
-			adsmaxminutesShadow = config.FyneApp.Preferences().StringWithFallback("ADSMAXMINUTES", config.Encrypt("5", config.MySecret))
-			config.AdsMaxMinutes, _ = strconv.Atoi(adsmaxminutesShadow)
+			buckettypeShadow = config.FyneApp.Preferences().StringWithFallback("NatsBucketType", config.Encrypt("mp3", config.MySecret))
+			config.NatsBucketType  = buckettypeShadow
 
 			webpassword.Enable()
 			password.Disable()

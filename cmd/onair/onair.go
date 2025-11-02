@@ -93,9 +93,16 @@ func playNext() {
 			config.Send("messages.NEXT", "Inventory Song Get "+nexterr.Error(), "onair")
 		}
 		// play the item
-		config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-		//config.SendONAIRmp3(artist + " - " + album + " - " + song)
-		itemlength = Play(otoctx, rowid, category)
+		if config.NatsBucketType == "mp3" {
+			config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
+			//config.SendONAIRmp3(artist + " - " + album + " - " + song)
+			itemlength = PlayMP3(otoctx, rowid, category)
+		}
+		if config.NatsBucketType == "wav" {
+			config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
+			//config.SendONAIRmp3(artist + " - " + album + " - " + song)
+			itemlength = PlayWAV(otoctx, rowid, category)
+		}
 
 	}
 	nextgetconn.Release()
@@ -164,10 +171,16 @@ func adjustToTopOfHour() {
 				config.Send("messages."+StationId, "[TOH] Inventory Song Get TOH "+tohinverr.Error(), "onair")
 			}
 			// play the item
-
-			config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, "0", playingday, playinghour, "0", "FILTOTOH", "0", strconv.Itoa(tohspins))))
+			if config.NatsBucketType == "mp3" {
+				config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, "0", playingday, playinghour, "0", "FILTOTOH", "0", strconv.Itoa(tohspins))))
+			}
+			if config.NatsBucketType == "mp4" {
+				config.SendONAIRmp4(string(OnAir2Json(artist, album, song, songlength, "0", playingday, playinghour, "0", "FILTOTOH", "0", strconv.Itoa(tohspins))))
+			}
 			//			config.SendONAIRmp3(artist + " - " + album + " - " + song)
-			itemlength = Play(otoctx, rowid, category)
+			if config.NatsBucketType == "mp3" {
+				itemlength = PlayMP3(otoctx, rowid, category)
+			}
 			tohspins--
 			// update statistics
 			spinsweek, _ = strconv.Atoi(week)
@@ -241,9 +254,16 @@ func playImagingId() {
 			config.Send("messages."+StationId, "[playImagingId] Inventory Song Get PID "+pidinverr.Error(), "onair")
 		}
 		// play the item
-		config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, playingday, playinghour, "0", category, "0", "1")))
+		if config.NatsBucketType == "mp3" {
+			config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, playingday, playinghour, "0", category, "0", "1")))
+		}
+		if config.NatsBucketType == "wav" {
+			config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, playingday, playinghour, "0", category, "0", "1")))
+		}
 		//config.SendONAIRmp3(artist + " - " + album + " - " + song)
-		itemlength = Play(otoctx, rowid, category)
+		if config.NatsBucketType == "mp3" {
+			itemlength = PlayMP3(otoctx, rowid, category)
+		}
 
 		// update statistics
 		spinsweek, _ = strconv.Atoi(week)
@@ -398,7 +418,7 @@ var otoCtx *oto.Context
 var otoreadyChan chan struct{}
 var otoerr error
 
-func playsetup() oto.Context {
+func playsetupMP3() oto.Context {
 
 	// Prepare an Oto context (this will use your default audio device) that will
 	// play all our sounds. Its configuration can't be changed later.
@@ -433,9 +453,42 @@ var fileBytesReader *bytes.Reader
 var t time.Time
 var decodedMp3 *mp3.Decoder
 var decodedMp3err error
+var decodedWav *mp3.Decoder
+var decodedWaverr error
 var player *oto.Player
+var sz uint64
 
-func Play(ctx oto.Context, song string, cat string) int {
+func PlayWAV(ctx oto.Context, song string, cat string) int {
+	elapsed = 0
+
+	if cat == "CURRENTS" {
+		t = time.Now()
+		if t.Minute()%2 == 0 {
+			value := config.InventoryGetRowByRow(song)
+			if len(value) > 0 {
+
+				sz = config.GetBucketSize("wav", song+"INTRO")
+
+				if sz > 0 {
+					song += "INTRO"
+				}
+			}
+		} else {
+			value := config.InventoryGetRowByRow(song)
+			if len(value) > 0 {
+
+				sz = config.GetBucketSize("mp3", song+"INTRO")
+
+				if sz > 0 {
+					song += "OUTRO"
+				}
+			}
+		}
+
+	}
+	return elapsed
+}
+func PlayMP3(ctx oto.Context, song string, cat string) int {
 
 	elapsed = 0
 
@@ -444,7 +497,9 @@ func Play(ctx oto.Context, song string, cat string) int {
 		if t.Minute()%2 == 0 {
 			value := config.InventoryGetRowByRow(song)
 			if len(value) > 0 {
-				sz := config.GetBucketSize("MP3", song+"INTRO")
+
+				sz = config.GetBucketSize("mp3", song+"INTRO")
+
 				if sz > 0 {
 					song += "INTRO"
 				}
@@ -452,7 +507,9 @@ func Play(ctx oto.Context, song string, cat string) int {
 		} else {
 			value := config.InventoryGetRowByRow(song)
 			if len(value) > 0 {
-				sz := config.GetBucketSize("MP3", song+"INTRO")
+
+				sz = config.GetBucketSize("mp3", song+"INTRO")
+
 				if sz > 0 {
 					song += "OUTRO"
 				}
@@ -464,6 +521,7 @@ func Play(ctx oto.Context, song string, cat string) int {
 	// Read the mp3 file into memory
 
 	fileBytes = config.GetBucket("mp3", song, StationId)
+
 	/* 	if err != nil {
 		panic("reading my-file.mp3 failed: " + err.Error())
 	} */
@@ -472,7 +530,9 @@ func Play(ctx oto.Context, song string, cat string) int {
 	fileBytesReader = bytes.NewReader(fileBytes)
 
 	// Decode file
+
 	decodedMp3, decodedMp3err = mp3.NewDecoder(fileBytesReader)
+
 	if decodedMp3err != nil {
 		config.Send("messages."+StationId, "Play MP3 Decoder Error "+song, "onair")
 		log.Println("Play mp3.NewDecoder failed: ", decodedMp3err.Error(), "for song:", song)
@@ -516,7 +576,7 @@ func readPreferences() {
 	//log.Println(config.DBaddress)
 
 	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
-
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
 	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
 	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
@@ -527,7 +587,7 @@ func readPreferences() {
 	if erramm != nil {
 		log.Println("CONFIG AdsMaxMinutes", amm, erramm)
 	}
-	//log.Println("CONFIG AdsMaxMinutes", config.AdsMaxMinutes)
+	log.Println("CONFIG NatsBucketType", config.NatsBucketType)
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
 	config.NewPGSQL()
@@ -633,17 +693,20 @@ func main() {
 
 	//playingday = *schedDay
 	//playinghour = *schedHour
-	otoctx = playsetup()
 
+	log.Println("Startup Parms:", actschedday, *schedHour, *stationId, *Logging)
+	readPreferences()
+	//config.NewPGSQL()
+	//config.NewNatsJS()
+	log.Println(config.NatsBucketType)
+	if config.NatsBucketType == "mp3" {
+		otoctx = playsetupMP3()
+	}
 	if *Logging == "true" {
 		logto = true
 	} else {
 		logto = false
 	}
-	log.Println("Startup Parms:", actschedday, *schedHour, *stationId, *Logging)
-	readPreferences()
-	//config.NewPGSQL()
-	//config.NewNatsJS()
 
 	var connectionspool *pgxpool.Conn
 	var connectionspoolerr error
@@ -835,8 +898,10 @@ func main() {
 							config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 							//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 							log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
-							itemlength = Play(otoctx, rowid, category)
-							processingadsminutes += itemlength
+							if config.NatsBucketType == "mp3" {
+								itemlength = PlayMP3(otoctx, rowid, category)
+								processingadsminutes += itemlength
+							}
 						}
 
 					} else {
@@ -862,8 +927,12 @@ func main() {
 						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 						// handle ads time slots, max spins, and max minutes
 						log.Println(category + ": " + artist + " - " + album + " - " + song)
-
-						itemlength = Play(otoctx, rowid+playintro, category)
+						if config.NatsBucketType == "mp3" {
+							itemlength = PlayMP3(otoctx, rowid+playintro, category)
+						}
+						if config.NatsBucketType == "wav" {
+							itemlength = PlayWAV(otoctx, rowid+playintro, category)
+						}
 
 					}
 					// update statistics

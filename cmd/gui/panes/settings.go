@@ -12,6 +12,7 @@ import (
 	"github.com/nh3000-org/broadcast/config"
 )
 
+var buckettypeShadow string
 var preferredlanguageShadow string
 var msgmaxageShadow string
 var preferredthemeShadow string
@@ -33,6 +34,13 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 	preferredlanguageShadow = config.Decrypt(swf, config.MySecret)
 	config.PreferedLanguage = preferredlanguageShadow
 	la.SetSelected(preferredlanguageShadow)
+
+	btlabel := widget.NewLabel(config.GetLangs("buckettype"))
+	bt := widget.NewRadioGroup([]string{"mp3", "mp4", "wav"}, func(string) {})
+	bt.Horizontal = true
+	buckettypeShadow = config.FyneApp.Preferences().StringWithFallback("NatsBucketType", config.Encrypt("mp3", config.MySecret))
+	config.NatsBucketType = buckettypeShadow
+	bt.SetSelected(config.Decrypt(buckettypeShadow, config.MySecret))
 
 	malabel := widget.NewLabel(config.GetLangs("ss-ma"))
 	ma := widget.NewRadioGroup([]string{"1h", "12h", "24h", "161h", "8372h"}, func(string) {})
@@ -78,6 +86,9 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		if x != config.Selected {
 			config.FyneApp.Preferences().SetString("FyneTheme", config.Encrypt(strconv.Itoa(config.Selected), config.MySecret))
 		}
+		if buckettypeShadow != bt.Selected {
+			config.FyneApp.Preferences().SetString("BucketType", config.Encrypt(bt.Selected, config.MySecret))
+		}
 		if preferredlanguageShadow != la.Selected {
 			config.FyneApp.Preferences().SetString("PreferedLanguage", config.Encrypt(la.Selected, config.MySecret))
 		}
@@ -87,7 +98,10 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		if adsmaxminutesShadow != amm.Selected {
 			config.FyneApp.Preferences().SetString("AdsMaxMinutes", config.Encrypt(amm.Selected, config.MySecret))
 		}
-		log.Println("settings ", ma.Selected)
+		if buckettypeShadow != bt.Selected {
+			config.FyneApp.Preferences().SetString("NatsBucketType", config.Encrypt(bt.Selected, config.MySecret))
+		}
+		log.Println("settings ", ma.Selected, bt.Selected)
 		if filterShadow != filter.Selected {
 			config.FyneApp.Preferences().SetString("FyneFilter", config.Encrypt(filter.Selected, config.MySecret))
 		}
@@ -104,6 +118,8 @@ func SettingsScreen(_ fyne.Window) fyne.CanvasObject {
 		widget.NewLabelWithStyle(config.GetLangs("ss-heading"), fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		lalabel,
 		la,
+		btlabel,
+		bt,
 		malabel,
 		ma,
 		ammlabel,
