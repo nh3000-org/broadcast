@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/ebitengine/oto/v3"
+	"github.com/go-audio/wav"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -418,7 +419,7 @@ var otoCtx *oto.Context
 var otoreadyChan chan struct{}
 var otoerr error
 
-func playsetupMP3() oto.Context {
+func playsetup() oto.Context {
 
 	// Prepare an Oto context (this will use your default audio device) that will
 	// play all our sounds. Its configuration can't be changed later.
@@ -453,7 +454,7 @@ var fileBytesReader *bytes.Reader
 var t time.Time
 var decodedMp3 *mp3.Decoder
 var decodedMp3err error
-var decodedWav *mp3.Decoder
+var decoderWav *wav.Decoder
 var decodedWaverr error
 var player *oto.Player
 var sz uint64
@@ -486,6 +487,39 @@ func PlayWAV(ctx oto.Context, song string, cat string) int {
 		}
 
 	}
+
+	fileBytes = config.GetBucket("wav", song, StationId)
+
+	/* 	if err != nil {
+		panic("reading my-file.mp3 failed: " + err.Error())
+	} */
+
+	// Convert the pure bytes into a reader object that can be used with the wac decoder
+	fileBytesReader = bytes.NewReader(fileBytes)
+
+	// Decode file
+
+	decoderWav = wav.NewDecoder(fileBytesReader)
+	/*
+		buf, err := decoderWav.FullPCMBuffer()
+		if err != nil {
+			log.Println("PlayWAV decoder err", err)
+		}
+
+		// Convert audio buffer to bytes
+		samples := audio.IntBuffer{
+			Data:   buf.Data,
+			Format: buf.Format,
+		} */
+
+	player := ctx.NewPlayer(fileBytesReader)
+	// Play
+	player.Play()
+	for player.IsPlaying() {
+		elapsed++
+		time.Sleep(time.Second)
+	}
+
 	return elapsed
 }
 func PlayMP3(ctx oto.Context, song string, cat string) int {
@@ -699,9 +733,9 @@ func main() {
 	//config.NewPGSQL()
 	//config.NewNatsJS()
 	log.Println(config.NatsBucketType)
-	if config.NatsBucketType == "mp3" {
-		otoctx = playsetupMP3()
-	}
+
+	otoctx = playsetup()
+
 	if *Logging == "true" {
 		logto = true
 	} else {

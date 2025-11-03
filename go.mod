@@ -29,6 +29,8 @@ require (
 	fyne.io/systray v1.11.0 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
+	github.com/cocoonlife/goalsa v0.0.0-20230731174733-19b297509b2e
+	github.com/cryptix/wav v0.0.0-20180415113528-8bdace674401
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ebitengine/purego v0.8.0 // indirect
 	github.com/f-amaral/go-async v0.3.0 // indirect
