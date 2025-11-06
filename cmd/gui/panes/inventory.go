@@ -24,7 +24,6 @@ var songerr error
 var pberr error
 var shadowCategory string
 
-
 func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	config.FyneInventoryWin = win
@@ -301,8 +300,6 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 				}
 
-
-
 				if strings.HasSuffix(cat, "wav") {
 					rmcat := imcategory + "/"
 					songfull := strings.ReplaceAll(path, rmcat, "")
@@ -373,12 +370,14 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 						rowreturned := config.InventoryAdd(imcategory, imartist, imsong, imalbum, length, "000000", sd[0:19], ed[0:19], hp, dp, maxspins, maxspinsperhour, "1999-01-01 00:00:00", added[0:19], today, week, total, "Stub")
 						row := strconv.Itoa(rowreturned)
 						if row != "0" {
+
 							songbytes, songerr = os.ReadFile(imimportdir)
+							log.Println("nats ", imimportdir)
 							if songerr != nil {
 								config.Send("messages."+config.NatsAlias, "Put Bucket Song Read Error", config.NatsAlias)
 							}
 							if songerr == nil {
-							
+								log.Println("nats put", "wav", row)
 								pberr = config.PutBucket("wav", row, songbytes)
 								if pberr == nil {
 									songbytes = []byte("")
@@ -437,18 +436,9 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 				}
 
-
-
 				return nil
 			})
 
-
-
-
-
-
-
-			
 			if walkstuberr != nil {
 				log.Println("messages.IMPORT", "Inventory Walk Err FileInfo "+walkstuberr.Error(), "onair")
 				config.Send("messages.IMPORT", "Inventory Walk Err FileInfo "+walkstuberr.Error(), "onair")
@@ -485,6 +475,21 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 					if pberr != nil {
 						config.Send("messages."+config.NatsAlias, "Put Bucket ", config.NatsAlias)
 						log.Fatal("ERROR PutBucket mp3" + song.URI().String() + ": " + pberr.Error())
+					}
+				}
+				if strings.HasSuffix(song.URI().String(), "wav") {
+					songbytes, songerr := os.ReadFile(strings.Replace(song.URI().String(), "file://", "", -1))
+					if songerr != nil {
+						config.Send("messages."+config.NatsAlias, "Put Bucket Song Read Error", config.NatsAlias)
+					}
+					pberr = config.PutBucket("wav", edrow.Text, songbytes)
+					if pberr == nil {
+						edsongsz.SetText(strconv.Itoa(len(songbytes)))
+						songbytes = []byte("")
+					}
+					if pberr != nil {
+						config.Send("messages."+config.NatsAlias, "Put Bucket ", config.NatsAlias)
+						log.Fatal("ERROR PutBucket wav" + song.URI().String() + ": " + pberr.Error())
 					}
 				}
 				if strings.HasSuffix(song.URI().String(), "mp4") {
@@ -545,14 +550,27 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 				config.Send("messages."+config.NatsAlias, "Put Bucket Read Error "+songerr.Error(), config.NatsAlias)
 			}
 			if songerr == nil {
-				pberr = config.PutBucket("mp3", edrow.Text+"INTRO", songbytes)
+				if config.NatsBucketType == "mp3" {
+					pberr = config.PutBucket("mp3", edrow.Text+"INTRO", songbytes)
 
-				if pberr == nil {
-					edintrosz.SetText(strconv.Itoa(len(songbytes)))
-					songbytes = []byte("")
+					if pberr == nil {
+						edintrosz.SetText(strconv.Itoa(len(songbytes)))
+						songbytes = []byte("")
+					}
+					if pberr != nil {
+						config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+					}
 				}
-				if pberr != nil {
-					config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+				if config.NatsBucketType == "wav" {
+					pberr = config.PutBucket("wav", edrow.Text+"INTRO", songbytes)
+
+					if pberr == nil {
+						edintrosz.SetText(strconv.Itoa(len(songbytes)))
+						songbytes = []byte("")
+					}
+					if pberr != nil {
+						config.Send("messages."+config.NatsAlias, "Put Bucket Write Error", config.NatsAlias)
+					}
 				}
 			}
 
@@ -595,6 +613,9 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	bucket := "mp3"
 	if strings.Contains(EDcategory.Selected, "VIDEO") {
 		bucket = "mp4"
+	}
+	if strings.Contains(EDcategory.Selected, "wav") {
+		bucket = "wav"
 	}
 	openSongsz := strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text)))
 	edsongsz.SetText("Song Size:" + openSongsz)
@@ -679,9 +700,13 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		edlastplayed.SetText(config.InventoryStore[id.Row].Lastplayed)
 		edlinks.SetText(config.InventoryStore[id.Row].Sourcelink)
 		bucket := "mp3"
-		if strings.Contains(EDcategory.Selected, "VIDEO") {
+		if config.NatsBucketType == "mp4" {
 			bucket = "mp4"
 		}
+		if config.NatsBucketType == "wav" {
+			bucket = "wav"
+		}
+		log.Println("bucket type",config.NatsBucketType )
 		edsongsz.SetText("Song Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text))))
 		edintrosz.SetText("Intro Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"INTRO"))))
 		edoutrosz.SetText("Outro Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"OUTRO"))))
@@ -709,8 +734,14 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			if shadowCategory == "CURRENTS" {
 				if EDcategory.Selected != "CURRENTS" {
 					// delete intro/outro
-					config.DeleteBucket("MP3", strconv.Itoa(myrow)+"INTRO.mp3")
-					config.DeleteBucket("MP3", strconv.Itoa(myrow)+"OUTRO.mp3")
+					if config.NatsBucketType == "mp3" {
+						config.DeleteBucket("mp3", strconv.Itoa(myrow)+"INTRO.mp3")
+						config.DeleteBucket("mp3", strconv.Itoa(myrow)+"OUTRO.mp3")
+					}
+					if config.NatsBucketType == "wav" {
+						config.DeleteBucket("wav", strconv.Itoa(myrow)+"INTRO.wav")
+						config.DeleteBucket("wav", strconv.Itoa(myrow)+"OUTRO.wav")
+					}
 				}
 			}
 
@@ -820,14 +851,30 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	})
 	syncdbtofs := widget.NewButtonWithIcon("Sync Db to FS", theme.ListIcon(), func() {
 		config.InventoryGet()
+		if config.NatsBucketType == "mp3" {
+			for i := range config.InventoryStore {
+				if !config.TestBucket("mp3", strconv.Itoa(config.InventoryStore[i].Row)) {
+					config.InventoryDelete(config.InventoryStore[i].Row)
+				}
 
-		for i := range config.InventoryStore {
-			if !config.TestBucket("mp3", strconv.Itoa(config.InventoryStore[i].Row)) {
-				config.InventoryDelete(config.InventoryStore[i].Row)
 			}
-
 		}
+		if config.NatsBucketType == "mp4" {
+			for i := range config.InventoryStore {
+				if !config.TestBucket("mp4", strconv.Itoa(config.InventoryStore[i].Row)) {
+					config.InventoryDelete(config.InventoryStore[i].Row)
+				}
 
+			}
+		}
+		if config.NatsBucketType == "wav" {
+			for i := range config.InventoryStore {
+				if !config.TestBucket("wav", strconv.Itoa(config.InventoryStore[i].Row)) {
+					config.InventoryDelete(config.InventoryStore[i].Row)
+				}
+
+			}
+		}
 		config.InventoryGet()
 		config.FyneInventoryList.Refresh()
 

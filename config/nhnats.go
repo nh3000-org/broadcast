@@ -74,7 +74,7 @@ func NewNatsJS() error {
 		MaxReconnect:   -1,
 		ReconnectWait:  2,
 		PingInterval:   120 * time.Second,
-		Timeout:        2400 * time.Hour,
+		Timeout:        87600 * time.Hour,
 		User:           NatsUser,
 		Password:       NatsUserPassword,
 	}
@@ -351,7 +351,7 @@ func PutBucket(bucket string, id string, data []byte) error {
 	}
 	if bucket == "wav" {
 		_, puterr := NATS.Obswav.PutBytes(id, data)
-
+		//log.Println("nats putbucket ", puterr)
 		if puterr != nil {
 			return puterr
 		}
@@ -386,7 +386,7 @@ func CheckBucket(bucket, id, station string) bool {
 	}
 	if bucket == "wav" {
 		_, gberr := NATS.Obswav.GetInfo(id)
-
+		//log.Println("nats checkbucket ", id)
 		if gberr != nil {
 			log.Println("Bucket WAV Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
 			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
@@ -421,7 +421,7 @@ func GetBucket(bucket, id, station string) []byte {
 	}
 	if bucket == "wav" {
 		gbdata, gberr := NATS.Obswav.GetBytes(id)
-
+		//log.Println("nats getbucket ", id, len(gbdata))
 		if gberr != nil {
 			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
 		}
@@ -449,7 +449,7 @@ func TestBucket(bucket, id string) bool {
 	}
 	if bucket == "wav" {
 		_, gberr := NATS.Obswav.GetBytes(id)
-
+		//Println("nats testbucket ", gberr)
 		if gberr == nil {
 			return true
 		}
@@ -465,7 +465,7 @@ func GetBucketSize(bucket, id string) uint64 {
 	if id == "" || id == "INTRO" || id == "OUTRO" {
 		return 0
 	}
-
+	//log.Println("nats getbucketsize ", bucket, id)
 	if bucket == "mp3" {
 		gbs, gbserr := NATS.Obsmp3.GetInfo(id)
 		if gbserr == nil {
@@ -480,9 +480,12 @@ func GetBucketSize(bucket, id string) uint64 {
 	}
 	if bucket == "wav" {
 		gbs, gbserr := NATS.Obswav.GetInfo(id)
+		//log.Println("nats getbucketsize ", gbserr)
 		if gbserr == nil {
+			log.Println("nats getbucketsize ", gbs)
 			return gbs.Size
 		}
+
 	}
 	return 0
 }
@@ -583,7 +586,7 @@ func SendONAIRmp3(m string) {
 }
 func SendONAIRmp4(m string) {
 	//"station.mp4.*"
-	log.Println(m)
+	//log.Println(m)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	_, puterr := NATS.OnAirmp4.Put(ctx, "OnAirmp4", []byte(m))
 
@@ -595,7 +598,7 @@ func SendONAIRmp4(m string) {
 }
 func SendONAIRwav(m string) {
 	//"station.wav.*"
-	log.Println(m)
+	//log.Println(m)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	_, puterr := NATS.OnAirwav.Put(ctx, "OnAirwav", []byte(m))
 
@@ -692,7 +695,7 @@ func SetupNATS() {
 			Storage:     nats.FileStorage,
 		})
 		if miswaveoerr != nil {
-			log.Println("SetupNATS Video Bucket ", miswaveoerr)
+			log.Println("SetupNATS WAV Bucket ", miswaveoerr)
 		}
 
 	}

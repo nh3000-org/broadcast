@@ -411,7 +411,7 @@ func CategoriesWriteStub(withinventory bool) string {
 					}
 					var invitem = artist + "-" + song + "-" + album
 					if err == nil {
-						data := GetBucket("mp3", strconv.Itoa(rowid), "COPY")
+						data := GetBucket(NatsBucketType, strconv.Itoa(rowid), "COPY")
 						os.WriteFile(userHome+"/"+id+"/"+invitem+".mp3", data, os.ModePerm)
 						log.Println("CategoriesWriteStub Write Stub", userHome+"/"+id+"/"+invitem+".mp3")
 					}

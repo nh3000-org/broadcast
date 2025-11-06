@@ -17,7 +17,9 @@ import (
 
 	"github.com/nh3000-org/broadcast/config"
 )
+
 var EDcategory = widget.NewSelect([]string{}, func(string) {})
+
 func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
 	errors := widget.NewLabel("...")
@@ -187,8 +189,9 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			webaddressShadow = webaddress.Text
 
 			buckettypeShadow = config.FyneApp.Preferences().StringWithFallback("NatsBucketType", config.Encrypt("mp3", config.MySecret))
-			config.NatsBucketType  = buckettypeShadow
+			config.NatsBucketType = config.Decrypt(buckettypeShadow, config.MySecret)
 
+			log.Println("logon", config.NatsBucketType)
 			webpassword.Enable()
 			password.Disable()
 			alias.Enable()
