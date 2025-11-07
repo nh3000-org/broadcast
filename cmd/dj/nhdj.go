@@ -70,6 +70,8 @@ var ctxmaincan context.CancelFunc
 var errum error
 var mp3msg jetstream.KeyWatcher
 var mp3err error
+var wavmsg jetstream.KeyWatcher
+var waverr error
 var kve jetstream.KeyValueEntry
 
 func main() {
@@ -133,34 +135,82 @@ func main() {
 			config.NewNatsJS()
 			config.NewPGSQL()
 			ctxmain, ctxmaincan = context.WithCancel(context.Background())
-			mp3msg, mp3err = config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
+			if config.NatsBucketType == "mp3" {
+				mp3msg, mp3err = config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
+				if mp3err != nil {
+					log.Println("ReceiveONAIRMP3", mp3err)
+					config.Send("messages."+"DJ", "Receive On Air mp3 ", "DJ")
+				}
+				for {
 
-			if mp3err != nil {
-				log.Println("ReceiveONAIRMP3", mp3err)
-				config.Send("messages."+"DJ", "Receive On Air mp3 ", "DJ")
-			}
-			//log.Println("ReceiveONAIRMP3 waiting")
+					kve = <-mp3msg.Updates()
+					//log.Println("ReceiveONAIRMP3", kve)
+					if kve != nil {
+						errum = json.Unmarshal(kve.Value(), &DJJSON)
+						if errum != nil {
+							log.Println("DJ ReceiveONAIRMP3", errum)
+							config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
 
-			for {
-
-				kve = <-mp3msg.Updates()
-				//log.Println("ReceiveONAIRMP3", kve)
-				if kve != nil {
-					errum = json.Unmarshal(kve.Value(), &DJJSON)
-					if errum != nil {
-						log.Println("DJ ReceiveONAIRMP3", errum)
-						config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
+						}
+						runtime.GC()
+						runtime.ReadMemStats(&memoryStats)
+						if w != nil {
+							w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+						}
+						drawgGui(DJJSON)
 
 					}
-					runtime.GC()
-					runtime.ReadMemStats(&memoryStats)
-					if w != nil {
-						w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
-					}
-					drawgGui(DJJSON)
-
 				}
 			}
+			if config.NatsBucketType == "wav" {
+				wavmsg, waverr = config.NATS.OnAirwav.Watch(ctxmain, "OnAirwav")
+				if waverr != nil {
+					log.Println("ReceiveONAIRWAV", waverr)
+					config.Send("messages."+"DJ", "Receive On Air wav ", "DJ")
+				}
+				for {
+
+					kve = <-wavmsg.Updates()
+					//log.Println("ReceiveONAIRMP3", kve)
+					if kve != nil {
+						errum = json.Unmarshal(kve.Value(), &DJJSON)
+						if errum != nil {
+							log.Println("DJ ReceiveONAIRMP3", errum)
+							config.Send("messages."+"DJ", "DJ Receive On Air wav ", errum.Error())
+
+						}
+						runtime.GC()
+						runtime.ReadMemStats(&memoryStats)
+						if w != nil {
+							w.SetTitle("On Air WAV " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+						}
+						drawgGui(DJJSON)
+
+					}
+				}
+			}
+			//log.Println("ReceiveONAIRMP3 waiting")
+			/*
+				for {
+
+					kve = <-mp3msg.Updates()
+					//log.Println("ReceiveONAIRMP3", kve)
+					if kve != nil {
+						errum = json.Unmarshal(kve.Value(), &DJJSON)
+						if errum != nil {
+							log.Println("DJ ReceiveONAIRMP3", errum)
+							config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
+
+						}
+						runtime.GC()
+						runtime.ReadMemStats(&memoryStats)
+						if w != nil {
+							w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+						}
+						drawgGui(DJJSON)
+
+					}
+				} */
 
 		}
 
@@ -311,7 +361,6 @@ func drawgGui(oa DJ) {
 	nextspins3 = strconv.Itoa(config.SchedulePlan[2].Spinstoplay)
 	custp3.Text = nextspins3
 
-
 	vertbox := container.NewVBox(
 		widget.NewLabel(" "),
 		asalgridhead,
@@ -363,6 +412,7 @@ func readPreferences() {
 	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
 	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
 
 	//log.Println("CONFIG AdsMaxMinutes", config.AdsMaxMinutes)
