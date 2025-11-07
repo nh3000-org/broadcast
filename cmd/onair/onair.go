@@ -940,7 +940,7 @@ func main() {
 								//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 								log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 
-								itemlength = PlayMP3(otoctx, rowid, category)
+								itemlength = PlayWAV(otoctx, rowid, category)
 								processingadsminutes += itemlength
 
 							}
@@ -965,25 +965,32 @@ func main() {
 						if config.NatsBucketType == "mp3" {
 							if config.CheckBucket("mp3", rowid+playintro, *stationId) {
 								playintro = ""
+
 							}
+							log.Println("mp3", category+": "+artist+" - "+album+" - "+song)
+							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
+							itemlength = PlayWAV(otoctx, rowid+playintro, category)
 						}
 						if config.NatsBucketType == "wav" {
 							if config.CheckBucket("wav", rowid+playintro, *stationId) {
 								playintro = ""
 							}
+							log.Println("wav", category+": "+artist+" - "+album+" - "+song)
+							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
+							itemlength = PlayWAV(otoctx, rowid+playintro, category)
 						}
 
 						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 						// handle ads time slots, max spins, and max minutes
-						log.Println(category + ": " + artist + " - " + album + " - " + song)
-						if config.NatsBucketType == "mp3" {
-							config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-							itemlength = PlayMP3(otoctx, rowid+playintro, category)
-						}
-						if config.NatsBucketType == "wav" {
-							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-							itemlength = PlayWAV(otoctx, rowid+playintro, category)
-						}
+						//log.Println(category + ": " + artist + " - " + album + " - " + song)
+						/* 						if config.NatsBucketType == "mp3" {
+						   							config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
+						   							itemlength = PlayMP3(otoctx, rowid+playintro, category)
+						   						}
+						   						if config.NatsBucketType == "wav" {
+						   							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
+						   							itemlength = PlayWAV(otoctx, rowid+playintro, category)
+						   						} */
 
 					}
 					// update statistics
