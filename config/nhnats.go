@@ -482,7 +482,7 @@ func GetBucketSize(bucket, id string) uint64 {
 		gbs, gbserr := NATS.Obswav.GetInfo(id)
 		//log.Println("nats getbucketsize ", gbserr)
 		if gbserr == nil {
-			log.Println("nats getbucketsize ", gbs)
+			//log.Println("nats getbucketsize ", gbs)
 			return gbs.Size
 		}
 
