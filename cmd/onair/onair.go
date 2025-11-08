@@ -131,6 +131,7 @@ var pidrowserr error
 var pidinverr error
 var pidinvupdconn *pgxpool.Conn
 var piderrinventoryupd error
+var tohhour string
 
 func adjustToTopOfHour() {
 
@@ -141,7 +142,11 @@ func adjustToTopOfHour() {
 	//log.Println("[TOH] time min", tohmin, "left", tohleft, "spins", tohspins)
 	if tohleft > 50 {
 		tohspins = 0
-		//getNextHourPart()
+		// if this is the hour part that needs to be played dont increment\
+		tohhour = config.GetDateTime("0h")[11:13]
+		if playinghour != tohhour {
+			getNextHourPart()
+		}
 		return
 	}
 	if tohspins > 1 {
