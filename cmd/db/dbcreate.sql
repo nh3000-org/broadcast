@@ -127,9 +127,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '00','22','FILLTOTOH',1);
 
@@ -150,9 +150,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '01','22','FILLTOTOH',1);
 
@@ -173,9 +173,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '02','22','FILLTOTOH',1);
 
@@ -196,9 +196,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '03','22','FILLTOTOH',1);
 
@@ -219,9 +219,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '04','22','FILLTOTOH',1);
 
@@ -242,9 +242,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '05','22','FILLTOTOH',1);
 
@@ -262,7 +262,7 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '06','12','NWS-1-PLAYONCE',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '06','13','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '06','14','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '06','15','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '06','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '06','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '06','17','FILLTOTOH',1);
 
@@ -278,7 +278,7 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','10','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','11','DJAM-72-PLAYONCE',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','12','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','13','RECURRENTS',3);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','13','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','14','NWS-3-PLAYONCE',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','15','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '07','16','IMAGINGID',1);
@@ -298,7 +298,7 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '08','12','ADS',4);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '08','13','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '08','14','NWS-5-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '08','15','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '08','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '08','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '08','17','FILLTOTOH',1);
 
@@ -313,9 +313,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','10','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','11','DJAM-92-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','13','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','14','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','14','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','15','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '09','16','FILLTOTOH',1);
 
@@ -330,10 +330,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','08','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','09','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','10','DJAM-102-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','11','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','11','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','12','ADS',4);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','14','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','14','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','14','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','15','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '10','16','FILLTOTOH',1);
 
@@ -348,10 +348,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','10','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','11','DJAM-112-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '11','17','FILLTOTOH',1);
 
@@ -366,10 +366,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','10','RECURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','11','DJPM-122-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '12','17','FILLTOTOH',1);
 
@@ -384,10 +384,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','10','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','11','DJPM-122-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '13','17','FILLTOTOH',1);
 
@@ -403,10 +403,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','10','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','11','DJPM-142-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '14','17','FILLTOTOH',1);
 
@@ -424,7 +424,7 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '15','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '15','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '15','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '15','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '15','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '15','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '15','17','FILLTOTOH',1);
 
@@ -439,10 +439,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','10','CURRENTS',2);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','11','DJPM-162-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '16','17','FILLTOTOH',1);
 
@@ -457,10 +457,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','10','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','11','DJPM-172-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '17','17','FILLTOTOH',1);
 
@@ -475,10 +475,10 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','09','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','10','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','11','DJPM-182-PLAYONCE',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','12','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','12','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','13','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','14','ADS',4);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','15','CURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','15','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','16','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '18','17','FILLTOTOH',1);
 
@@ -499,9 +499,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '19','22','FILLTOTOH',1);
 
@@ -522,9 +522,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '20','22','FILLTOTOH',1);
 
@@ -545,9 +545,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '21','22','FILLTOTOH',1);
 
@@ -568,9 +568,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '22','22','FILLTOTOH',1);
 
@@ -591,9 +591,9 @@ insert into schedule (days,hours,position,categories,spinstoplay) values('MON', 
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','15','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','16','CURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','17','ADS',2);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','18','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','18','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','19','IMAGINGID',1);
-insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','20','RECURRENTS',2);
+insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','20','RECURRENTS',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','21','IMAGINGID',1);
 insert into schedule (days,hours,position,categories,spinstoplay) values('MON', '23','22','FILLTOTOH',1);
 
