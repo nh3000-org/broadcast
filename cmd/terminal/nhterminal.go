@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -168,13 +169,103 @@ var wavmsg jetstream.KeyWatcher
 var waverr error
 var kve jetstream.KeyValueEntry
 
-func drawonair() {
+func drawonair() tview.Table {
+
+	//flex.Clear()
+	table := tview.NewTable()
+	table.SetBorder(true)
+
+	// header r,c
+	table.SetCell(0, 0, tview.NewTableCell("On Air").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(0, 1, tview.NewTableCell("Artist").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(0, 2, tview.NewTableCell("Song").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(0, 3, tview.NewTableCell("Album").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(0, 4, tview.NewTableCell("Length").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(0, 5, tview.NewTableCell("Left").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	// onair r,c
+	table.SetCell(1, 0, tview.NewTableCell("Playing").SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(1, 1, tview.NewTableCell(DJJSON.Artist).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(1, 2, tview.NewTableCell(DJJSON.Song).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(1, 3, tview.NewTableCell(DJJSON.Album).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	if strings.HasPrefix("DJ", DJJSON.SchedCategory) && (DJJSON.Length == "0" || DJJSON.Length == "00") {
+		DJJSON.Length = "300"
+	}
+	if strings.HasPrefix("NWS", DJJSON.SchedCategory) && (DJJSON.Length == "0" || DJJSON.Length == "00") {
+		DJJSON.Length = "60"
+	}
+	table.SetCell(1, 4, tview.NewTableCell(DJJSON.Length).SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+
+	ttp, _ := strconv.ParseFloat(DJJSON.Length, 64)
+	go func() {
+		for tl := 1.0; tl <= ttp; tl++ {
+			time.Sleep(time.Second)
+			timeleft := ttp - tl
+			s := strconv.FormatFloat(timeleft, 'f', -1, 64)
+			if timeleft > 10 {
+				table.SetCell(1, 5, tview.NewTableCell(s).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+			} else {
+				table.SetCell(1, 5, tview.NewTableCell(s).SetTextColor(tcell.ColorRed).SetAlign(tview.AlignLeft))
+			}
+		}
+	}()
+
+	// header r,c
+	table.SetCell(3, 0, tview.NewTableCell("Category").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(3, 1, tview.NewTableCell("Day").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(3, 2, tview.NewTableCell("Hour").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(3, 3, tview.NewTableCell("Position").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(3, 4, tview.NewTableCell("Spins").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(3, 5, tview.NewTableCell("Spins Left").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	// onair r,c
+	table.SetCell(4, 0, tview.NewTableCell(DJJSON.SchedCategory).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(4, 1, tview.NewTableCell(DJJSON.SchedDay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(4, 2, tview.NewTableCell(DJJSON.SchedHour).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	if DJJSON.SchedPosition == "0" || DJJSON.SchedPosition == "00" {
+		DJJSON.SchedPosition = "99"
+	}
+	table.SetCell(4, 3, tview.NewTableCell(DJJSON.SchedPosition).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(4, 4, tview.NewTableCell(DJJSON.SchedSpinsToPlay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(4, 5, tview.NewTableCell(DJJSON.SchedSpinsLefToPlay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+	// header r,c
+	table.SetCell(6, 0, tview.NewTableCell("Category").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(6, 1, tview.NewTableCell("Day").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(6, 2, tview.NewTableCell("Hour").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(6, 3, tview.NewTableCell("Position").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	table.SetCell(6, 4, tview.NewTableCell("Spins").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+
+	config.ScheduleGetPlan(DJJSON.SchedDay, DJJSON.SchedHour, DJJSON.SchedPosition)
+
+	table.SetCell(7, 0, tview.NewTableCell(config.SchedulePlan[0].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(7, 1, tview.NewTableCell(config.SchedulePlan[0].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(7, 2, tview.NewTableCell(config.SchedulePlan[0].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(7, 3, tview.NewTableCell(config.SchedulePlan[0].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	nextspins1 := strconv.Itoa(config.SchedulePlan[0].Spinstoplay)
+	table.SetCell(7, 4, tview.NewTableCell(nextspins1).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+	table.SetCell(8, 0, tview.NewTableCell(config.SchedulePlan[1].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(8, 1, tview.NewTableCell(config.SchedulePlan[1].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(8, 2, tview.NewTableCell(config.SchedulePlan[1].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(8, 3, tview.NewTableCell(config.SchedulePlan[1].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	nextspins2 := strconv.Itoa(config.SchedulePlan[1].Spinstoplay)
+	table.SetCell(8, 4, tview.NewTableCell(nextspins2).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+	table.SetCell(9, 0, tview.NewTableCell(config.SchedulePlan[2].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(9, 1, tview.NewTableCell(config.SchedulePlan[2].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(9, 2, tview.NewTableCell(config.SchedulePlan[2].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	table.SetCell(9, 3, tview.NewTableCell(config.SchedulePlan[2].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	nextspins3 := strconv.Itoa(config.SchedulePlan[2].Spinstoplay)
+	table.SetCell(9, 4, tview.NewTableCell(nextspins3).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	return *table
+}
+func doonair() {
+	app := tview.NewApplication()
+	flex := tview.NewFlex()
 	ctxmain, ctxmaincan = context.WithCancel(context.Background())
 	if config.NatsBucketType == "mp3" {
 		mp3msg, mp3err = config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
 		if mp3err != nil {
 			log.Println("ReceiveONAIRMP3", mp3err)
-			config.Send("messages."+"DJ", "Receive On Air mp3 ", "DJ")
 		}
 		for {
 
@@ -184,15 +275,29 @@ func drawonair() {
 				errum = json.Unmarshal(kve.Value(), &DJJSON)
 				if errum != nil {
 					log.Println("DJ ReceiveONAIRMP3", errum)
-					config.Send("messages."+"DJ", "DJ Receive On Air mp3 ", errum.Error())
-
 				}
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
-				if w != nil {
-					w.SetTitle("On Air MP3 " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+
+				runtime.GC()
+
+				memcpudisk := domemory()
+				memcpu := tview.NewTextView()
+				memcpu.SetTitle("MEM/CPU/DISK")
+				memcpu.SetLabel("")
+				memcpu.SetText("")
+				memcpu.SetBorder(true)
+
+				flex.AddItem(&memcpudisk, 0, 1, false)
+				onair := tview.NewTextView()
+				onair.SetTitle("On Air MP3 Player")
+				ona := drawonair()
+
+				flex.AddItem(&ona, 0, 1, false)
+
+				if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
+					panic(err)
 				}
-				drawgGui(DJJSON)
 
 			}
 		}
@@ -201,7 +306,6 @@ func drawonair() {
 		wavmsg, waverr = config.NATS.OnAirwav.Watch(ctxmain, "OnAirwav")
 		if waverr != nil {
 			log.Println("ReceiveONAIRWAV", waverr)
-			config.Send("messages."+"DJ", "Receive On Air wav ", "DJ")
 		}
 		for {
 
@@ -210,51 +314,89 @@ func drawonair() {
 			if kve != nil {
 				errum = json.Unmarshal(kve.Value(), &DJJSON)
 				if errum != nil {
-					log.Println("DJ ReceiveONAIRMP3", errum)
-					config.Send("messages."+"DJ", "DJ Receive On Air wav ", errum.Error())
-
+					log.Println("DJ ReceiveONAIRWAV", errum)
 				}
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
-				if w != nil {
-					w.SetTitle("On Air WAV " + DJJSON.Artist + " - " + DJJSON.Song + " - " + DJJSON.Album + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+
+				runtime.GC()
+				runtime.ReadMemStats(&memoryStats)
+
+				app = tview.NewApplication()
+				flex = tview.NewFlex()
+				//log.Println("in wav")
+				runtime.GC()
+				readPreferences()
+				memcpudisk := domemory()
+				memcpu := tview.NewTextView()
+				memcpu.SetTitle("MEM/CPU/DISK")
+				memcpu.SetLabel("")
+				memcpu.SetText("")
+				memcpu.SetBorder(true)
+
+				flex.AddItem(&memcpudisk, 0, 1, false)
+				onair := tview.NewTextView()
+				onair.SetTitle("On Air WAV Player")
+				ona := drawonair()
+
+				flex.AddItem(&ona, 0, 4, false)
+				app.Draw()
+				if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
+					panic(err)
 				}
-				drawgGui(DJJSON)
 
 			}
 		}
 	}
 
 }
-func drawgui(app *tview.Application, flex *tview.Flex) {
-	runtime.GC()
+
+/*
+	 func drawgui(app *tview.Application, flex *tview.Flex) {
+		runtime.GC()
+		readPreferences()
+		memcpudisk := domemory()
+		memcpu := tview.NewTextView()
+		memcpu.SetTitle("MEM/CPU/DISK")
+		memcpu.SetLabel("")
+		memcpu.SetText("")
+		memcpu.SetBorder(true)
+
+		flex.AddItem(&memcpudisk, 0, 1, false)
+		onair := tview.NewTextView()
+		onair.SetTitle("On Air")
+		doonair()
+
+		///flex.AddItem(&ona, 0, 1, false)
+
+		if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
+			panic(err)
+		}
+	}
+*/
+var app *tview.Application
+var left *tview.Box
+var right *tview.Box
+var flex *tview.Flex
+
+func main() {
 	readPreferences()
+	app = tview.NewApplication()
+	left = tview.NewBox()
 	memcpudisk := domemory()
 	memcpu := tview.NewTextView()
 	memcpu.SetTitle("MEM/CPU/DISK")
 	memcpu.SetLabel("")
 	memcpu.SetText("")
 	memcpu.SetBorder(true)
-
+	flex = tview.NewFlex()
 	flex.AddItem(&memcpudisk, 0, 1, false)
-
-	nats := tview.NewTextView()
-	nats.SetTitle("On Air")
-
-	du := "\n\nONair \n/ Total "
-
-	nats.SetText(du)
-	nats.SetBorder(true)
-	flex.AddItem(nats, 0, 2, false)
+	oa := drawonair()
+	flex.AddItem(&oa, 0, 1, false)
+	//right = tview.NewBox().SetDrawFunc(drawTime)
 
 	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
-}
-func main() {
-	app := tview.NewApplication()
-	flex := tview.NewFlex()
-
-	drawgui(app, flex)
 
 }
