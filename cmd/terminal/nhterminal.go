@@ -261,8 +261,26 @@ func drawonair() {
 	onair.SetCell(9, 4, tview.NewTableCell(nextspins3).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
 }
+func countdown(tottime float64) {
+	for tl := 1.0; tl <= tottime; tl++ {
+		time.Sleep(time.Second)
+		timeleft := tottime - tl
+		s := strconv.FormatFloat(timeleft, 'f', -1, 64)
+
+		if timeleft > 10 {
+			app.QueueUpdateDraw(func() {
+				onair.SetCell(1, 5, tview.NewTableCell(s).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+			})
+		} else {
+			app.QueueUpdateDraw(func() {
+				onair.SetCell(1, 5, tview.NewTableCell(s).SetTextColor(tcell.ColorRed).SetAlign(tview.AlignLeft))
+			})
+		}
+
+	}
+}
 func doonair() {
-	log.Println("ReceiveONAIRMP3")
+
 	ctxmain, ctxmaincan = context.WithCancel(context.Background())
 	if config.NatsBucketType == "mp3" {
 		mp3msg, mp3err = config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
@@ -302,7 +320,90 @@ func doonair() {
 				if errum != nil {
 					log.Println("DJ ReceiveONAIRWAV", errum)
 				}
+				ttp, _ := strconv.ParseFloat(DJJSON.Length, 64)
+				go countdown(ttp)
+				app.QueueUpdateDraw(func() {
+					v, _ := mem.VirtualMemory()
+					vtotal := strconv.FormatUint(v.Total/1024/1024, 10)
+					vfree := strconv.FormatUint(v.Free/1024/1024, 10)
+					vusedpercent := strconv.FormatFloat(v.UsedPercent, 'f', 2, 64)
+					runtime.ReadMemStats(&memoryStats)
+					cpupercent, _ := cpu.Percent(time.Second, true)
+					vcpupercent := strconv.FormatFloat(cpupercent[0], 'f', 2, 64)
+					usage, _ := disk.Usage("/")
+					usagehome, _ := disk.Usage("/home")
+					usageopt, _ := disk.Usage("/opt")
+					mcp.SetCell(1, 1, tview.NewTableCell(vtotal).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(2, 1, tview.NewTableCell(vfree).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(3, 1, tview.NewTableCell(vcpupercent).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
+					mcp.SetCell(5, 1, tview.NewTableCell(vusedpercent).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					mcp.SetCell(7, 1, tview.NewTableCell(strconv.FormatUint(memoryStats.Alloc/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					mcp.SetCell(9, 1, tview.NewTableCell(strconv.FormatUint(usage.Total/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(10, 1, tview.NewTableCell(strconv.FormatUint(usage.Used/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(11, 1, tview.NewTableCell(strconv.FormatUint(usage.Free/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					mcp.SetCell(13, 1, tview.NewTableCell(strconv.FormatUint(usagehome.Total/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(14, 1, tview.NewTableCell(strconv.FormatUint(usagehome.Used/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(15, 1, tview.NewTableCell(strconv.FormatUint(usagehome.Free/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					mcp.SetCell(17, 1, tview.NewTableCell(strconv.FormatUint(usageopt.Total/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(18, 1, tview.NewTableCell(strconv.FormatUint(usageopt.Used/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					mcp.SetCell(19, 1, tview.NewTableCell(strconv.FormatUint(usageopt.Free/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					onair.SetCell(1, 1, tview.NewTableCell(DJJSON.Artist).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(1, 2, tview.NewTableCell(DJJSON.Song).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(1, 3, tview.NewTableCell(DJJSON.Album).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					if strings.HasPrefix("DJ", DJJSON.SchedCategory) && (DJJSON.Length == "0" || DJJSON.Length == "00") {
+						DJJSON.Length = "300"
+					}
+					if strings.HasPrefix("NWS", DJJSON.SchedCategory) && (DJJSON.Length == "0" || DJJSON.Length == "00") {
+						DJJSON.Length = "60"
+					}
+					onair.SetCell(1, 4, tview.NewTableCell(DJJSON.Length).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(4, 0, tview.NewTableCell(DJJSON.SchedCategory).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(4, 1, tview.NewTableCell(DJJSON.SchedDay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(4, 2, tview.NewTableCell(DJJSON.SchedHour).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					if DJJSON.SchedPosition == "0" || DJJSON.SchedPosition == "00" {
+						DJJSON.SchedPosition = "99"
+					}
+					onair.SetCell(4, 3, tview.NewTableCell(DJJSON.SchedPosition).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(4, 4, tview.NewTableCell(DJJSON.SchedSpinsToPlay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(4, 5, tview.NewTableCell(DJJSON.SchedSpinsLefToPlay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					// header r,c
+					onair.SetCell(6, 0, tview.NewTableCell("Category").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+					onair.SetCell(6, 1, tview.NewTableCell("Day").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+					onair.SetCell(6, 2, tview.NewTableCell("Hour").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+					onair.SetCell(6, 3, tview.NewTableCell("Position").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+					onair.SetCell(6, 4, tview.NewTableCell("Spins").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+
+					config.ScheduleGetPlan(DJJSON.SchedDay, DJJSON.SchedHour, DJJSON.SchedPosition)
+
+					onair.SetCell(7, 0, tview.NewTableCell(config.SchedulePlan[0].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(7, 1, tview.NewTableCell(config.SchedulePlan[0].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(7, 2, tview.NewTableCell(config.SchedulePlan[0].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(7, 3, tview.NewTableCell(config.SchedulePlan[0].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					nextspins1 := strconv.Itoa(config.SchedulePlan[0].Spinstoplay)
+					onair.SetCell(7, 4, tview.NewTableCell(nextspins1).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					onair.SetCell(8, 0, tview.NewTableCell(config.SchedulePlan[1].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(8, 1, tview.NewTableCell(config.SchedulePlan[1].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(8, 2, tview.NewTableCell(config.SchedulePlan[1].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(8, 3, tview.NewTableCell(config.SchedulePlan[1].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					nextspins2 := strconv.Itoa(config.SchedulePlan[1].Spinstoplay)
+					onair.SetCell(8, 4, tview.NewTableCell(nextspins2).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+					onair.SetCell(9, 0, tview.NewTableCell(config.SchedulePlan[2].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(9, 1, tview.NewTableCell(config.SchedulePlan[2].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(9, 2, tview.NewTableCell(config.SchedulePlan[2].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(9, 3, tview.NewTableCell(config.SchedulePlan[2].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					nextspins3 := strconv.Itoa(config.SchedulePlan[2].Spinstoplay)
+					onair.SetCell(9, 4, tview.NewTableCell(nextspins3).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+
+				})
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
 
@@ -329,7 +430,7 @@ func main() {
 	drawonair()
 	flex.AddItem(&onair, 0, 3, false)
 	//drawonair()
-	//doonair()
+	go doonair()
 	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
