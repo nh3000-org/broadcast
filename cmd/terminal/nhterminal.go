@@ -27,11 +27,14 @@ const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 var app *tview.Application
 
 var flex *tview.Flex
-
+var memcpu *tview.TextView
 var vtotal string
 var vfree string
 var vusedpercent string
-
+var ttp float64
+var tl float64
+var timeleft float64
+var s string
 var cpupercent []float64
 var vcpupercent string
 var usage *disk.UsageStat
@@ -41,16 +44,19 @@ var v *mem.VirtualMemoryStat
 var nextspins1 string
 var nextspins2 string
 var nextspins3 string
+var jsondata []byte
+var readerr error
+var errunmarshal error
 
 func readPreferences() {
 	// read config preferences.json
-	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	jsondata, readerr = os.ReadFile(PreferencesLocation)
 	if readerr != nil {
 		log.Println("ERROR Preferences readerr ", readerr)
 	}
 	// parse json
 	var cfg map[string]any
-	errunmarshal := json.Unmarshal(jsondata, &cfg)
+	errunmarshal = json.Unmarshal(jsondata, &cfg)
 	if errunmarshal != nil {
 		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
 	}
@@ -211,12 +217,12 @@ func drawonair() {
 	}
 	onair.SetCell(1, 4, tview.NewTableCell(DJJSON.Length).SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 
-	ttp, _ := strconv.ParseFloat(DJJSON.Length, 64)
+	ttp, _ = strconv.ParseFloat(DJJSON.Length, 64)
 	go func() {
-		for tl := 1.0; tl <= ttp; tl++ {
+		for tl = 1.0; tl <= ttp; tl++ {
 			time.Sleep(time.Second)
-			timeleft := ttp - tl
-			s := strconv.FormatFloat(timeleft, 'f', -1, 64)
+			timeleft = ttp - tl
+			s = strconv.FormatFloat(timeleft, 'f', -1, 64)
 			if timeleft > 10 {
 				onair.SetCell(1, 5, tview.NewTableCell(s).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 			} else {
@@ -275,10 +281,10 @@ func drawonair() {
 
 }
 func countdown(tottime float64) {
-	for tl := 1.0; tl <= tottime; tl++ {
+	for tl = 1.0; tl <= tottime; tl++ {
 		time.Sleep(time.Second)
-		timeleft := tottime - tl
-		s := strconv.FormatFloat(timeleft, 'f', -1, 64)
+		timeleft = tottime - tl
+		s = strconv.FormatFloat(timeleft, 'f', -1, 64)
 
 		if timeleft > 10 {
 			app.QueueUpdateDraw(func() {
@@ -312,7 +318,7 @@ func doonair() {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
 
-				ttp, _ := strconv.ParseFloat(DJJSON.Length, 64)
+				ttp, _ = strconv.ParseFloat(DJJSON.Length, 64)
 				go countdown(ttp)
 				app.QueueUpdateDraw(func() {
 					runtime.GC()
@@ -419,7 +425,7 @@ func doonair() {
 				}
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
-				ttp, _ := strconv.ParseFloat(DJJSON.Length, 64)
+				ttp, _ = strconv.ParseFloat(DJJSON.Length, 64)
 				go countdown(ttp)
 				app.QueueUpdateDraw(func() {
 					runtime.GC()
@@ -520,7 +526,7 @@ func main() {
 	flex = tview.NewFlex()
 	mcp = *tview.NewTable()
 	domemory()
-	memcpu := tview.NewTextView()
+	memcpu = tview.NewTextView()
 	memcpu.SetTitle("MEM/CPU/DISK")
 	memcpu.SetLabel("")
 	memcpu.SetText("")
