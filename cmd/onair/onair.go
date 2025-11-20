@@ -974,7 +974,7 @@ func main() {
 							}
 							log.Println(category + ": " + artist + " - " + album + " - " + song)
 							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-							itemlength = PlayWAV(otoctx, rowid+playintro, category)
+							itemlength = PlayMP3(otoctx, rowid+playintro, category)
 						}
 						if config.NatsBucketType == "wav" {
 							if config.CheckBucket("wav", rowid+playintro, *stationId) {
