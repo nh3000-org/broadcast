@@ -701,7 +701,6 @@ func SetupNATS() {
 	}
 
 }
-
 func ReceiveMESSAGE() {
 
 	var startseqmsg uint64 = 1
@@ -746,18 +745,67 @@ func ReceiveMESSAGE() {
 				ms.MSelementid = len(NatsMessages)
 				NatsMessages[len(NatsMessages)] = ms
 				NatsMessagesIndex[ms.MSiduuid] = true
-				FyneMessageList.Refresh()
+				if FyneMainWin != nil {
+					FyneMessageList.Refresh()
+				}
 			}
 			if FyneMainWin != nil {
 				runtime.GC()
 				runtime.ReadMemStats(&memoryStats)
 				FyneMessageWin.SetTitle(getLangsNats("ms-err6-1") + strconv.Itoa(len(NatsMessages)) + getLangsNats("ms-err6-2") + " " + strconv.FormatUint(memoryStats.Alloc/1024/1024, 10) + " Mib")
+				FyneMessageList.Refresh()
 			}
-			FyneMessageList.Refresh()
+
 		}
 
 	}
 }
+
+/* func ReceiveMESSAGEDashboard() {
+	log.Println("rmd")
+	var startseqmsg uint64 = 1
+	rmctx, rmctxcan := context.WithTimeout(context.Background(), 12*time.Hour)
+	defer rmctxcan()
+	rmconsumer, rmconserr := NATS.Js.CreateOrUpdateConsumer(rmctx, jetstream.ConsumerConfig{
+		Name:              "RMDASHBOARD-" + NatsAlias + "-" + uuid.New().String(),
+		AckWait:           4 * time.Hour,
+		AckPolicy:         jetstream.AckExplicitPolicy,
+		DeliverPolicy:     jetstream.DeliverByStartSequencePolicy,
+		InactiveThreshold: 4 * time.Hour,
+		FilterSubject:     "messages.*",
+		ReplayPolicy:      jetstream.ReplayInstantPolicy,
+		OptStartSeq:       startseqmsg,
+	})
+	if rmconserr != nil {
+		log.Println("ReceiveMESSAGEDashboard Consumer", rmconserr)
+	}
+	for {
+
+		rmmsg, rmerr := rmconsumer.Next()
+
+		startseqmsg++
+
+		if rmerr == nil {
+			rmmeta, _ := rmmsg.Metadata()
+			runtime.GC()
+			runtime.ReadMemStats(&memoryStats)
+			rmmsg.Nak()
+			ms := MessageStore{}
+			jsaonerr := json.Unmarshal([]byte(string(Decrypt(string(rmmsg.Data()), NatsQueuePassword))), &ms)
+			if jsaonerr != nil {
+				log.Println("ReceiveMESSAGEDashboard Un Marhal", jsaonerr)
+			}
+
+			//if !NatsMessagesIndex[ms.MSiduuid] {
+
+			ms.MSsequence = rmmeta.Sequence.Stream
+			ms.MSelementid = len(NatsMessages)
+			NatsMessages[len(NatsMessages)] = ms
+			NatsMessagesIndex[ms.MSiduuid] = true
+			//}
+		}
+	}
+} */
 
 type OA struct {
 	Artist              string

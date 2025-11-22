@@ -81,6 +81,7 @@ func readPreferences() {
 
 var memoryStats runtime.MemStats
 var mcp tview.Table
+var msgv tview.TextView
 
 func domemory() {
 	v, _ = mem.VirtualMemory()
@@ -279,6 +280,25 @@ func drawonair() {
 	nextspins3 = strconv.Itoa(config.SchedulePlan[2].Spinstoplay)
 	onair.SetCell(9, 4, tview.NewTableCell(nextspins3).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
+}
+
+var msgi int
+var msgs string
+
+func drawmessages() {
+
+	for {
+
+		msgs = "\n"
+		for msgi = 0; msgi < len(config.NatsMessages); msgi++ {
+			msgs = msgs + config.NatsMessages[msgi].MSmessage + "\n"
+		}
+		app.QueueUpdateDraw(func() {
+			msgv.SetTitle(strconv.Itoa(len(config.NatsMessages)))
+			msgv.SetText(msgs)
+		})
+		time.Sleep(5 * time.Minute)
+	}
 }
 func countdown(tottime float64) {
 	for tl = 1.0; tl <= tottime; tl++ {
@@ -538,6 +558,17 @@ func main() {
 	flex.AddItem(&onair, 0, 3, false)
 	//drawonair()
 	go doonair()
+	msgv = *tview.NewTextView()
+	msgv.SetWordWrap(true)
+	msgv.SetBorder(true)
+	msgv.SetTitle("Messages")
+	msgv.SetText("Error Messages")
+	msgv.SetWordWrap(true)
+	msgv.SetScrollable(true)
+
+	go config.ReceiveMESSAGE()
+	go drawmessages()
+	flex.AddItem(&msgv, 0, 2, false)
 	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
