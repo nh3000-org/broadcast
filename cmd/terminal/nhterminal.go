@@ -238,7 +238,7 @@ func drawonair() {
 	onair.SetCell(3, 2, tview.NewTableCell("Hour").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 	onair.SetCell(3, 3, tview.NewTableCell("Position").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 	onair.SetCell(3, 4, tview.NewTableCell("Spins").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
-	onair.SetCell(3, 5, tview.NewTableCell("Spins Left").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+	onair.SetCell(3, 5, tview.NewTableCell("Left").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 	// onair r,c
 	onair.SetCell(4, 0, tview.NewTableCell(DJJSON.SchedCategory).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(4, 1, tview.NewTableCell(DJJSON.SchedDay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
@@ -568,7 +568,7 @@ func main() {
 
 	go config.ReceiveMESSAGE()
 	go drawmessages()
-	flex.AddItem(&msgv, 0, 2, false)
+	flex.AddItem(&msgv, 0, 1, false)
 	if err := app.SetRoot(flex, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
