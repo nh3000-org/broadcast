@@ -207,9 +207,9 @@ func drawonair() {
 	onair.SetCell(0, 5, tview.NewTableCell("Left").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 	// onair r,c
 	onair.SetCell(1, 0, tview.NewTableCell("Playing").SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
-	onair.SetCell(1, 1, tview.NewTableCell(DJJSON.Artist).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
-	onair.SetCell(1, 2, tview.NewTableCell(DJJSON.Song).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
-	onair.SetCell(1, 3, tview.NewTableCell(DJJSON.Album).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	onair.SetCell(1, 1, tview.NewTableCell(to16(DJJSON.Artist)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	onair.SetCell(1, 2, tview.NewTableCell(to16(DJJSON.Song)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	onair.SetCell(1, 3, tview.NewTableCell(to16(DJJSON.Album)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	if strings.HasPrefix("DJ", DJJSON.SchedCategory) && (DJJSON.Length == "0" || DJJSON.Length == "00") {
 		DJJSON.Length = "300"
 	}
@@ -240,7 +240,7 @@ func drawonair() {
 	onair.SetCell(3, 4, tview.NewTableCell("Spins").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 	onair.SetCell(3, 5, tview.NewTableCell("Left").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 	// onair r,c
-	onair.SetCell(4, 0, tview.NewTableCell(DJJSON.SchedCategory).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	onair.SetCell(4, 0, tview.NewTableCell(to16(DJJSON.SchedCategory)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(4, 1, tview.NewTableCell(DJJSON.SchedDay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(4, 2, tview.NewTableCell(DJJSON.SchedHour).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	if DJJSON.SchedPosition == "0" || DJJSON.SchedPosition == "00" {
@@ -259,21 +259,21 @@ func drawonair() {
 
 	config.ScheduleGetPlan(DJJSON.SchedDay, DJJSON.SchedHour, DJJSON.SchedPosition)
 
-	onair.SetCell(7, 0, tview.NewTableCell(config.SchedulePlan[0].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	onair.SetCell(7, 0, tview.NewTableCell(to16(config.SchedulePlan[0].Category)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(7, 1, tview.NewTableCell(config.SchedulePlan[0].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(7, 2, tview.NewTableCell(config.SchedulePlan[0].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(7, 3, tview.NewTableCell(config.SchedulePlan[0].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	nextspins1 = strconv.Itoa(config.SchedulePlan[0].Spinstoplay)
 	onair.SetCell(7, 4, tview.NewTableCell(nextspins1).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
-	onair.SetCell(8, 0, tview.NewTableCell(config.SchedulePlan[1].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	onair.SetCell(8, 0, tview.NewTableCell(to16(config.SchedulePlan[1].Category)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(8, 1, tview.NewTableCell(config.SchedulePlan[1].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(8, 2, tview.NewTableCell(config.SchedulePlan[1].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(8, 3, tview.NewTableCell(config.SchedulePlan[1].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	nextspins2 = strconv.Itoa(config.SchedulePlan[1].Spinstoplay)
 	onair.SetCell(8, 4, tview.NewTableCell(nextspins2).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
-	onair.SetCell(9, 0, tview.NewTableCell(config.SchedulePlan[2].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+	onair.SetCell(9, 0, tview.NewTableCell(to16(config.SchedulePlan[2].Category)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(9, 1, tview.NewTableCell(config.SchedulePlan[2].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(9, 2, tview.NewTableCell(config.SchedulePlan[2].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 	onair.SetCell(9, 3, tview.NewTableCell(config.SchedulePlan[2].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
@@ -317,6 +317,12 @@ func countdown(tottime float64) {
 		}
 
 	}
+}
+func to16(s string) string {
+	if len(s) > 16 {
+		return s[0:16]
+	}
+	return s
 }
 func doonair() {
 
@@ -373,9 +379,9 @@ func doonair() {
 					mcp.SetCell(18, 1, tview.NewTableCell(strconv.FormatUint(usageopt.Used/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					mcp.SetCell(19, 1, tview.NewTableCell(strconv.FormatUint(usageopt.Free/1024/1024, 10)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
-					onair.SetCell(1, 1, tview.NewTableCell(DJJSON.Artist).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
-					onair.SetCell(1, 2, tview.NewTableCell(DJJSON.Song).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
-					onair.SetCell(1, 3, tview.NewTableCell(DJJSON.Album).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(1, 1, tview.NewTableCell(to16(DJJSON.Artist)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(1, 2, tview.NewTableCell(to16(DJJSON.Song)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(1, 3, tview.NewTableCell(to16(DJJSON.Album)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					if strings.HasPrefix("DJ", DJJSON.SchedCategory) && (DJJSON.Length == "0" || DJJSON.Length == "00") {
 						DJJSON.Length = "300"
 					}
@@ -383,7 +389,7 @@ func doonair() {
 						DJJSON.Length = "60"
 					}
 					onair.SetCell(1, 4, tview.NewTableCell(DJJSON.Length).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
-					onair.SetCell(4, 0, tview.NewTableCell(DJJSON.SchedCategory).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(4, 0, tview.NewTableCell(to16(DJJSON.SchedCategory)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(4, 1, tview.NewTableCell(DJJSON.SchedDay).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(4, 2, tview.NewTableCell(DJJSON.SchedHour).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					if DJJSON.SchedPosition == "0" || DJJSON.SchedPosition == "00" {
@@ -402,23 +408,21 @@ func doonair() {
 
 					config.ScheduleGetPlan(DJJSON.SchedDay, DJJSON.SchedHour, DJJSON.SchedPosition)
 
-					onair.SetCell(7, 0, tview.NewTableCell(config.SchedulePlan[0].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(7, 0, tview.NewTableCell(to16(config.SchedulePlan[0].Category)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(7, 1, tview.NewTableCell(config.SchedulePlan[0].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(7, 2, tview.NewTableCell(config.SchedulePlan[0].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(7, 3, tview.NewTableCell(config.SchedulePlan[0].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					nextspins1 = strconv.Itoa(config.SchedulePlan[0].Spinstoplay)
 					onair.SetCell(7, 4, tview.NewTableCell(nextspins1).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
-					onair.SetCell(8, 0, tview.NewTableCell(config.SchedulePlan[1].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(8, 0, tview.NewTableCell(to16(config.SchedulePlan[1].Category)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(8, 1, tview.NewTableCell(config.SchedulePlan[1].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(8, 2, tview.NewTableCell(config.SchedulePlan[1].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(8, 3, tview.NewTableCell(config.SchedulePlan[1].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					nextspins2 = strconv.Itoa(config.SchedulePlan[1].Spinstoplay)
 					onair.SetCell(8, 4, tview.NewTableCell(nextspins2).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
-					runtime.GC()
-					runtime.ReadMemStats(&memoryStats)
-					onair.SetCell(9, 0, tview.NewTableCell(config.SchedulePlan[2].Category).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
+					onair.SetCell(9, 0, tview.NewTableCell(to16(config.SchedulePlan[2].Category)).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(9, 1, tview.NewTableCell(config.SchedulePlan[2].Days).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(9, 2, tview.NewTableCell(config.SchedulePlan[2].Hours).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 					onair.SetCell(9, 3, tview.NewTableCell(config.SchedulePlan[2].Position).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
