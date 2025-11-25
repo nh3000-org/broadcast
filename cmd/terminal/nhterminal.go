@@ -49,32 +49,23 @@ var readerr error
 var errunmarshal error
 
 func readPreferences() {
-	// read config preferences.json
 	jsondata, readerr = os.ReadFile(PreferencesLocation)
 	if readerr != nil {
 		log.Println("ERROR Preferences readerr ", readerr)
 	}
-	// parse json
 	var cfg map[string]any
 	errunmarshal = json.Unmarshal(jsondata, &cfg)
 	if errunmarshal != nil {
 		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
 	}
-
 	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
-
 	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
-	//log.Println(config.DBaddress)
-
 	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
 	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
 	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
 	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
-
-	//log.Println("CONFIG NatsBucketType", config.NatsBucketType)
-	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
 	config.NewPGSQL()
 }
@@ -331,6 +322,7 @@ func doonair() {
 		mp3msg, mp3err = config.NATS.OnAirmp3.Watch(ctxmain, "OnAirmp3")
 		if mp3err != nil {
 			log.Println("ReceiveONAIRMP3", mp3err)
+			ctxmaincan()
 		}
 		for {
 
@@ -535,9 +527,6 @@ func doonair() {
 					onair.SetCell(9, 4, tview.NewTableCell(nextspins3).SetTextColor(tcell.ColorGreen).SetAlign(tview.AlignLeft))
 
 				})
-				runtime.GC()
-				runtime.ReadMemStats(&memoryStats)
-
 			}
 		}
 	}
@@ -557,10 +546,10 @@ func main() {
 	memcpu.SetBorder(true)
 	flex.AddItem(&mcp, 0, 1, false)
 	onair = *tview.NewTable()
-	//doonair()
+
 	drawonair()
 	flex.AddItem(&onair, 0, 3, false)
-	//drawonair()
+
 	go doonair()
 	msgv = *tview.NewTextView()
 	msgv.SetWordWrap(true)
