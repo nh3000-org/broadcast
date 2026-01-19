@@ -1,3 +1,12 @@
+create table  webusers  (
+  rowid serial primary key,
+  userrole varchar(32),
+  userpassword text not null,
+  userpasswordhash varchar(128) not null,
+  userauthcategories text array[128] not null,
+  userauthactions text array[128] not null
+);
+create index userindex on webusers (userpassword);
 create table  days  (
   rowid serial primary key,
   id char(3),

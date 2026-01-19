@@ -206,7 +206,7 @@ func HoursGet() {
 	}
 
 	igethoursrows, igethoursrowserr = conn.Query(context.Background(), "igethours")
-	if igetdaysrowserr != nil {
+	if igethoursrowserr != nil {
 		Send("messages."+"CatGet", "[IGETHOURS] Prepare Hours Read PID "+igethoursrowserr.Error(), "onair")
 		log.Fatal("Error reading days IGETHOURS", igethoursrowserr)
 	}
@@ -2342,4 +2342,105 @@ func getRedColor() *props.Color {
 		Green: 10,
 		Blue:  10,
 	}
+}
+
+// rowid serial primary key,
+// userrole varchar(32),
+// userpassword text not null,
+// userpasswordhash varchar(128) not null,
+// userauthcategories text array[128] not null,
+// userauthactions text array[128] not null
+type UserStruct struct {
+	Row                int      // rowid
+	Userrole           string   // role of user
+	Userpassword       string   // Entered password
+	Userpasswordhash   string   // Entered password
+	Userauthcategories []string // authorized categories
+	Userauthaction     []string // actions allowed
+}
+
+func UserAdd(userrole, userpassword, userpasswordhash string, userauthcategories, userauthaction []string) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+	_, rowserr := conn.Query(ctxsql, "insert into  webusers (userrole, userpassword,userpasswordhash,userauthstring,userauthactions) values($1,$2,$3,$4,$5)", userrole, userpassword, userpasswordhash, userauthcategories, userauthaction)
+
+	if rowserr != nil {
+		log.Println("UserAdd Add Users row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+}
+func UserUpdate(row int, userrole, userpassword, userpasswordhash string, userauthcategories, userauthaction []string) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+	_, rowserr := conn.Exec(ctxsql, "update hours set userrole =$1, userpassword = $2,userpasswordhash = $3,userauthcategories = $4,userauthaction = $5 where rowid = $6", userrole, userpassword, userpasswordhash, userauthcategories, userauthaction, row)
+
+	if rowserr != nil {
+		log.Println("UserDelete Delete User row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+}
+func UserDelete(row int) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+	_, rowserr := conn.Query(ctxsql, "delete from webusers where rowid =$1", row)
+
+	if rowserr != nil {
+		log.Println("UsersDelete Delete User row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+}
+
+var UserStore = make(map[int]UserStruct)
+var SelectedUser int
+var igetusererr error
+var igetuserrowserr error
+var igetuserrows pgx.Rows
+
+func UserGet() {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+	UserStore = make(map[int]UserStruct)
+
+	_, igetusererr = conn.Conn().Prepare(context.Background(), "igetuser", "select * from webusers order by userrole")
+	if igetusererr != nil {
+		log.Println("[IGETUSER]", igetusererr)
+		Send("messages."+"StationId", "[IGETUSER] Prepare webusersget "+igethourserr.Error(), "GUI")
+	}
+
+	igetuserrows, igetuserrowserr = conn.Query(context.Background(), "igetuser")
+	if igetuserrowserr != nil {
+		Send("messages."+"UserGet", "[IGETUSER] Prepare User Read PID "+igetuserrowserr.Error(), "GUI")
+		log.Fatal("Error reading users IGETUSER", igetuserrowserr)
+	}
+
+	var rowid int
+	var userrole string
+	var userpassword string
+	var userpasswordhash string
+	var userauthcategories []string
+	var userauthaction []string
+
+	for igetuserrows.Next() {
+		err := igetuserrows.Scan(&rowid, &userrole, &userpassword, &userpasswordhash, &userauthcategories, &userauthaction)
+		if err != nil {
+			log.Println("UserGet GetUser row", err)
+		}
+		ds := UserStruct{}
+		ds.Row = rowid
+		ds.Userrole = userrole
+		ds.Userpassword = userpassword
+		ds.Userpasswordhash = userpasswordhash
+		ds.Userauthcategories = userauthcategories
+		ds.Userauthaction = userauthaction
+		UserStore[len(UserStore)] = ds
+
+	}
+	if igetuserrowserr != nil {
+		log.Println("UserGet Gethours row error", igetuserrowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
 }

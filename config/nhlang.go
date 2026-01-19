@@ -203,9 +203,9 @@ var MyLangs = map[string]string{
 	"eng-ls-erase":  "Erase All Messages",
 	"spa-ls-erase":  "Borrar Todos los Mensajes",
 	"hin-ls-erase":  "सभी संदेश मिटाएँ",
-	"eng-ls-clogon": "Communications Logon",
-	"spa-ls-clogon": "Inicio de Sesión de Comunicaciones",
-	"hin-ls-clogon": "संचार लॉगऑन",
+	"eng-ls-clogon": "Broadcast Logon",
+	"spa-ls-clogon": "Inicio de Sesión de Transmisión",
+	"hin-ls-clogon": "ब्रॉडकास्ट लॉगऑन",
 	"eng-ls-err8":   "No JETSTREAM Connection",
 	"spa-ls-err8":   "Sin Conexión JETSTREAM ",
 	"hin-ls-err8":   "कोई जेटस्ट्रीम कनेक्शन नहीं",
@@ -437,6 +437,10 @@ var MyLangs = map[string]string{
 	"spa-ra-days": "Días",
 	"hin-ra-days": "दिन",
 
+	"eng-ra-users": "Users",
+	"spa-ra-users": "Días",
+	"hin-ra-users": "दिन",
+
 	"eng-ra-hours": "Hours",
 	"spa-ra-hours": "Horas",
 	"hin-ra-hours": "घंटे",
@@ -480,6 +484,26 @@ var MyLangs = map[string]string{
 	"eng-buckettype": "Content Format Type",
 	"spa-buckettype": "Tipo de Formato de Contenido",
 	"hin-buckettype": "सामग्री प्रारूप प्रकार",
+
+	"eng-userrole": "User Role",
+	"spa-userrole": "Rol del Usuario",
+	"hin-userrole": "उपयोगकर्ता भूमिका",
+
+	"eng-userpassword": "User Password",
+	"spa-userpassword": "Contraseña de Usuario",
+	"hin-userpassword": "उपयोगकर्ता पासवर्ड",
+
+	"eng-userpasswordhash": "User Password Hash",
+	"spa-userpasswordhash": "Hash de la Contraseña del Usuario",
+	"hin-userpasswordhash": "उपयोगकर्ता पासवर्ड हैश",
+
+	"eng-userauthcategories": "User Authorized Categories",
+	"spa-userauthcategories": "Categorías Autorizadas por el Usuario",
+	"hin-userauthcategories": "उपयोगकर्ता अधिकृत श्रेणियाँ",
+
+	"eng-userauthactions": "User Authorized Actions",
+	"spa-userauthactions": "Acciones Autorizadas por el Usuario",
+	"hin-userauthactions": "उपयोगकर्ता अधिकृत कार्य",
 }
 
 // do translation
