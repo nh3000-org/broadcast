@@ -9,23 +9,33 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/nh3000-org/broadcast/config"
-
 )
 
 func UsersScreen(win fyne.Window) fyne.CanvasObject {
 
 	larow := widget.NewLabel("Row: ")
-	edrow := widget.NewEntry()
-	edrow.SetPlaceHolder("Automatically Assigned")
+	usrow := widget.NewEntry()
+	usrow.SetPlaceHolder(config.GetLangs("autoassigned"))
 
-	laday := widget.NewLabel("Day: ")
-	edday := widget.NewRadioGroup([]string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN", "VID"}, func(string) {})
-	edday.Horizontal = true
-	ladesc := widget.NewLabel("Description: ")
-	eddesc := widget.NewEntry()
-	ladow := widget.NewLabel("Day of Week: ")
-	eddow := widget.NewRadioGroup([]string{"1", "2", "3", "4", "5", "6", "7"}, func(string) {})
-	eddow.Horizontal = true
+	larole := widget.NewLabel(config.GetLangs("usrole"))
+	edusrole := widget.NewEntry()
+	edusrole.SetPlaceHolder(config.GetLangs("usrole"))
+
+	lapassword := widget.NewLabel(config.GetLangs("userpassword"))
+	eduspassword := widget.NewEntry()
+	eduspassword.SetPlaceHolder(config.GetLangs("userpassword"))
+
+	lapasswordhash := widget.NewLabel(config.GetLangs("userpasswordhash"))
+	eduspasswordhash := widget.NewEntry()
+	eduspasswordhash.SetPlaceHolder(config.GetLangs("userpasswordhash"))
+
+	lacategories := widget.NewLabel(config.GetLangs("userauthcategories"))
+	edcategories := widget.NewRadioGroup(config.CategoriesToArray(), func(string) {})
+	edcategories.Horizontal = false
+
+	laauthactions := widget.NewLabel(config.GetLangs("userauthactions"))
+	edauthactions := widget.NewRadioGroup([]string{"Upload/Download", "Category History", "Chart", "Clear", "Ad History"}, func(string) {})
+	edauthactions.Horizontal = true
 
 	gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
 	gridday := container.New(layout.NewGridLayoutWithRows(2), laday, edday)

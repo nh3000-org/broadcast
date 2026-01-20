@@ -504,6 +504,14 @@ var MyLangs = map[string]string{
 	"eng-userauthactions": "User Authorized Actions",
 	"spa-userauthactions": "Acciones Autorizadas por el Usuario",
 	"hin-userauthactions": "उपयोगकर्ता अधिकृत कार्य",
+
+		"eng-usrole": "Role",
+	"spa-usrole": "Role",
+	"hin-usrole": "भूमिका",
+
+		"eng-autoassigned": "Automatically Assigned",
+	"spa-autoassigned": "Asignado Automáticamente",
+	"hin-autoassigned": "स्वचालित रूप से सौंपा गया",
 }
 
 // do translation
