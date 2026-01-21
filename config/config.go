@@ -72,6 +72,7 @@ var FyneInventoryWin fyne.Window
 var FyneApp fyne.App
 var FyneMessageList fyne.Widget
 var FyneDeviceList fyne.Widget
+var FyneUserList fyne.Widget
 var FyneFilter bool
 var FyneFilterDevices bool
 var FyneDaysList fyne.Widget

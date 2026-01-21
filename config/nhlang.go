@@ -505,11 +505,14 @@ var MyLangs = map[string]string{
 	"spa-userauthactions": "Acciones Autorizadas por el Usuario",
 	"hin-userauthactions": "उपयोगकर्ता अधिकृत कार्य",
 
-		"eng-usrole": "Role",
+	"eng-adduser": "Add User",
+	"spa-adduser": "Agregar Usuario",
+	"hin-adduser": "उपयोगकर्ता जोड़ें",
+	"eng-usrole": "Role",
 	"spa-usrole": "Role",
 	"hin-usrole": "भूमिका",
 
-		"eng-autoassigned": "Automatically Assigned",
+	"eng-autoassigned": "Automatically Assigned",
 	"spa-autoassigned": "Asignado Automáticamente",
 	"hin-autoassigned": "स्वचालित रूप से सौंपा गया",
 }
