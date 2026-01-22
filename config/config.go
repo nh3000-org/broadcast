@@ -93,7 +93,18 @@ func GetDateTime(offsethours string) string {
 
 	return future.String()
 }
+var tos string
+func ToString(s []string) string {
+	if len(s) == 0 {
+		return ""
+	}
+	tos = ""
+	for x := 0; x < len(s); x++ {
+		tos = tos + s[x] + "\n"
 
+	} 
+	return tos
+}
 func DataStore(file string) fyne.URI {
 	DataLocation, dlerr := storage.Child(FyneApp.Storage().RootURI(), file)
 	if dlerr != nil {

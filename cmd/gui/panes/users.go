@@ -11,6 +11,8 @@ import (
 	"github.com/nh3000-org/broadcast/config"
 )
 
+var USERcategory = widget.NewCheckGroup([]string{}, func([]string) {})
+
 func UsersScreen(win fyne.Window) fyne.CanvasObject {
 
 	larow := widget.NewLabel("Row: ")
@@ -30,22 +32,22 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 	eduspasswordhash.SetPlaceHolder(config.GetLangs("userpasswordhash"))
 
 	lacategories := widget.NewLabel(config.GetLangs("userauthcategories"))
-	edcategories := widget.NewCheckGroup(config.CategoriesToArray(), func(string) {})
-	edcategories.Horizontal = false
+	USERcategory := widget.NewCheckGroup(config.CategoryArray, func([]string) {})
+	USERcategory.Horizontal = false
 
 	laauthactions := widget.NewLabel(config.GetLangs("userauthactions"))
-	edauthactions := widget.NewCheckGroup([]string{"Upload/Download", "Category History", "Chart", "Clear", "Ad History"}, func(string) {})
-	edauthactions.Horizontal = false
+	edauthactions := widget.NewCheckGroup([]string{"Upload/Download", "Category History", "Chart", "Clear", "Ad History"}, func([]string) {})
+	edauthactions.Horizontal = true
 
 	gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
 	gridrole := container.New(layout.NewGridLayoutWithRows(2), larole, edusrole)
 	gridpassword := container.New(layout.NewGridLayoutWithRows(2), lapassword, eduspassword)
 	gridpasswordhash := container.New(layout.NewGridLayoutWithRows(2), lapasswordhash, eduspasswordhash)
-	gridcategories := container.New(layout.NewGridLayoutWithRows(2), lacategories, edcategories)
+	gridcategories := container.New(layout.NewGridLayoutWithRows(2), lacategories, USERcategory)
 	gridauthactions := container.New(layout.NewGridLayoutWithRows(2), laauthactions, edauthactions)
 	saveaddbutton := widget.NewButtonWithIcon(config.GetLangs("adduser"), theme.ContentCopyIcon(), func() {
 
-		config.UserAdd(edusrole.SelectedText(), eduspassword.Text, eduspasswordhash.Text, edcategories.Selected, edauthactions.Selected)
+		config.UserAdd(edusrole.SelectedText(), eduspassword.Text, eduspasswordhash.Text, USERcategory.Selected, edauthactions.Selected)
 		config.DaysGet()
 		config.FyneDaysList.Refresh()
 	})
@@ -67,9 +69,9 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 		case 3: // hash
 			l.SetText(config.UserStore[id.Row].Userpasswordhash)
 		case 4: // cats
-			l.SetText(config.UserStore[id.Row].Userauthcategories[1])
+			l.SetText(config.ToString(config.UserStore[id.Row].Userauthcategories))
 		case 5: // auth
-			l.SetText(config.UserStore[id.Row].Userauthaction[1])
+			l.SetText(config.ToString(config.UserStore[id.Row].Userauthaction))
 		}
 	})
 	List.SetColumnWidth(0, 64)
@@ -77,58 +79,64 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 	List.SetColumnWidth(2, 96)
 	List.SetColumnWidth(3, 132)
 	List.SetColumnWidth(4, 132)
-	List.SetColumnWidth(5, 132)
+
 	config.FyneUserList = List
 	List.OnSelected = func(id widget.TableCellID) {
-		config.SelectedDay = id.Row
+		config.SelectedUser = id.Row
 
-		edrow.SetText(strconv.Itoa(config.DaysStore[id.Row].Row))
+		edrow.SetText(strconv.Itoa(config.UserStore[id.Row].Row))
 		edrow.Disable()
 
-		edday.SetSelected(config.DaysStore[id.Row].Day)
+		edusrole.SetText(config.UserStore[id.Row].Userrole)
 
-		eddesc.SetText(config.DaysStore[id.Row].Desc)
+		eduspassword.SetText(config.UserStore[id.Row].Userpassword)
 
-		eddow.SetSelected(strconv.Itoa(config.DaysStore[id.Row].Dow))
-
-		deletebutton := widget.NewButtonWithIcon("Delete Day of Week", theme.ContentCopyIcon(), func() {
+		eduspasswordhash.SetText(config.UserStore[id.Row].Userpasswordhash)
+		USERcategory.SetSelected(config.UserStore[id.Row].Userauthcategories)
+		edauthactions.SetSelected(config.UserStore[id.Row].Userauthaction)
+		deletebutton := widget.NewButtonWithIcon(config.GetLangs("eng-usdelete"), theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
-			config.DaysDelete(myrow)
-			config.DaysGet()
+			config.UserDelete(myrow)
+			config.UserGet()
 		})
-		savebutton := widget.NewButtonWithIcon("Save Day of Week", theme.ContentCopyIcon(), func() {
+		savebutton := widget.NewButtonWithIcon(config.GetLangs("Save Day of Week"), theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
-			mydow, _ := strconv.Atoi(eddow.Selected)
-			config.DaysUpdate(myrow, edday.Selected, eddesc.Text, mydow)
-			config.DaysGet()
+
+			config.UserUpdate(myrow, edusrole.Text, eduspassword.Text, eduspasswordhash.Text, USERcategory.Selected, edauthactions.Selected)
+			config.UserGet()
 
 		})
 		databox := container.NewVBox(
 			deletebutton,
 			gridrow,
-			gridday,
-			griddesc,
-			griddow,
+			gridrole,
+			gridpassword,
+			gridpasswordhash,
+			gridcategories,
+			gridauthactions,
 			savebutton,
 		)
 		DetailsVW := container.NewScroll(databox)
 		DetailsVW.SetMinSize(fyne.NewSize(640, 480))
-		dlg := fyne.CurrentApp().NewWindow("Manage Days")
+		dlg := fyne.CurrentApp().NewWindow(config.GetLangs("manuser"))
 		dlg.SetContent(container.NewBorder(DetailsVW, nil, nil, nil, nil))
 		dlg.Show()
 		List.Unselect(id)
 	}
-	addbutton := widget.NewButtopasswordhashnWithIcon("Add New Day of Week", theme.ContentCopyIcon(), func() {
+	addbutton := widget.NewButtonWithIcon(config.GetLangs("adduser"), theme.ContentCopyIcon(), func() {
 		databox := container.NewVBox(
 			gridrow,
-			gridday,
-			griddesc,
-			griddow,
+			gridrow,
+			gridrole,
+			gridpassword,
+			gridpasswordhash,
+			gridcategories,
+			gridauthactions,
 			saveaddbutton,
 		)
 		DetailsVW := container.NewScroll(databox)
 		DetailsVW.SetMinSize(fyne.NewSize(640, 480))
-		dlg := fyne.CurrentApp().NewWindow("Manage Days")
+		dlg := fyne.CurrentApp().NewWindow(config.GetLangs("manuser"))
 		dlg.SetContent(container.NewBorder(DetailsVW, nil, nil, nil, nil))
 		dlg.Show()
 	})

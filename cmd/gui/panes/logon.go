@@ -386,12 +386,14 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			}
 			config.NewPGSQL()
 			EDcategory.SetOptions(config.CategoriesToArray())
+			USERcategory.SetSelected(config.CategoriesToArray())
 			config.SetupNATS()
 			go config.ReceiveMESSAGE()
 			go config.ReceiveONAIRMP3()
 			config.DaysGet()
 			config.HoursGet()
 			config.CategoriesGet()
+			//config.CategoriesToArray()
 			config.ScheduleGet()
 			config.InventoryGet()
 		}

@@ -511,6 +511,19 @@ var MyLangs = map[string]string{
 	"eng-usrole": "Role",
 	"spa-usrole": "Role",
 	"hin-usrole": "भूमिका",
+	"eng-usdelete": "Delete User",
+	"spa-usdelete": "Eliminar Usuario",
+	"hin-usdelete": "उपयोगकर्ता हटाएं",
+
+	"eng-ussave": "Save User",
+	"spa-ussave": "Guardar Usuario",
+	"hin-ussave": "उपयोगकर्ता को सहेजें",	
+
+	"eng-manuser": "Manage User",
+	"spa-manuser": "Usuario Administrador",
+	"hin-manuser": "प्रबंधक उपयोगकर्ता",	
+
+
 
 	"eng-autoassigned": "Automatically Assigned",
 	"spa-autoassigned": "Asignado Automáticamente",
