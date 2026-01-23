@@ -92,7 +92,23 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	line.SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}))
 	line.Render(w)
 }
-
+func ADSREPORT(w http.ResponseWriter, r *http.Request) {
+	if !checkauthorization(r.FormValue("Authorization")) {
+		w.Write([]byte(ilogon()))
+		return
+	}
+	config.TrafficStart = TrafStart.Text
+	config.TrafficEnd = TrafEnd.Text
+	//selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
+	config.TrafficAlbum = selalbum.Selected
+	config.ToPDF("TrafficReport", "ADMIN")
+	cmd := exec.Command("xdg-open", "TrafficReport.pdf")
+	cmderr := cmd.Start()
+	log.Println("Traffic", cmderr, "rpt", "TrafficReport.pdf")
+	if cmderr != nil {
+		log.Println("Traffic", cmderr, "rpt", "TrafficReport.pdf")
+	}
+}
 func chart(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -451,7 +467,6 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 
 		}
 
-
 		if strings.HasSuffix(cat, "wav") {
 			rmcat := imcategory + "/"
 			songfull := strings.ReplaceAll(path, rmcat, "")
@@ -595,8 +610,6 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 
 		}
 
-
-
 		return nil
 	})
 	if walkstuberr != nil {
@@ -722,6 +735,7 @@ func setupRoutes() {
 	http.HandleFunc("/upload", uploadFile)
 	http.HandleFunc("/chart", chart)
 	http.HandleFunc("/ADS", ADS)
+	http.HandleFunc("/REPORT", ADSREPORT)
 	http.HandleFunc("/counts", counts)
 	http.HandleFunc("/schedcounts", schedcounts)
 	http.HandleFunc("/cleartraffic", cleartraffic)
@@ -875,6 +889,23 @@ func ibuilder(authtoken string) string {
 	s.WriteString(config.TrafficGetAlbum("-2160"))
 	s.WriteString("          </select></td>")
 	s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Ad History\" style=\"color: #4c14e477;\" /></td>\n")
+	s.WriteString("          <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+	s.WriteString("         </form>\n")
+	s.WriteString("	        <td colspan=\"1\">Produce a line chart using parameters</td>\n")
+	s.WriteString("	     </tr>\n")
+
+	s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
+	s.WriteString("         <form  action=\"" + config.WebAddress + "/REPORT\" method=\"post\" target=\"_blank\">\n")
+	s.WriteString("         <td colspan=\"1\"><select name=\"Days\" id=\"days\">")
+	s.WriteString("             <option value=\"7\">7 Days</option>")
+	s.WriteString("             <option value=\"14\">14 Days</option>")
+	s.WriteString("             <option value=\"28\">28 Days</option>")
+	s.WriteString("             <option value=\"90\">90 Days</option>")
+	s.WriteString("            </select></td>")
+	s.WriteString("          <td colspan=\"1\"><select name=\"Categories1\" id=\"categories1\">")
+	s.WriteString(config.TrafficGetAlbum("-2160"))
+	s.WriteString("          </select></td>")
+	s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Ad Report\" style=\"color: #4c14e477;\" /></td>\n")
 	s.WriteString("          <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 	s.WriteString("         </form>\n")
 	s.WriteString("	        <td colspan=\"1\">Produce a line chart using parameters</td>\n")
