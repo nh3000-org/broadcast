@@ -92,15 +92,21 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 	line.SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}))
 	line.Render(w)
 }
+
+var stend = "23:59:59"
+var ststart = "00:00:00"
+
 func ADSREPORT(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
 		return
 	}
-	config.TrafficStart = TrafStart.Text
-	config.TrafficEnd = TrafEnd.Text
+	rd := r.FormValue("Days")
+
+	config.TrafficStart = config.GetDateTime("-" + rd)[0:10] + " " + ststart
+	config.TrafficEnd = config.GetDateTime("-0")[0:10] + " " + stend
 	//selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
-	config.TrafficAlbum = selalbum.Selected
+	config.TrafficAlbum = r.FormValue("Categories1")
 	config.ToPDF("TrafficReport", "ADMIN")
 	cmd := exec.Command("xdg-open", "TrafficReport.pdf")
 	cmderr := cmd.Start()
@@ -735,7 +741,7 @@ func setupRoutes() {
 	http.HandleFunc("/upload", uploadFile)
 	http.HandleFunc("/chart", chart)
 	http.HandleFunc("/ADS", ADS)
-	http.HandleFunc("/REPORT", ADSREPORT)
+	http.HandleFunc("/ADSREPORT", ADSREPORT)
 	http.HandleFunc("/counts", counts)
 	http.HandleFunc("/schedcounts", schedcounts)
 	http.HandleFunc("/cleartraffic", cleartraffic)
@@ -878,6 +884,24 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	     </tr>\n")
 
 	s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
+	s.WriteString("         <form  action=\"" + config.WebAddress + "/ADSREPORT\" method=\"post\" target=\"_blank\">\n")
+	s.WriteString("         <td colspan=\"1\"><select name=\"Days\" id=\"days\">")
+	s.WriteString("             <option value=\"7\">7 Days</option>")
+	s.WriteString("             <option value=\"14\">14 Days</option>")
+	s.WriteString("             <option value=\"28\">28 Days</option>")
+	s.WriteString("             <option value=\"90\">90 Days</option>")
+	s.WriteString("             <option value=\"365\">365 Days</option>")
+	s.WriteString("            </select></td>")
+	s.WriteString("          <td colspan=\"1\"><select name=\"Categories1\" id=\"categories1\">")
+	s.WriteString(config.TrafficGetAlbum("-2160"))
+	s.WriteString("          </select></td>")
+	s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Ad Report\" style=\"color: #4c14e477;\" /></td>\n")
+	s.WriteString("          <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+	s.WriteString("         </form>\n")
+	s.WriteString("	        <td colspan=\"1\">Produce a billing report using parameters</td>\n")
+	s.WriteString("	     </tr>\n")
+
+	s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
 	s.WriteString("         <form  action=\"" + config.WebAddress + "/ADS\" method=\"post\" target=\"_blank\">\n")
 	s.WriteString("         <td colspan=\"1\"><select name=\"Days\" id=\"days\">")
 	s.WriteString("             <option value=\"7\">7 Days</option>")
@@ -889,23 +913,6 @@ func ibuilder(authtoken string) string {
 	s.WriteString(config.TrafficGetAlbum("-2160"))
 	s.WriteString("          </select></td>")
 	s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Ad History\" style=\"color: #4c14e477;\" /></td>\n")
-	s.WriteString("          <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
-	s.WriteString("         </form>\n")
-	s.WriteString("	        <td colspan=\"1\">Produce a line chart using parameters</td>\n")
-	s.WriteString("	     </tr>\n")
-
-	s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
-	s.WriteString("         <form  action=\"" + config.WebAddress + "/REPORT\" method=\"post\" target=\"_blank\">\n")
-	s.WriteString("         <td colspan=\"1\"><select name=\"Days\" id=\"days\">")
-	s.WriteString("             <option value=\"7\">7 Days</option>")
-	s.WriteString("             <option value=\"14\">14 Days</option>")
-	s.WriteString("             <option value=\"28\">28 Days</option>")
-	s.WriteString("             <option value=\"90\">90 Days</option>")
-	s.WriteString("            </select></td>")
-	s.WriteString("          <td colspan=\"1\"><select name=\"Categories1\" id=\"categories1\">")
-	s.WriteString(config.TrafficGetAlbum("-2160"))
-	s.WriteString("          </select></td>")
-	s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Ad Report\" style=\"color: #4c14e477;\" /></td>\n")
 	s.WriteString("          <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 	s.WriteString("         </form>\n")
 	s.WriteString("	        <td colspan=\"1\">Produce a line chart using parameters</td>\n")

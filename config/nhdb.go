@@ -478,7 +478,7 @@ func CategoriesToArray() []string {
 			log.Println("CategoryArray Get Categories to Array row", err)
 		}
 		CategoryArray = append(CategoryArray, id)
-
+		log.Println("CategoryArray", id)
 	}
 	if igetctarowserr != nil {
 		log.Println("CategoryArray Get Categories to Array row error", igetctarowserr)
@@ -1169,6 +1169,7 @@ func PDFTrafficByAlbum() []core.Row {
 	}
 	if TrafficAlbum != "" {
 		full, fullerr = conn.Query(ctxsql, "select * from traffic where playedon >= '"+TrafficStart+"' and playedon <= '"+TrafficEnd+"' and album = '"+TrafficAlbum+"' order by album,playedon")
+		log.Println("select * from traffic where playedon >= '" + TrafficStart + "' and playedon <= '" + TrafficEnd + "' and album = '" + TrafficAlbum + "' order by album,playedon")
 	}
 	var rowid int
 	var category string
@@ -1254,6 +1255,7 @@ func PDFTrafficByAlbum() []core.Row {
 		}
 		itemcount++
 		itemcountgrand++
+		log.Println("playedon", playedon)
 		rline := row.New(6).Add(
 			col.New(1),
 			text.NewCol(1, strconv.Itoa(rowid), props.Text{Size: 8, Align: align.Left}),
