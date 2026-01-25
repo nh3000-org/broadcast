@@ -88,12 +88,18 @@ var TimeZoneOffset = ""
 func GetDateTime(offsethours string) string {
 	ct := time.Now()
 
-	hours, _ := time.ParseDuration(offsethours)
+	hours, e := time.ParseDuration(offsethours)
+	if e != nil {
+		log.Println("GDT", offsethours, e)
+	}
+
 	future := ct.Add(hours)
 
 	return future.String()
 }
+
 var tos string
+
 func ToString(s []string) string {
 	if len(s) == 0 {
 		return ""
@@ -102,7 +108,7 @@ func ToString(s []string) string {
 	for x := 0; x < len(s); x++ {
 		tos = tos + s[x] + "\n"
 
-	} 
+	}
 	return tos
 }
 func DataStore(file string) fyne.URI {

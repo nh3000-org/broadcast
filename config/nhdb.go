@@ -1169,7 +1169,7 @@ func PDFTrafficByAlbum() []core.Row {
 	}
 	if TrafficAlbum != "" {
 		full, fullerr = conn.Query(ctxsql, "select * from traffic where playedon >= '"+TrafficStart+"' and playedon <= '"+TrafficEnd+"' and album = '"+TrafficAlbum+"' order by album,playedon")
-		log.Println("select * from traffic where playedon >= '" + TrafficStart + "' and playedon <= '" + TrafficEnd + "' and album = '" + TrafficAlbum + "' order by album,playedon")
+		//log.Println("select * from traffic where playedon >= '" + TrafficStart + "' and playedon <= '" + TrafficEnd + "' and album = '" + TrafficAlbum + "' order by album,playedon")
 	}
 	var rowid int
 	var category string
@@ -1196,7 +1196,7 @@ func PDFTrafficByAlbum() []core.Row {
 	contentsRow = append(contentsRow, rowshead...)
 	for full.Next() {
 
-		err := full.Scan(&rowid, &artist, &song, &album, &playedon)
+		err := full.Scan(&rowid, &category, &artist, &song, &album, &playedon)
 		if err != nil {
 			log.Println("PDFTrafficByAlbum PDF Get Traffic row", err)
 		}
@@ -1255,7 +1255,7 @@ func PDFTrafficByAlbum() []core.Row {
 		}
 		itemcount++
 		itemcountgrand++
-		log.Println("playedon", playedon)
+		//log.Println("playedon", playedon)
 		rline := row.New(6).Add(
 			col.New(1),
 			text.NewCol(1, strconv.Itoa(rowid), props.Text{Size: 8, Align: align.Left}),
@@ -1263,7 +1263,7 @@ func PDFTrafficByAlbum() []core.Row {
 			text.NewCol(2, album, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(2, artist, props.Text{Size: 8, Align: align.Left}),
 			text.NewCol(2, song, props.Text{Size: 8, Align: align.Left}),
-			text.NewCol(2, playedon[0:19], props.Text{Size: 8, Align: align.Left}),
+			text.NewCol(2, playedon, props.Text{Size: 8, Align: align.Left}),
 		)
 		if itemcount%2 == 0 {
 			gray := getGrayColor()

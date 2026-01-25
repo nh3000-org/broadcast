@@ -96,16 +96,22 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 var stend = "23:59:59"
 var ststart = "00:00:00"
 
-func ADSREPORT(w http.ResponseWriter, r *http.Request) {
+func TRAFICREPORT(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
 		return
 	}
-	rd := r.FormValue("Days")
-
-	config.TrafficStart = config.GetDateTime("-" + rd)[0:10] + " " + ststart
-	config.TrafficEnd = config.GetDateTime("-0")[0:10] + " " + stend
+	rd := r.FormValue("Days1")
+	sd, e := strconv.Atoi(rd)
+	if e != nil {
+		log.Println("ERROR ", e)
+	}
+	sd = sd * 24
+	log.Println("SD", "-"+strconv.Itoa(sd))
+	config.TrafficStart = config.GetDateTime("-" + strconv.Itoa(sd) + "h")[0:10] + " " + ststart
+	config.TrafficEnd = config.GetDateTime("-0h")[0:10] + " " + stend
 	//selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
+	log.Println("TRAFFICREPORT", sd, config.TrafficStart, config.TrafficEnd)
 	config.TrafficAlbum = r.FormValue("Categories1")
 	config.ToPDF("TrafficReport", "ADMIN")
 	cmd := exec.Command("xdg-open", "TrafficReport.pdf")
@@ -741,7 +747,7 @@ func setupRoutes() {
 	http.HandleFunc("/upload", uploadFile)
 	http.HandleFunc("/chart", chart)
 	http.HandleFunc("/ADS", ADS)
-	http.HandleFunc("/ADSREPORT", ADSREPORT)
+	http.HandleFunc("/TRAFICREPORT", TRAFICREPORT)
 	http.HandleFunc("/counts", counts)
 	http.HandleFunc("/schedcounts", schedcounts)
 	http.HandleFunc("/cleartraffic", cleartraffic)
@@ -884,8 +890,8 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	     </tr>\n")
 
 	s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
-	s.WriteString("         <form  action=\"" + config.WebAddress + "/ADSREPORT\" method=\"post\" target=\"_blank\">\n")
-	s.WriteString("         <td colspan=\"1\"><select name=\"Days\" id=\"days\">")
+	s.WriteString("         <form  action=\"" + config.WebAddress + "/TRAFICREPORT\" method=\"post\" target=\"_blank\">\n")
+	s.WriteString("         <td colspan=\"1\"><select name=\"Days1\" id=\"days1\">")
 	s.WriteString("             <option value=\"7\">7 Days</option>")
 	s.WriteString("             <option value=\"14\">14 Days</option>")
 	s.WriteString("             <option value=\"28\">28 Days</option>")
@@ -901,7 +907,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	        <td colspan=\"1\">Produce a billing report using parameters</td>\n")
 	s.WriteString("	     </tr>\n")
 
-	s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
+	s.WriteString("	      <tr>\n")
 	s.WriteString("         <form  action=\"" + config.WebAddress + "/ADS\" method=\"post\" target=\"_blank\">\n")
 	s.WriteString("         <td colspan=\"1\"><select name=\"Days\" id=\"days\">")
 	s.WriteString("             <option value=\"7\">7 Days</option>")
@@ -918,7 +924,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	        <td colspan=\"1\">Produce a line chart using parameters</td>\n")
 	s.WriteString("	     </tr>\n")
 
-	s.WriteString("	     <tr>\n")
+	s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
 	s.WriteString("        <form  action=\"" + config.WebAddress + "/counts\" method=\"post\" target=\"_blank\">\n")
 	s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Inventory counts\" style=\"color: #4c14e477;\" /></td>\n")
 	s.WriteString("          <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
@@ -926,7 +932,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	        <td colspan=\"5\">Produce a pie chart using parameters</td>\n")
 	s.WriteString("	     </tr>\n")
 
-	s.WriteString("	     <tr style=\"background-color: #11d4e277;\">\n")
+	s.WriteString("	     <tr>\n")
 	s.WriteString("  		<form  action=\"" + config.WebAddress + "/schedcounts\" method=\"post\" target=\"_blank\">\n")
 	s.WriteString(" 	      <td colspan=\"1\"><input type=\"submit\" value=\"Schedule counts\" style=\"color: #4c14e477;\" /></td>\n")
 	s.WriteString("  	      <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
