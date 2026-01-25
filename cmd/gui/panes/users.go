@@ -54,9 +54,9 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 			log.Fatalf("failed to generate UUID: %v", err)
 		}
 		eduspasswordhash.SetText(u.String())
-		config.UserAdd(edusrole.SelectedText(), eduspassword.Text, eduspasswordhash.Text, USERcategory.Selected, edauthactions.Selected)
-		config.DaysGet()
-		config.FyneDaysList.Refresh()
+		config.UserAdd(edusrole.Text, eduspassword.Text, eduspasswordhash.Text, USERcategory.Selected, edauthactions.Selected)
+		config.UserGet()
+		config.FyneUserList.Refresh()
 	})
 	List := widget.NewTable(func() (int, int) {
 		return len(config.UserStore), 4
