@@ -478,7 +478,7 @@ func CategoriesToArray() []string {
 			log.Println("CategoryArray Get Categories to Array row", err)
 		}
 		CategoryArray = append(CategoryArray, id)
-		log.Println("CategoryArray", id)
+		//log.Println("CategoryToArray", id)
 	}
 	if igetctarowserr != nil {
 		log.Println("CategoryArray Get Categories to Array row error", igetctarowserr)
@@ -2364,7 +2364,7 @@ type UserStruct struct {
 func UserAdd(userrole, userpassword, userpasswordhash string, userauthcategories, userauthaction []string) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
-	_, rowserr := conn.Query(ctxsql, "insert into  webusers (userrole, userpassword,userpasswordhash,userauthstring,userauthactions) values($1,$2,$3,$4,$5)", userrole, userpassword, userpasswordhash, userauthcategories, userauthaction)
+	_, rowserr := conn.Query(ctxsql, "insert into  webusers (userrole, userpassword,userpasswordhash,userauthcategories,userauthactions) values($1,$2,$3,$4,$5)", userrole, userpassword, userpasswordhash, userauthcategories, userauthaction)
 
 	if rowserr != nil {
 		log.Println("UserAdd Add Users row error", rowserr)

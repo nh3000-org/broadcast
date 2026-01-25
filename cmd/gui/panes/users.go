@@ -1,6 +1,7 @@
 package panes
 
 import (
+	"log"
 	"strconv"
 
 	"fyne.io/fyne/v2"
@@ -8,10 +9,9 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/gofrs/uuid/v5"
 	"github.com/nh3000-org/broadcast/config"
 )
-
-var USERcategory = widget.NewCheckGroup([]string{}, func([]string) {})
 
 func UsersScreen(win fyne.Window) fyne.CanvasObject {
 
@@ -31,22 +31,29 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 	eduspasswordhash := widget.NewEntry()
 	eduspasswordhash.SetPlaceHolder(config.GetLangs("userpasswordhash"))
 
+	eduspasswordhash.Disable()
+
 	lacategories := widget.NewLabel(config.GetLangs("userauthcategories"))
-	USERcategory := widget.NewCheckGroup(config.CategoryArray, func([]string) {})
-	USERcategory.Horizontal = false
+	USERcategory := widget.NewCheckGroup([]string{"All", "DJAM", "DJPM", "NWS", "CURRENTS", "RECURRENTS", "IMAGINGID", "NEXT", "PROMOS"}, func([]string) {})
+	USERcategory.Horizontal = true
 
 	laauthactions := widget.NewLabel(config.GetLangs("userauthactions"))
-	edauthactions := widget.NewCheckGroup([]string{"Upload/Download", "Category History", "Chart", "Clear", "Ad History"}, func([]string) {})
+	edauthactions := widget.NewCheckGroup([]string{"ALL", "Upload/Download", "Category History", "Chart", "Clear", "Ad History"}, func([]string) {})
 	edauthactions.Horizontal = true
 
 	gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
 	gridrole := container.New(layout.NewGridLayoutWithRows(2), larole, edusrole)
 	gridpassword := container.New(layout.NewGridLayoutWithRows(2), lapassword, eduspassword)
 	gridpasswordhash := container.New(layout.NewGridLayoutWithRows(2), lapasswordhash, eduspasswordhash)
+
 	gridcategories := container.New(layout.NewGridLayoutWithRows(2), lacategories, USERcategory)
 	gridauthactions := container.New(layout.NewGridLayoutWithRows(2), laauthactions, edauthactions)
 	saveaddbutton := widget.NewButtonWithIcon(config.GetLangs("adduser"), theme.ContentCopyIcon(), func() {
-
+		u, err := uuid.NewV7()
+		if err != nil {
+			log.Fatalf("failed to generate UUID: %v", err)
+		}
+		eduspasswordhash.SetText(u.String())
 		config.UserAdd(edusrole.SelectedText(), eduspassword.Text, eduspasswordhash.Text, USERcategory.Selected, edauthactions.Selected)
 		config.DaysGet()
 		config.FyneDaysList.Refresh()

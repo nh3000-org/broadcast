@@ -386,7 +386,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			}
 			config.NewPGSQL()
 			EDcategory.SetOptions(config.CategoriesToArray())
-			USERcategory.SetSelected(config.CategoriesToArray())
+			//USERcategory.SetSelected(config.CategoriesToArray())
 			config.SetupNATS()
 			go config.ReceiveMESSAGE()
 			go config.ReceiveONAIRMP3()

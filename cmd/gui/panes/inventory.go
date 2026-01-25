@@ -75,7 +75,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	lastartson := widget.NewLabel("Starts On: ")
 	edstartson := widget.NewEntry()
-	so := config.GetDateTime("1")
+	so := config.GetDateTime("1h")
 	edstartson.SetText(so[0:19])
 	gridstartson := container.New(layout.NewGridLayoutWithRows(2), lastartson, edstartson)
 
@@ -706,7 +706,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		if config.NatsBucketType == "wav" {
 			bucket = "wav"
 		}
-		log.Println("bucket type",config.NatsBucketType )
+		log.Println("bucket type", config.NatsBucketType)
 		edsongsz.SetText("Song Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text))))
 		edintrosz.SetText("Intro Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"INTRO"))))
 		edoutrosz.SetText("Outro Size: " + strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"OUTRO"))))
