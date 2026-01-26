@@ -23,6 +23,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type UserSessionJSON struct {
+	UserToken          string   `json:"token"`        // expiry token
+	UserPasswordHash   string   `json:"passwordhash"` // password hash
+	UserIPA            string   `json:"ips"`          // session remote addresses
+	UserAuthCategories []string `json:"categoriess"`  // authorized categories
+	UserAuthAction     []string `json:"actions"`      // actions allowed
+}
+
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 var HashLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/config.hash"
 var authtoken = ""
@@ -825,6 +833,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(ilogon()))
 		return
 	}
+	var uajson = UserSessionJSON{}
+	uajson.UserToken = config.GetDateTime("0h")[0:19]
+	uajson.UserIPA = r.RemoteAddr
+	uajson.UserPasswordHash
+
 	// check aut token expiry
 	authtoken = config.GetDateTime("0h")[0:19] + "-" + r.RemoteAddr + "-" + uuid.New().String()
 	tobrowser := config.Encrypt(authtoken, MySecret)
@@ -972,9 +985,18 @@ func ilogon() string {
 	s.WriteString("	       <th colspan=\"3\">Broadcat Web Interface</th>\n")
 	s.WriteString("	     </tr>\n")
 	s.WriteString("	     <tr>\n")
-	s.WriteString("	       <td colspan=\"1\"><label>Password</label></td>\n")
+	s.WriteString("	       <td colspan=\"1\"><label>System ID</label></td>\n")
 	s.WriteString("	       <td colspan=\"1\"><input type=\"password\" id=\"pw\" name=\"pword\"></td>\n")
-	s.WriteString("	       <td colspan=\"2\"><input type=\"submit\" value=\"Try Password\"></td>\n")
+	s.WriteString("	     </tr>\n")
+	s.WriteString("	     <tr>\n")
+	s.WriteString("	       <td colspan=\"1\"><label>User ID</label></td>\n")
+	s.WriteString("	       <td colspan=\"1\"><input type=\"password\" id=\"userid\" name=\"userid\"></td>\n")
+	s.WriteString("	     </tr>\n")
+	s.WriteString("	     <tr>\n")
+	s.WriteString("	       <td colspan=\"1\"><label>User Password</label></td>\n")
+	s.WriteString("	       <td colspan=\"1\"><input type=\"password\" id=\"userpassword\" name=\"userpassword\"></td>\n")
+
+	s.WriteString("	       <td colspan=\"2\"><input type=\"submit\" value=\"Try Authentication\"></td>\n")
 	s.WriteString("	     </tr>\n")
 
 	s.WriteString("	   </table>\n")

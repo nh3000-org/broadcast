@@ -2409,7 +2409,7 @@ func UserGet() {
 	_, igetusererr = conn.Conn().Prepare(context.Background(), "igetuser", "select * from webusers order by userrole")
 	if igetusererr != nil {
 		log.Println("[IGETUSER]", igetusererr)
-		Send("messages."+"StationId", "[IGETUSER] Prepare webusersget "+igethourserr.Error(), "GUI")
+		Send("messages."+"StationId", "[IGETUSER] Prepare webusersget "+igetusererr.Error(), "GUI")
 	}
 
 	igetuserrows, igetuserrowserr = conn.Query(context.Background(), "igetuser")
@@ -2445,4 +2445,48 @@ func UserGet() {
 	}
 	conn.Release()
 	ctxsqlcan()
+}
+func UserGetbyID(id string) UserStruct {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	_, igetuserbyiderr := conn.Conn().Prepare(context.Background(), "igetuserbyid", "select * from webusers where rowid = $1")
+	if igetuserbyiderr != nil {
+		log.Println("[IGETUSERBYID]", igetuserbyiderr)
+		Send("messages."+"StationId", "[IGETUSERBYID] Prepare webusersgetbyid "+igetuserbyiderr.Error(), "WEB")
+	}
+
+	igetuserbyidrows, igetuserbyidrowserr := conn.Query(context.Background(), "igetuserbyid", id)
+	if igetuserbyidrowserr != nil {
+		Send("messages."+"UserGet", "[IGETUSERBYID] Prepare User Read PID "+igetuserbyidrowserr.Error(), "GUI")
+		log.Fatal("Error reading users IGETUSERBYID", igetuserbyidrowserr)
+	}
+
+	var rowid int
+	var userrole string
+	var userpassword string
+	var userpasswordhash string
+	var userauthcategories []string
+	var userauthaction []string
+	ds := UserStruct{}
+	for igetuserbyidrows.Next() {
+		err := igetuserbyidrows.Scan(&rowid, &userrole, &userpassword, &userpasswordhash, &userauthcategories, &userauthaction)
+		if err != nil {
+			log.Println("UserGet GetUserByID row", err)
+		}
+
+		ds.Row = rowid
+		ds.Userrole = userrole
+		ds.Userpassword = userpassword
+		ds.Userpasswordhash = userpasswordhash
+		ds.Userauthcategories = userauthcategories
+		ds.Userauthaction = userauthaction
+
+	}
+	if igetuserbyidrowserr != nil {
+		log.Println("UserGet GetUserbyID row error", igetuserbyidrowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+	return ds
 }
