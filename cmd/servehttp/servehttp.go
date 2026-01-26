@@ -859,7 +859,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	uajson.UserIPA = r.RemoteAddr
 	uajson.UserPasswordHash = myuser.Userpasswordhash
 	uajson.UserAuthCategories = myuser.Userauthcategories
+	SessionCategories = myuser.Userauthcategories
 	uajson.UserAuthAction = myuser.Userauthaction
+	log.Println("myuser caction", myuser.Userauthaction)
+	SessionAction = myuser.Userauthaction
 	js, err := json.Marshal(uajson)
 	if err != nil {
 		log.Println("UserJSON ERR ", err)
@@ -874,8 +877,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(ibuilder(tobrowser)))
 }
 func arrayhas(a []string, v string) bool {
+	log.Println("arrayhas: a", a, "v", v)
 	for index, value := range a {
-		fmt.Printf("Index: %d, Value: %d\n", index, value)
+		log.Println("Index: ", index, value)
 		if v == value {
 			return true
 		}
