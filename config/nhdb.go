@@ -2481,7 +2481,7 @@ func UserGetbyID(id string) UserStruct {
 		ds.Userpasswordhash = userpasswordhash
 		ds.Userauthcategories = userauthcategories
 		ds.Userauthaction = userauthaction
-		log.Println("DB USER", ds.Userauthaction)
+		//log.Println("DB USER", ds.Userauthaction)
 	}
 	if igetuserbyidrowserr != nil {
 		log.Println("UserGet GetUserbyID row error", igetuserbyidrowserr)
