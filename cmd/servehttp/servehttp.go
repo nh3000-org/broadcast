@@ -20,7 +20,6 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/go-echarts/go-echarts/v2/types"
-	"github.com/google/uuid"
 )
 
 type UserSessionJSON struct {
@@ -30,6 +29,9 @@ type UserSessionJSON struct {
 	UserAuthCategories []string `json:"categoriess"`  // authorized categories
 	UserAuthAction     []string `json:"actions"`      // actions allowed
 }
+
+var SessionCategories []string
+var SessionAction []string
 
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 var HashLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/config.hash"
@@ -776,7 +778,17 @@ func main() {
 	setupRoutes()
 }
 func checkauthorization(authtoken string) bool {
-	frombrowser, sterr := time.Parse(time.DateTime, config.Decrypt(authtoken, MySecret)[0:19])
+	decrypt := config.Decrypt(authtoken, MySecret)
+	var jsondat = UserSessionJSON{}
+
+	if err := json.Unmarshal([]byte(decrypt), &jsondat); err != nil {
+		log.Println(err)
+
+		return false
+	}
+	fmt.Println(jsondat)
+
+	frombrowser, sterr := time.Parse(time.DateTime, jsondat.UserToken)
 	if sterr != nil {
 		log.Println("checkauthorization st ", sterr)
 	}
@@ -791,16 +803,24 @@ func checkauthorization(authtoken string) bool {
 		log.Println("checkauthorization token expired ")
 		return false
 	}
+	SessionCategories = jsondat.UserAuthCategories
+	SessionAction = jsondat.UserAuthAction
 	return true
 }
 func login(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
+	pw := r.FormValue("pw")
+	userid := r.FormValue("userid")
+	userpassword := r.FormValue("userpassword")
 	userdata = "\n"
 	userdata = userdata + "=====================================\n"
 	userdata = userdata + "Forwarded: " + r.Header.Get("X-Forwarded-For") + "\n"
 	userdata = userdata + "RemoteAddr: " + r.RemoteAddr + "\n"
 	userdata = userdata + "Agent: " + r.UserAgent() + "\n"
+	userdata = userdata + "PW: " + pw + "\n"
+	userdata = userdata + "User: " + userid + "\n"
+	userdata = userdata + "UserPassword: " + userpassword + "\n"
 	userdata = userdata + "=====================================\n"
 	log.Println(userdata)
 	//log.Println("Login")
@@ -833,14 +853,22 @@ func login(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(ilogon()))
 		return
 	}
+	myuser := config.UserGetbyID(userid)
 	var uajson = UserSessionJSON{}
 	uajson.UserToken = config.GetDateTime("0h")[0:19]
 	uajson.UserIPA = r.RemoteAddr
-	uajson.UserPasswordHash
-
+	uajson.UserPasswordHash = myuser.Userpasswordhash
+	uajson.UserAuthCategories = myuser.Userauthcategories
+	uajson.UserAuthAction = myuser.Userauthaction
+	js, err := json.Marshal(uajson)
+	if err != nil {
+		log.Println("UserJSON ERR ", err)
+		w.Write([]byte(ilogon()))
+		return
+	}
 	// check aut token expiry
-	authtoken = config.GetDateTime("0h")[0:19] + "-" + r.RemoteAddr + "-" + uuid.New().String()
-	tobrowser := config.Encrypt(authtoken, MySecret)
+
+	tobrowser := config.Encrypt(string(js), MySecret)
 	//r.Header.Set("Authorization", authtoken)
 
 	w.Write([]byte(ibuilder(tobrowser)))
