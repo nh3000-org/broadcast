@@ -34,11 +34,11 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 	eduspasswordhash.Disable()
 
 	lacategories := widget.NewLabel(config.GetLangs("userauthcategories"))
-	USERcategory := widget.NewCheckGroup([]string{"All", "DJAM", "DJPM", "NWS", "CURRENTS", "RECURRENTS", "IMAGINGID", "NEXT", "PROMOS"}, func([]string) {})
+	USERcategory := widget.NewCheckGroup([]string{"ALL", "DJAM", "DJPM", "NWS", "CURRENTS", "RECURRENTS", "IMAGINGID", "NEXT", "PROMOS"}, func([]string) {})
 	USERcategory.Horizontal = true
 
 	laauthactions := widget.NewLabel(config.GetLangs("userauthactions"))
-	edauthactions := widget.NewCheckGroup([]string{"ALL", "Upload/Download", "Category History", "Chart", "Clear", "Ad History"}, func([]string) {})
+	edauthactions := widget.NewCheckGroup([]string{"ALL", "Upload/Download", "", "Chart", "Clear", "Traffic"}, func([]string) {})
 	edauthactions.Horizontal = true
 
 	gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
