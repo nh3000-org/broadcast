@@ -1,7 +1,7 @@
 ingress:
   - hostname: wss.localhost
     path: /socket
-    service: http://localhost:8080
+    service: http://localhost:8443
     originRequest:
       websocket: true
       noTLSVerify: true  # Use only if origin uses self-signed certs 
