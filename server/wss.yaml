@@ -1,7 +1,21 @@
+tunnel: US-HTTP
+credentials-file: "/usr/local/etc/cloudflared/US-HTTP.json"
 ingress:
-  - hostname: wss.localhost
-    path: /socket
-    service: http://localhost:8443
+  # Route WebSocket traffic to internal service
+  - hostname: ws.newhorizons3000.org
+    service: ws://localhost:8443
     originRequest:
-      websocket: true
-      noTLSVerify: true  # Use only if origin uses self-signed certs 
+      # Ensure WebSocket upgrade headers are preserved
+      noTLSVerify: true
+      http2Origin: true
+      # Optional: Set connection timeouts
+      connectTimeout: 30s
+      tlsTimeout: 10s
+      keepAliveTimeout: 30s
+      # Forward original host header
+      httpHostHeader: "nats.newhorizons3000.org"
+    originCert: "/root/.cloudflared/cert.pem"
+
+
+  # Catch-all rule
+  - service: http_status:404
