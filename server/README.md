@@ -1,4 +1,4 @@
-e origincert option in the configuration file, or set TUNNEL_ORIGIN_CERT environment variable originCertPath=
+Thee origincert option in the configuration file, or set TUNNEL_ORIGIN_CERT environment variable originCertPath=
 error parsing tunnel ID: Error locating origin cert: client didn't specify origincert path
 root@us:/opt/cloudflare# cloudflared tunnel help
 NAME:
