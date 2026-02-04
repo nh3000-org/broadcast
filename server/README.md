@@ -1,3 +1,33 @@
+<<<<<<< HEAD
+=======
+
+Setup cloudflare to proxy nats
+
+STEPS:
+login to cf to get credentials:
+
+./cloudflared tunnel login
+
+Use link to get credentials
+
+copy cert.pem to your working directory as origin.pem
+
+./cloudflared tunnel create us-nats
+
+copy json file to your working directory as credentials.json
+
+create a config.ynl
+
+route the tunnel
+
+cloudflared tunnel route dns us-nats nats.newhorizons3000.org
+
+run the tunnel
+
+cloudflared tunnel run us-nats   
+
+
+>>>>>>> 4491f57 (cloudflare)
 Thee origincert option in the configuration file, or set TUNNEL_ORIGIN_CERT environment variable originCertPath=
 error parsing tunnel ID: Error locating origin cert: client didn't specify origincert path
 root@us:/opt/cloudflare# cloudflared tunnel help
