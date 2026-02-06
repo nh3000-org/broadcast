@@ -1,6 +1,8 @@
 tunnel: us-nats
-credentials-file: /etc/cloudflared/14c1d36f-c67e-4076-9352-0a6ffcbf2bf0.json
+##credentials-file: /etc/cloudflared/14c1d36f-c67e-4076-9352-0a6ffcbf2bf0.json
 ingress:
   - hostname: nats.newhorizons3000.org
     service: tcp://localhost:4222  # NATS default port
   - service: http_status:404
+
+cloudflared -config /opt/cloudflare/config.yml --loglevel debug tunnel run us-nat
