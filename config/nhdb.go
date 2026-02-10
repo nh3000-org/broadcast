@@ -2375,10 +2375,10 @@ func UserAdd(userrole, userpassword, userpasswordhash string, userauthcategories
 func UserUpdate(row int, userrole, userpassword, userpasswordhash string, userauthcategories, userauthaction []string) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
-	_, rowserr := conn.Exec(ctxsql, "update hours set userrole =$1, userpassword = $2,userpasswordhash = $3,userauthcategories = $4,userauthaction = $5 where rowid = $6", userrole, userpassword, userpasswordhash, userauthcategories, userauthaction, row)
+	_, rowserr := conn.Exec(ctxsql, "update webusers set userrole =$1, userpassword = $2,userpasswordhash = $3,userauthcategories = $4,userauthactions = $5 where rowid = $6", userrole, userpassword, userpasswordhash, userauthcategories, userauthaction, row)
 
 	if rowserr != nil {
-		log.Println("UserDelete Delete User row error", rowserr)
+		log.Println("UserUpdate Update User row error", rowserr)
 	}
 	conn.Release()
 	ctxsqlcan()

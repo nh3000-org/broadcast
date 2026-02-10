@@ -106,7 +106,7 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 			config.UserDelete(myrow)
 			config.UserGet()
 		})
-		savebutton := widget.NewButtonWithIcon(config.GetLangs("Save Day of Week"), theme.ContentCopyIcon(), func() {
+		savebutton := widget.NewButtonWithIcon(config.GetLangs("ussave"), theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 
 			config.UserUpdate(myrow, edusrole.Text, eduspassword.Text, eduspasswordhash.Text, USERcategory.Selected, edauthactions.Selected)
