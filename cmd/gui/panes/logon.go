@@ -186,8 +186,8 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			webaddressShadow = config.FyneApp.Preferences().StringWithFallback("WEBADDRESS", config.Encrypt("https://", config.MySecret))
 			webaddress.SetText(config.Decrypt(webaddressShadow, config.MySecret))
 			config.FyneApp.Preferences().SetString("WEBADDRESS", config.Encrypt(webaddress.Text, config.MySecret))
-			webaddressShadow = webaddress.Text
-
+			webaddress.Text = webaddressShadow
+			config.WebAddress = webaddressShadow
 			buckettypeShadow = config.FyneApp.Preferences().StringWithFallback("NatsBucketType", config.Encrypt("mp3", config.MySecret))
 			config.NatsBucketType = config.Decrypt(buckettypeShadow, config.MySecret)
 
@@ -326,6 +326,15 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			} else {
 				errors.SetText(config.GetLangs("ls-err11"))
 				log.Println(dbpasswordShadow, dbpassword.Text)
+			}
+		}
+		if webaddressShadow != webaddress.Text {
+			haserrors = config.Edit("STRING", webaddress.Text)
+			if !haserrors {
+				config.FyneApp.Preferences().SetString("WEBADDRESS", config.Encrypt(webaddress.Text, config.MySecret))
+			} else {
+				errors.SetText(config.GetLangs("ls-err11"))
+				log.Println(webaddressShadow, webaddress.Text)
 			}
 		}
 		if !haserrors {

@@ -737,6 +737,7 @@ func readPreferences() {
 	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	config.WebAddress = config.Decrypt(fmt.Sprintf("%v", cfg["WEBADDRESS"]), MySecret)
 
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
@@ -769,7 +770,7 @@ func setupRoutes() {
 	http.HandleFunc("/schedcounts", schedcounts)
 	http.HandleFunc("/cleartraffic", cleartraffic)
 
-	err := http.ListenAndServeTLS(":9000", "server.crt", "server.key", nil)
+	err := http.ListenAndServeTLS(":443", "server.crt", "server.key", nil)
 	if err != nil {
 		log.Println("SSL ERROR ", err)
 	}
