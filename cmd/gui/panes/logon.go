@@ -186,8 +186,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			webaddressShadow = config.FyneApp.Preferences().StringWithFallback("WEBADDRESS", config.Encrypt("https://", config.MySecret))
 			webaddress.SetText(config.Decrypt(webaddressShadow, config.MySecret))
 			config.FyneApp.Preferences().SetString("WEBADDRESS", config.Encrypt(webaddress.Text, config.MySecret))
-			webaddress.Text = webaddressShadow
-			config.WebAddress = webaddressShadow
+			config.WebAddress = webaddress.Text
 			buckettypeShadow = config.FyneApp.Preferences().StringWithFallback("NatsBucketType", config.Encrypt("mp3", config.MySecret))
 			config.NatsBucketType = config.Decrypt(buckettypeShadow, config.MySecret)
 
