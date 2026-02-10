@@ -739,7 +739,7 @@ func readPreferences() {
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
 	config.WebAddress = config.Decrypt(fmt.Sprintf("%v", cfg["WEBADDRESS"]), MySecret)
 
-	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
+	log.Println("WebAddress", config.WebAddress)
 	config.NewNatsJS()
 	config.NewPGSQL()
 }
@@ -778,11 +778,12 @@ func setupRoutes() {
 
 func main() {
 	fmt.Println("Writing Startup index.html")
+	readPreferences()
 	err := os.WriteFile("/opt/radio/publichtml/index.html", []byte(istartup()), 0644)
 	if err != nil {
 		log.Println("FAILED to Write Startup File", err)
 	}
-	fmt.Println("Waiting for Input")
+	fmt.Println("Waiting for Input", istartup())
 	setupRoutes()
 }
 func checkauthorization(authtoken string) bool {
