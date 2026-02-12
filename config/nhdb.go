@@ -1255,7 +1255,7 @@ func PDFTrafficByAlbum() []core.Row {
 		}
 		itemcount++
 		itemcountgrand++
-		//log.Println("playedon", playedon)
+		//log.Println("playedon", playedon, "album", album)
 		rline := row.New(6).Add(
 			col.New(1),
 			text.NewCol(1, strconv.Itoa(rowid), props.Text{Size: 8, Align: align.Left}),

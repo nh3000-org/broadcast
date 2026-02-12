@@ -121,12 +121,12 @@ func TRAFICREPORT(w http.ResponseWriter, r *http.Request) {
 	config.TrafficStart = config.GetDateTime("-" + strconv.Itoa(sd) + "h")[0:10] + " " + ststart
 	config.TrafficEnd = config.GetDateTime("-0h")[0:10] + " " + stend
 	//selalbum := widget.NewSelect(config.AlbumToArray(), func(string) {})
-	log.Println("TRAFFICREPORT", sd, config.TrafficStart, config.TrafficEnd)
+	log.Println("TRAFFICREPORT HOURS", sd, config.TrafficStart, config.TrafficEnd)
 	config.TrafficAlbum = r.FormValue("Categories1")
 	config.ToPDF("TrafficReport", "ADMIN")
+
 	cmd := exec.Command("xdg-open", "TrafficReport.pdf")
 	cmderr := cmd.Start()
-	log.Println("Traffic", cmderr, "rpt", "TrafficReport.pdf")
 	if cmderr != nil {
 		log.Println("Traffic", cmderr, "rpt", "TrafficReport.pdf")
 	}
@@ -770,7 +770,7 @@ func setupRoutes() {
 	http.HandleFunc("/schedcounts", schedcounts)
 	http.HandleFunc("/cleartraffic", cleartraffic)
 
-	err := http.ListenAndServeTLS(":443", "server.crt", "server.key", nil)
+	err := http.ListenAndServeTLS(":3000", "server.crt", "server.key", nil)
 	if err != nil {
 		log.Println("SSL ERROR ", err)
 	}
