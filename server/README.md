@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-=======
+### Expose port 3000 to web
+
 
 Setup cloudflare to proxy nats
 
