@@ -1,9 +1,10 @@
 ### Expose port 3000 to web
 
 
-Setup cloudflare to proxy nats
+Setup cloudflare to proxy broadcast web interface to internet/
 
 STEPS:
+
 login to cf to get credentials:
 
 ./cloudflared tunnel login
