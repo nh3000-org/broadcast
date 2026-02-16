@@ -783,7 +783,7 @@ func main() {
 	if err != nil {
 		log.Println("FAILED to Write Startup File", err)
 	}
-	fmt.Println("Waiting for Input", istartup())
+	//fmt.Println("Waiting for Input", istartup())
 	setupRoutes()
 }
 func checkauthorization(authtoken string) bool {
@@ -1023,7 +1023,7 @@ func ibuilder(authtoken string) string {
 	return s.String()
 }
 func ilogon() string {
-	log.Println("ilogon")
+
 	var s bytes.Buffer
 	s.WriteString("<!DOCTYPE html>\n")
 	s.WriteString("<html lang=\"en\">\n")
