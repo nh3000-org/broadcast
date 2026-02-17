@@ -101,7 +101,7 @@ func UsersScreen(win fyne.Window) fyne.CanvasObject {
 		eduspasswordhash.SetText(config.UserStore[id.Row].Userpasswordhash)
 		USERcategory.SetSelected(config.UserStore[id.Row].Userauthcategories)
 		edauthactions.SetSelected(config.UserStore[id.Row].Userauthaction)
-		deletebutton := widget.NewButtonWithIcon(config.GetLangs("eng-usdelete"), theme.ContentCopyIcon(), func() {
+		deletebutton := widget.NewButtonWithIcon(config.GetLangs("usdelete"), theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 			config.UserDelete(myrow)
 			config.UserGet()
