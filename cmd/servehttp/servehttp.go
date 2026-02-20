@@ -819,7 +819,7 @@ func checkauthorization(authtoken string) bool {
 func login(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
-	pw := r.FormValue("pw")
+	//pw := r.FormValue("pw")
 	userid := r.FormValue("userid")
 	//userpassword := r.FormValue("userpassword")
 	userdata = "\n"
@@ -827,11 +827,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 	userdata = userdata + "Forwarded: " + r.Header.Get("X-Forwarded-For") + "\n"
 	userdata = userdata + "RemoteAddr: " + r.RemoteAddr + "\n"
 	userdata = userdata + "Agent: " + r.UserAgent() + "\n"
-	userdata = userdata + "PW: " + pw + "\n"
+	//userdata = userdata + "PW: " + pw + "\n"
 	userdata = userdata + "User: " + userid + "\n"
 	//userdata = userdata + "UserPassword: " + userpassword + "\n"
 	userdata = userdata + "=====================================\n"
-	//log.Println(userdata)
+	log.Println(userdata)
 	//log.Println("Login")
 	if isbusy {
 		w.Write([]byte(ibusy()))
