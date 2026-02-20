@@ -795,7 +795,7 @@ func checkauthorization(authtoken string) bool {
 
 		return false
 	}
-	fmt.Println(jsondat)
+	//fmt.Println(jsondat)
 
 	frombrowser, sterr := time.Parse(time.DateTime, jsondat.UserToken)
 	if sterr != nil {
