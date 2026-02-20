@@ -821,7 +821,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	pw := r.FormValue("pw")
 	userid := r.FormValue("userid")
-	userpassword := r.FormValue("userpassword")
+	//userpassword := r.FormValue("userpassword")
 	userdata = "\n"
 	userdata = userdata + "=====================================\n"
 	userdata = userdata + "Forwarded: " + r.Header.Get("X-Forwarded-For") + "\n"
@@ -829,9 +829,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	userdata = userdata + "Agent: " + r.UserAgent() + "\n"
 	userdata = userdata + "PW: " + pw + "\n"
 	userdata = userdata + "User: " + userid + "\n"
-	userdata = userdata + "UserPassword: " + userpassword + "\n"
+	//userdata = userdata + "UserPassword: " + userpassword + "\n"
 	userdata = userdata + "=====================================\n"
-	log.Println(userdata)
+	//log.Println(userdata)
 	//log.Println("Login")
 	if isbusy {
 		w.Write([]byte(ibusy()))
@@ -887,8 +887,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 func arrayhas(a []string, v string) bool {
 	//log.Println("arrayhas: a", a, "v", v)
-	for index, value := range a {
-		log.Println("Index: ", index, value)
+	for _, value := range a {
+		//log.Println("Index: ", index, value)
 		if v == value {
 			return true
 		}

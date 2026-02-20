@@ -61,7 +61,14 @@ type NatsjsREPORT struct {
 	CtxcanREPORT      context.CancelFunc
 }
 
+var NewNatsDone = false
+
 func NewNatsJS() error {
+	if NewNatsDone {
+		NewNatsDone = true
+		return nil
+
+	}
 	nnjsd := new(Natsjs)
 	nnjsctx, nnjsctxcan := context.WithTimeout(context.Background(), 87840*time.Hour)
 
@@ -380,7 +387,7 @@ func CheckBucket(bucket, id, station string) bool {
 
 		if gberr != nil {
 			log.Println("Bucket MP4 Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
-			Send("messages."+station, "Bucket MP4 Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
+			Send("messages."+station, "Bucket MP4 Missing "+" bucket "+bucket+" id "+id+" error: "+gberr.Error(), "nats")
 			return false
 		}
 	}
@@ -389,7 +396,7 @@ func CheckBucket(bucket, id, station string) bool {
 		//log.Println("nats checkbucket ", id)
 		if gberr != nil {
 			log.Println("Bucket WAV Missing " + " bucket " + bucket + " id " + id + " error: " + gberr.Error())
-			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
+			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" error: "+gberr.Error(), "nats")
 			return false
 		}
 	}
@@ -414,7 +421,7 @@ func GetBucket(bucket, id, station string) []byte {
 		gbdata, gberr := NATS.Obsmp4.GetBytes(id)
 
 		if gberr != nil {
-			Send("messages."+station, "Bucket MP4 Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
+			Send("messages."+station, "Bucket MP4 Missing "+" bucket "+bucket+" id "+id+" error: "+gberr.Error(), "nats")
 		}
 		runtime.GC()
 		return gbdata
@@ -423,7 +430,7 @@ func GetBucket(bucket, id, station string) []byte {
 		gbdata, gberr := NATS.Obswav.GetBytes(id)
 		//log.Println("nats getbucket ", id, len(gbdata))
 		if gberr != nil {
-			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" errror: "+gberr.Error(), "nats")
+			Send("messages."+station, "Bucket WAV Missing "+" bucket "+bucket+" id "+id+" error: "+gberr.Error(), "nats")
 		}
 		runtime.GC()
 		return gbdata
