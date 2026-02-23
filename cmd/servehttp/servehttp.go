@@ -710,6 +710,35 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Write(hl)
 
 }
+func downloadContent(w http.ResponseWriter, r *http.Request) {
+	if !checkauthorization(r.FormValue("Authorization")) {
+		w.Write([]byte(ilogon()))
+		return
+	}
+	isbusy = true
+	log.Println("Download Content")
+	pmuerr := r.ParseForm()
+	if pmuerr != nil {
+		log.Println("Content Download", pmuerr)
+		w.Write([]byte("Content Download Parse Error r.FormFile"))
+
+	}
+
+	log.Println("Downloading ", r.FormValue("fileid"), r.FormValue("asa"))
+	data := config.GetBucket(config.NatsBucketType, r.FormValue("fileid"), "WEB")
+	isbusy = false
+	if config.NatsBucketType == "wav" {
+		w.Header().Set("Content-Type", "audio/wav")
+	}
+	if config.NatsBucketType == "mp3" {
+		w.Header().Set("Content-Type", "audio/mp3")
+	}
+	w.Header().Set("Content-Disposition", "attachment; filename="+r.FormValue("asa")+"."+config.NatsBucketType)
+	w.Header().Add("Content-Length", fmt.Sprint(len(data)))
+	w.Write(data)
+
+}
+
 func readPreferences() {
 
 	// read config preferences.json
@@ -738,7 +767,7 @@ func readPreferences() {
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
 	config.WebAddress = config.Decrypt(fmt.Sprintf("%v", cfg["WEBADDRESS"]), MySecret)
-
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
 	log.Println("WebAddress", config.WebAddress)
 	config.NewNatsJS()
 	config.NewPGSQL()
@@ -762,6 +791,7 @@ func setupRoutes() {
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/config", configFile)
 	http.HandleFunc("/download", downloadFile)
+	http.HandleFunc("/retrieve", downloadContent)
 	http.HandleFunc("/upload", uploadFile)
 	http.HandleFunc("/chart", chart)
 	http.HandleFunc("/ADS", ADS)
@@ -896,6 +926,31 @@ func arrayhas(a []string, v string) bool {
 
 	return false
 }
+func displayCurrent(authtoken string) string {
+
+	config.InventoryGetCurrent()
+	var builder strings.Builder
+	for _, inv := range config.InventoryStoreCurrent {
+
+		builder.WriteString(" </tr>\n")
+		builder.WriteString("<form  action=\"" + config.WebAddress + "/retrieve\" method=\"post\">\n")
+		builder.WriteString("	             <td colspan=\"1\">" + inv.Artist + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + inv.Song + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + inv.Album + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + strconv.Itoa(inv.Songlength) + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
+		builder.WriteString("	             <td colspan=\"3\">.</td>\n")
+		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"asa\" id=\"asa\" value=\"" + inv.Artist + "-" + inv.Song + "-" + inv.Album + "\" /></td>\n")
+		builder.WriteString(" <td colspan=\"1\"><input type=\"submit\" value=\"Download Content\" style=\"color: #4c14e477;\" /></td>\n")
+		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+		builder.WriteString("<td colspan=\"4\"><input type=\"hidden\" name=\"fileid\" id=\"fileid\" value=\"" + strconv.Itoa(inv.Row) + "\" /></td>\n")
+		builder.WriteString(" </tr>\n")
+
+	}
+
+	return builder.String()
+}
 func ibuilder(authtoken string) string {
 
 	var s bytes.Buffer
@@ -911,7 +966,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	   <table>\n")
 	s.WriteString("	     <tr style=\"background-color: #ddd;\">\n")
 	s.WriteString("	       <th colspan=\"1\"><img src=\"logo.png\" alt=\"Broadcast Radio\" style=\"width:128px;height:128px;\"></th>\n")
-	s.WriteString("	       <th colspan=\"7\">Broadcat Web Interface</th>\n")
+	s.WriteString("	       <th colspan=\"8\">Broadcat Web Interface<br>New Horizons 3000</th>\n")
 	s.WriteString("	     </tr>\n")
 
 	if arrayhas(SessionAction, "ALL") || arrayhas(SessionAction, "Upload/Download") {
@@ -919,7 +974,7 @@ func ibuilder(authtoken string) string {
 		s.WriteString("           <form enctype=\"multipart/form-data\" action=\"" + config.WebAddress + "/upload\" method=\"post\">\n")
 		s.WriteString("              <td colspan=\"1\"><input type=\"file\" name=\"stub\" />\n</td>")
 		s.WriteString("              <td colspan=\"1\"><input type=\"submit\" value=\"Upload stub.zip\" style=\"color: #4c14e477;\"/>\n</td>")
-		s.WriteString("              <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n</td>")
+		s.WriteString("              <td colspan=\"3\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" />\n</td>")
 		s.WriteString("	             <td colspan=\"5\">Upload and process a stub file. The file must be in zip format. Manually upload content with restrictions</td>\n")
 		s.WriteString("          </form>\n")
 		s.WriteString("	     </tr>\n")
@@ -927,7 +982,7 @@ func ibuilder(authtoken string) string {
 		s.WriteString("	     <tr style=\"background-color: #11d4e277;\">\n")
 		s.WriteString("           <form  action=\"" + config.WebAddress + "/download\" method=\"post\">\n")
 		s.WriteString("              <td colspan=\"1\"><input type=\"submit\" value=\"Download stub.zip\" style=\"color: #4c14e477;\" /></td>\n")
-		s.WriteString("              <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+		s.WriteString("              <td colspan=\"4\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 		s.WriteString("	             <td colspan=\"6\">Download a stub file.<br>The file is in zip format. Use this to build content</td>\n")
 		s.WriteString("           </form>\n")
 		s.WriteString("	     </tr>\n")
@@ -948,10 +1003,10 @@ func ibuilder(authtoken string) string {
 		s.WriteString("                  <option value=\"IMAGINGID\">Imaging Spots</option>")
 		s.WriteString("                  <option value=\"DJ\">DJ Spots</option>")
 		s.WriteString("                  </select></td>")
-		s.WriteString("               <td colspan=\"1\"><input type=\"submit\" value=\"Category History\" style=\"color: #4c14e477;\" /></td>\n")
+		s.WriteString("               <td colspan=\"2\"><input type=\"submit\" value=\"Category History\" style=\"color: #4c14e477;\" /></td>\n")
 		s.WriteString("               <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 		s.WriteString("           </form>\n")
-		s.WriteString("	          <td colspan=\"1\">Produce a line chart using parameters</td>\n")
+		s.WriteString("	          <td colspan=\"3\">Produce a line chart using parameters</td>\n")
 		s.WriteString("	     </tr>\n")
 	}
 	if arrayhas(SessionAction, "ALL") || arrayhas(SessionAction, "Traffic") {
@@ -967,7 +1022,7 @@ func ibuilder(authtoken string) string {
 		s.WriteString("          <td colspan=\"1\"><select name=\"Categories1\" id=\"categories1\">")
 		s.WriteString(config.TrafficGetAlbum("-2160"))
 		s.WriteString("          </select></td>")
-		s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Ad Report\" style=\"color: #4c14e477;\" /></td>\n")
+		s.WriteString("          <td colspan=\"2\"><input type=\"submit\" value=\"Ad Report\" style=\"color: #4c14e477;\" /></td>\n")
 		s.WriteString("          <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 		s.WriteString("         </form>\n")
 		s.WriteString("	        <td colspan=\"1\">Produce a billing report using parameters</td>\n")
@@ -985,10 +1040,10 @@ func ibuilder(authtoken string) string {
 		s.WriteString("          <td colspan=\"1\"><select name=\"Categories1\" id=\"categories1\">")
 		s.WriteString(config.TrafficGetAlbum("-2160"))
 		s.WriteString("          </select></td>")
-		s.WriteString("          <td colspan=\"1\"><input type=\"submit\" value=\"Ad History\" style=\"color: #4c14e477;\" /></td>\n")
+		s.WriteString("          <td colspan=\"2\"><input type=\"submit\" value=\"Ad History\" style=\"color: #4c14e477;\" /></td>\n")
 		s.WriteString("          <td colspan=\"1\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 		s.WriteString("         </form>\n")
-		s.WriteString("	        <td colspan=\"1\">Produce a line chart using parameters</td>\n")
+		s.WriteString("	        <td colspan=\"2\">Produce a line chart using parameters</td>\n")
 		s.WriteString("	     </tr>\n")
 
 		s.WriteString("	      <tr style=\"background-color: #11d4e277;\">\n")
@@ -1011,10 +1066,28 @@ func ibuilder(authtoken string) string {
 		s.WriteString("	     <tr style=\"background-color: #ec292977;\">\n")
 		s.WriteString("          <form  action=\"" + config.WebAddress + "/cleartraffic\" method=\"post\" target=\"_blank\">\n")
 		s.WriteString("            <td colspan=\"1\"><input type=\"submit\" value=\"Clear Traffic Over 1 Year Old\" style=\"color: #04c14e477;\" /></td>\n")
-		s.WriteString("           <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+		s.WriteString("           <td colspan=\"4\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 		s.WriteString("          </form>\n")
-		s.WriteString("	        <td colspan=\"5\">Clear traffic counts </td>\n")
+		s.WriteString("	        <td colspan=\"4\">Clear traffic counts </td>\n")
 		s.WriteString("	     </tr>\n")
+	}
+	if arrayhas(SessionAction, "ALL") || arrayhas(SessionAction, "Upload/Download") {
+
+		s.WriteString("	     <tr \">\n")
+		s.WriteString("	     	<td colspan=\"8\">Download CURRENT inventory item for voice tracking.<br>Transfer the contents to the client<br>Use GUI to upload the item to the store</td>\n")
+		s.WriteString("	     </tr>\n")
+		s.WriteString("	     <tr style=\"background-color: #11d4e277;\">\n")
+		s.WriteString("	             <td colspan=\"1\">Artist</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Song</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Album</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Length</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Intro</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Outro</td>\n")
+		s.WriteString("	             <td colspan=\"3\">.</td>\n")
+		s.WriteString("	     </tr>\n")
+
+		s.WriteString(displayCurrent(authtoken))
+
 	}
 	s.WriteString("	   </table>\n")
 	s.WriteString("</body>\n")
