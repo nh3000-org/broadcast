@@ -687,18 +687,10 @@ var errremovei error
 var errremoveo error
 var otoctx oto.Context
 
-func writeWav(filein, fileout, artist, song, album string) {
-
-}
 func main() {
 	hourtimingstart = time.Now()
-	rootImport := flag.String("rootimport", "./", "-rootimport base directory of scott files")
-	stationid := flag.String("stationid", "./", "-stationid call letters of station")
-	musicIncludes := []string{"401", "402", "403", "404", "405", "406", "407", "408", "409", "410"}
-	legalIncludes := []string{"ID4"}
-	linersIncludes := []string{"LI"}
-	promosIncludes := []string{"PR4", "SW4"}
-
+	schedDay := flag.String("schedday", "MON", "-schedday MON || TUE || WED || THU || FRI || SAT || SUN")
+	stationId := flag.String("stationid", "WRRW", "-station WRRW")
 	StationId = *stationId
 	schedHour := flag.String("schedhour", "00", "-schedhour 00..23")
 	schedhour = *schedHour
