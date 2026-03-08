@@ -38,7 +38,7 @@ func readPath(startpath, station string) {
 	fbindex = 1
 	walkfileerr := filepath.Walk(startpath, func(path string, info os.FileInfo, err error) error {
 		category = ""
-		continuereading = true
+		continuereading = false
 		if info.IsDir() {
 			log.Println("read", info.Name())
 			// determine the category
@@ -77,7 +77,7 @@ func readPath(startpath, station string) {
 
 			continuereading = errors.Is(readerr, io.EOF)
 		}
-		for continuereading {
+		if continuereading {
 			var ir = IndexRecord{}
 			sfb := string(fb)
 			/* 	Song   [45]byte
