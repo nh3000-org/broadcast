@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	//"github.com/nh3000-org/radio/config"
+	"strconv"
+
+	"github.com/nh3000-org/broadcast/config"
 )
 
 // scott findex directory index
@@ -80,7 +82,7 @@ func processIndex(path, station string) {
 			countforcurrents = 1
 			currentsselected = true
 		}
-		addInventory(ir,currentsselected)
+		addInventory(ir, currentsselected)
 		fbindex++
 		//if count > 3 {
 		//	os.Exit(0)
@@ -88,7 +90,29 @@ func processIndex(path, station string) {
 	}
 }
 func addInventory(rec IndexRecord, currents bool) {
+	// read the file
+	// add the meta data
 	
+	added := config.GetDateTime("0h")
+	rowreturned := config.InventoryAdd(cat, art, song, "", int(lengthFloat), "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
+	row := strconv.Itoa(rowreturned)
+	if row != "0" {
+		songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
+		if songerr != nil {
+			log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
+			config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
+		}
+		if songerr == nil {
+			pberr := config.PutBucket("mp3", row, songbytes)
+			if pberr == nil {
+				songbytes = []byte("")
+			}
+			if pberr != nil {
+				log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+				config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
+			}
+		}
+	}
 }
 func readPath(startpath, station string) {
 
