@@ -1,9 +1,7 @@
 package main
 
 import (
-	"errors"
 	"flag"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -27,11 +25,71 @@ var promosIncludes = []string{"PR4", "SW4"}
 var category string
 var findexfile *os.File
 var finxexfileerr error
-var fb = make([]byte, 179)
-var fbindex int64
+var fb = make([]byte, 184)
+var fbindex int64 = 1
 var continuereading = true
 var count = 1
+var countforcurrents = 1
+var currentsselected = false
 
+func processIndex(path, station string) {
+	// read the FINDEX01.DAT file block size 179
+	log.Println("processIndex", path, station)
+	os.Chdir(path)
+	//if !info.IsDir() && category != "" {
+	findexfile, findexfilerror := os.Open("FINDEX01.DAT")
+	if findexfilerror != nil {
+		log.Println("findexfile error reading", findexfilerror)
+	}
+	continuereading = true
+	for continuereading {
+		var seekstart int64 = fbindex * 183
+		_, fbseelerror := findexfile.Seek(seekstart, 0)
+		if fbseelerror != nil {
+			log.Println("findexfile seek error ", fbseelerror)
+		}
+
+		_, readerr := findexfile.Read(fb)
+		//log.Println("read", rb)
+		if readerr != nil {
+			log.Println("findexfile read error ", readerr)
+			continuereading = false
+			return
+		}
+
+		//continuereading = errors.Is(readerr, io.EOF)
+		//}
+		//if continuereading {
+		var ir = IndexRecord{}
+		sfb := string(fb)
+		/* 	Song   [45]byte
+		Junk   [12]byte
+		Artist [32]byte
+		Junk2  [12]byte
+		File   [78]byte */
+		ir.Song = sfb[0:43]
+		ir.Junk = sfb[44:55]
+		ir.Artist = sfb[56:90]
+		ir.Junk2 = sfb[91:102]
+		ir.File = sfb[103:183]
+		log.Println("c:", count, "s:", ir.Song, "a:", ir.Artist, "f:", ir.File)
+		count++
+		countforcurrents++
+		currentsselected = false
+		if countforcurrents == 13 {
+			countforcurrents = 1
+			currentsselected = true
+		}
+		addInventory(ir,currentsselected)
+		fbindex++
+		//if count > 3 {
+		//	os.Exit(0)
+		//}
+	}
+}
+func addInventory(rec IndexRecord, currents bool) {
+	
+}
 func readPath(startpath, station string) {
 
 	os.Chdir(startpath)
@@ -56,47 +114,8 @@ func readPath(startpath, station string) {
 			}
 			log.Println("read", info.Name(), category)
 		}
-		// read the FINDEX01.DAT file block size 179
-
-		if !info.IsDir() && category != "" {
-			log.Println("read2")
-			findexfile, findexfilerror := os.Open("FINDEX01.DAT")
-			if findexfilerror != nil {
-				log.Println("findexfile error reading", findexfilerror)
-			}
-			var seekstart int64 = fbindex * 179
-			_, fbseelerror := findexfile.Seek(seekstart, 1)
-			if fbseelerror != nil {
-				log.Println("findexfile seek error ", fbseelerror)
-			}
-
-			rb, readerr := findexfile.Read(fb)
-			log.Println("read", rb)
-			if readerr != nil {
-				log.Println("findexfile read error ", readerr)
-			}
-
-			continuereading = errors.Is(readerr, io.EOF)
-		}
-		if continuereading {
-			var ir = IndexRecord{}
-			sfb := string(fb)
-			/* 	Song   [45]byte
-			Junk   [12]byte
-			Artist [32]byte
-			Junk2  [12]byte
-			File   [78]byte */
-			ir.Song = sfb[1:45]
-			ir.Junk = sfb[46:58]
-			ir.Artist = sfb[59:91]
-			ir.Junk2 = sfb[92:104]
-			ir.File = sfb[105:179]
-			log.Println(fb, ir.Song, ir.Junk, ir.Artist, ir.Junk2, ir.File)
-			count++
-			fbindex++
-			if count > 3 {
-				os.Exit(0)
-			}
+		if category != "" {
+			processIndex(path, station)
 		}
 
 		return nil
