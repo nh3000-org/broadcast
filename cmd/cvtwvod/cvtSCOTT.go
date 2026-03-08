@@ -40,7 +40,7 @@ func readPath(startpath, station string) {
 		category = ""
 		continuereading = false
 		if info.IsDir() {
-			log.Println("read", info.Name())
+
 			// determine the category
 			if slices.Contains(musicIncludes, info.Name()) {
 				category = "RECURRENTS"
@@ -54,6 +54,7 @@ func readPath(startpath, station string) {
 			if slices.Contains(promosIncludes, info.Name()) {
 				category = "PROMOS"
 			}
+			log.Println("read", info.Name(), category)
 		}
 		// read the FINDEX01.DAT file block size 179
 
