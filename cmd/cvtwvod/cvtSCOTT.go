@@ -6,9 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strconv"
-
-	"github.com/nh3000-org/broadcast/config"
+	//"strconv"
+	//"github.com/nh3000-org/broadcast/config"
 )
 
 // scott findex directory index
@@ -20,7 +19,7 @@ type IndexRecord struct {
 	File   string
 }
 
-var musicIncludes = []string{"401", "402", "403", "404", "405", "406", "407", "408", "409", "410"}
+var musicIncludes = []string{"401"}
 var legalIncludes = []string{"ID4"}
 var linersIncludes = []string{"LI"}
 var promosIncludes = []string{"PR4", "SW4"}
@@ -42,6 +41,7 @@ func processIndex(path, station string) {
 	findexfile, findexfilerror := os.Open("FINDEX01.DAT")
 	if findexfilerror != nil {
 		log.Println("findexfile error reading", findexfilerror)
+		return
 	}
 	continuereading = true
 	for continuereading {
@@ -82,38 +82,45 @@ func processIndex(path, station string) {
 			countforcurrents = 1
 			currentsselected = true
 		}
-		addInventory(ir, currentsselected)
+		//addInventory(ir, currentsselected,path)
 		fbindex++
 		//if count > 3 {
 		//	os.Exit(0)
 		//}
 	}
 }
-func addInventory(rec IndexRecord, currents bool) {
-	// read the file
-	// add the meta data
-	
-	added := config.GetDateTime("0h")
-	rowreturned := config.InventoryAdd(cat, art, song, "", int(lengthFloat), "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
-	row := strconv.Itoa(rowreturned)
-	if row != "0" {
-		songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
-		if songerr != nil {
-			log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
-			config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
-		}
-		if songerr == nil {
-			pberr := config.PutBucket("mp3", row, songbytes)
-			if pberr == nil {
-				songbytes = []byte("")
+func processDirectory(path, station, category string) {
+	// read the FINDEX01.DAT file block size 179
+	log.Println("processDirectory", path, station, category)
+}
+
+/*
+	 func addInventory(rec IndexRecord, currents bool,path string) {
+		// read the file
+		// add the meta data
+
+		added := config.GetDateTime("0h")
+		rowreturned := config.InventoryAdd(cat, art, song, "", int(lengthFloat), "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
+		row := strconv.Itoa(rowreturned)
+		if row != "0" {
+			songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
+			if songerr != nil {
+				log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
+				config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
 			}
-			if pberr != nil {
-				log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
-				config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
+			if songerr == nil {
+				pberr := config.PutBucket("mp3", row, songbytes)
+				if pberr == nil {
+					songbytes = []byte("")
+				}
+				if pberr != nil {
+					log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+					config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
+				}
 			}
 		}
 	}
-}
+*/
 func readPath(startpath, station string) {
 
 	os.Chdir(startpath)
@@ -138,10 +145,18 @@ func readPath(startpath, station string) {
 			}
 			log.Println("read", info.Name(), category)
 		}
-		if category != "" {
+		if category == "RECURRENTS" {
 			processIndex(path, station)
 		}
-
+		if category == "IMAGINGID" {
+			processDirectory(path, station, category)
+		}
+		if category == "STATIONID" {
+			processDirectory(path, station, category)
+		}
+		if category == "PROMOS" {
+			processDirectory(path, station, category)
+		}
 		return nil
 	})
 	if walkfileerr != nil {
