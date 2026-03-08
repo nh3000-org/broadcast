@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
+	"strings"
 	//"strconv"
 	//"github.com/nh3000-org/broadcast/config"
 )
@@ -21,11 +23,11 @@ type IndexRecord struct {
 
 var musicIncludes = []string{"401"}
 var legalIncludes = []string{"ID4"}
-var linersIncludes = []string{"LI"}
+var linersIncludes = []string{"LI4","JI4"}
 var promosIncludes = []string{"PR4", "SW4"}
 var category string
 var findexfile *os.File
-var finxexfileerr error
+var findexfilerror error
 var fb = make([]byte, 184)
 var fbindex int64 = 1
 var continuereading = true
@@ -38,7 +40,7 @@ func processIndex(path, station string) {
 	log.Println("processIndex", path, station)
 	os.Chdir(path)
 	//if !info.IsDir() && category != "" {
-	findexfile, findexfilerror := os.Open("FINDEX01.DAT")
+	findexfile, findexfilerror = os.Open("FINDEX01.DAT")
 	if findexfilerror != nil {
 		log.Println("findexfile error reading", findexfilerror)
 		return
@@ -78,6 +80,7 @@ func processIndex(path, station string) {
 		count++
 		countforcurrents++
 		currentsselected = false
+		// write currents intro/outro 
 		if countforcurrents == 13 {
 			countforcurrents = 1
 			currentsselected = true
@@ -89,9 +92,28 @@ func processIndex(path, station string) {
 		//}
 	}
 }
+
+var dircount = 1
+var suf = ""
+var nm = ""
+
 func processDirectory(path, station, category string) {
 	// read the FINDEX01.DAT file block size 179
 	log.Println("processDirectory", path, station, category)
+	os.Chdir(path)
+	dircount = 1
+	walkfileerr := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		suf = strconv.Itoa(dircount)
+		nm = category + suf
+		if strings.HasPrefix(info.Name(), "SP") {
+			log.Println("c:", dircount, "s:", nm, "a:", nm, "f:", nm)
+			dircount++
+		}
+		return nil
+	})
+	if walkfileerr != nil {
+		log.Println("walkfileerr", walkfileerr)
+	}
 }
 
 /*
@@ -143,7 +165,7 @@ func readPath(startpath, station string) {
 			if slices.Contains(promosIncludes, info.Name()) {
 				category = "PROMOS"
 			}
-			log.Println("read", info.Name(), category)
+			//log.Println("read", info.Name(), category)
 		}
 		if category == "RECURRENTS" {
 			processIndex(path, station)
