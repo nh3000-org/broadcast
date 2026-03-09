@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	//"strconv"
+	"github.com/go-audio/wav"
 	"github.com/nh3000-org/broadcast/config"
 )
 
@@ -20,6 +21,7 @@ type IndexRecord struct {
 	Artist string
 	Junk2  string
 	File   string
+	Length string
 }
 
 var musicIncludes = []string{"401"}
@@ -75,9 +77,9 @@ func processIndex(path, station string) {
 		ir.Song = sfb[0:43]
 		ir.Junk = sfb[44:55]
 		ir.Artist = sfb[56:90]
-		ir.Junk2 = sfb[91:102]
+		ir.Length = sfb[91:96]
 		ir.File = sfb[103:183]
-		log.Println("c:", count, "s:", ir.Song, "a:", ir.Artist, "f:", ir.File)
+		log.Println("c:", count, "s:", ir.Song, "a:", ir.Artist, "f:", ir.File, "j1:", "l:", ir.Length)
 		count++
 		countforcurrents++
 		currentsselected = false
@@ -86,7 +88,7 @@ func processIndex(path, station string) {
 			countforcurrents = 1
 			currentsselected = true
 		}
-		//addInventory(ir, currentsselected,path)
+		addInventory(ir, currentsselected, path+"/"+ir.File)
 		fbindex++
 		//if count > 3 {
 		//	os.Exit(0)
@@ -108,6 +110,12 @@ func processDirectory(path, station, category string) {
 		nm = category + suf
 		if strings.HasPrefix(info.Name(), "SP") {
 			log.Println("c:", dircount, "s:", nm, "a:", nm, "f:", nm)
+			ir := IndexRecord{}
+			ir.Artist = nm
+			ir.Song = nm
+			ir.File = path + "/" + info.Name()
+			ir.Length = " 0:30"
+			addInventory(ir, currentsselected, ir.File)
 			dircount++
 		}
 		return nil
@@ -117,28 +125,87 @@ func processDirectory(path, station, category string) {
 	}
 }
 
-func addInventory(rec IndexRecord, currents bool, path string) {
+var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}
+var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
+
+func addInventory(rec IndexRecord, currentsselected bool, path string) {
+	var m = rec.Length[1:2]
+	var s = rec.Length[3:5]
+	min, _ := strconv.Atoi(m)
+	sec, _ := strconv.Atoi(s)
+	var l = min*60 + sec
+	log.Println("AddInventory ", currentsselected, path, "Length", rec.Length, min, sec, l)
+	if len(path) > 0 {
+		return
+	}
+
 	// read the file
-	// add the meta data
+	f, _ := os.Open(path)
+	defer f.Close()
+	d := wav.NewDecoder(f)
+	d.ReadMetadata() // Parses INFO, LIST, and other metadata chunks
+	metadata := d.Metadata
+	metadata.Artist = rec.Artist
+	metadata.Title = rec.Song
+	metadata.Genre = "AAA"
+	metadata.TrackNbr = "1"
+	buf, err := d.FullPCMBuffer()
+	if err != nil {
+		panic(err)
+	}
+	out, _ := os.Create("output.wav")
+	defer out.Close()
+	e := wav.NewEncoder(out, buf.Format.SampleRate, buf.Format.NumChannels, 16, 1)
+	e.Metadata = metadata // Inject metadata from original file
+	if err := e.Write(buf); err != nil {
+		panic(err)
+	}
+	if err := e.Close(); err != nil {
+		panic(err)
+	}
 
 	added := config.GetDateTime("0h")
-	rowreturned := config.InventoryAdd(cat, art, song, "", int(lengthFloat), "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
+	// convert Length from 3:45 to seconds
+
+	rowreturned := config.InventoryAdd(category, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
 	row := strconv.Itoa(rowreturned)
 	if row != "0" {
-		songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
+		songbytes, songerr := os.ReadFile("output.wav")
 		if songerr != nil {
-			log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
-			config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
+			log.Println("messages."+"cvtwvod", "Put Bucket Song Read Error", "cvtwvod", songerr)
+			config.Send("messages."+"cvtwvod", "Put Bucket Song Read Error", "cvtwvod")
 		}
 		if songerr == nil {
-			pberr := config.PutBucket("mp3", row, songbytes)
+			pberr := config.PutBucket("wav", row, songbytes)
 			if pberr == nil {
 				songbytes = []byte("")
 			}
 			if pberr != nil {
-				log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
-				config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
+				log.Println("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod", songerr)
+				config.Send("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod")
 			}
+
+			if currentsselected {
+				pberr := config.PutBucket("wav", row+"INTRO", songbytes)
+				if pberr == nil {
+					songbytes = []byte("")
+				}
+				if pberr != nil {
+					log.Println("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod", songerr)
+					config.Send("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod")
+				}
+			}
+			if currentsselected {
+				pberr := config.PutBucket("wav", row+"OUTRO", songbytes)
+				if pberr == nil {
+					songbytes = []byte("")
+				}
+				if pberr != nil {
+					log.Println("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod", songerr)
+					config.Send("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod")
+				}
+			}
+
 		}
 	}
 }
