@@ -8,8 +8,9 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
 	//"strconv"
-	//"github.com/nh3000-org/broadcast/config"
+	"github.com/nh3000-org/broadcast/config"
 )
 
 // scott findex directory index
@@ -23,7 +24,7 @@ type IndexRecord struct {
 
 var musicIncludes = []string{"401"}
 var legalIncludes = []string{"ID4"}
-var linersIncludes = []string{"LI4","JI4"}
+var linersIncludes = []string{"LI4", "JI4"}
 var promosIncludes = []string{"PR4", "SW4"}
 var category string
 var findexfile *os.File
@@ -80,7 +81,7 @@ func processIndex(path, station string) {
 		count++
 		countforcurrents++
 		currentsselected = false
-		// write currents intro/outro 
+		// write currents intro/outro
 		if countforcurrents == 13 {
 			countforcurrents = 1
 			currentsselected = true
@@ -116,33 +117,32 @@ func processDirectory(path, station, category string) {
 	}
 }
 
-/*
-	 func addInventory(rec IndexRecord, currents bool,path string) {
-		// read the file
-		// add the meta data
+func addInventory(rec IndexRecord, currents bool, path string) {
+	// read the file
+	// add the meta data
 
-		added := config.GetDateTime("0h")
-		rowreturned := config.InventoryAdd(cat, art, song, "", int(lengthFloat), "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
-		row := strconv.Itoa(rowreturned)
-		if row != "0" {
-			songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
-			if songerr != nil {
-				log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
-				config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
+	added := config.GetDateTime("0h")
+	rowreturned := config.InventoryAdd(cat, art, song, "", int(lengthFloat), "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, rec.invchart)
+	row := strconv.Itoa(rowreturned)
+	if row != "0" {
+		songbytes, songerr := os.ReadFile(importdir + rec.invid + ".mp3")
+		if songerr != nil {
+			log.Println("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw", songerr)
+			config.Send("messages."+"cvtwrrw", "Put Bucket Song Read Error", "cvtwrrw")
+		}
+		if songerr == nil {
+			pberr := config.PutBucket("mp3", row, songbytes)
+			if pberr == nil {
+				songbytes = []byte("")
 			}
-			if songerr == nil {
-				pberr := config.PutBucket("mp3", row, songbytes)
-				if pberr == nil {
-					songbytes = []byte("")
-				}
-				if pberr != nil {
-					log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
-					config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
-				}
+			if pberr != nil {
+				log.Println("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw", songerr)
+				config.Send("messages."+"cvtwrrw", "Put Bucket Write Error", "cvtwrrw")
 			}
 		}
 	}
-*/
+}
+
 func readPath(startpath, station string) {
 
 	os.Chdir(startpath)
