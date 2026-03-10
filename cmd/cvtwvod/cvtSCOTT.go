@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -37,6 +39,8 @@ var continuereading = true
 var count = 1
 var countforcurrents = 1
 var currentsselected = false
+
+//var goodfile string
 
 func processIndex(path, station string) {
 	// read the FINDEX01.DAT file block size 179
@@ -79,6 +83,9 @@ func processIndex(path, station string) {
 		ir.Artist = sfb[56:90]
 		ir.Length = sfb[91:96]
 		ir.File = sfb[103:183]
+		ir.Song = strings.ReplaceAll(ir.Song, "\x00", "")
+		ir.Artist = strings.ReplaceAll(ir.Artist, "\x00", "")
+		ir.File = strings.ReplaceAll(ir.File, "\x00", "")
 		log.Println("c:", count, "s:", ir.Song, "a:", ir.Artist, "f:", ir.File, "j1:", "l:", ir.Length)
 		count++
 		countforcurrents++
@@ -88,7 +95,8 @@ func processIndex(path, station string) {
 			countforcurrents = 1
 			currentsselected = true
 		}
-		addInventory(ir, currentsselected, path+"/"+ir.File)
+		addInventory(ir, currentsselected, path, ir.File)
+
 		fbindex++
 		//if count > 3 {
 		//	os.Exit(0)
@@ -115,7 +123,7 @@ func processDirectory(path, station, category string) {
 			ir.Song = nm
 			ir.File = path + "/" + info.Name()
 			ir.Length = " 0:30"
-			addInventory(ir, currentsselected, ir.File)
+			addInventory(ir, currentsselected, path, ir.File)
 			dircount++
 		}
 		return nil
@@ -128,35 +136,40 @@ func processDirectory(path, station, category string) {
 var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}
 var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
 
-func addInventory(rec IndexRecord, currentsselected bool, path string) {
+func addInventory(rec IndexRecord, currentsselected bool, path string, file string) {
 	var m = rec.Length[1:2]
 	var s = rec.Length[3:5]
 	min, _ := strconv.Atoi(m)
 	sec, _ := strconv.Atoi(s)
 	var l = min*60 + sec
-	log.Println("AddInventory ", currentsselected, path, "Length", rec.Length, min, sec, l)
-	if len(path) > 0 {
-		return
+	log.Println("AddInventory ", path, file, currentsselected, path, "Length", rec.Length, min, sec, l)
+	cddirer := os.Chdir(path)
+	if cddirer != nil {
+		log.Println("AddInventory cddirer", cddirer)
 	}
-
-	// read the file
-	f, _ := os.Open(path)
+	f, ferr := os.Open(file)
+	if ferr != nil {
+		log.Println("AddInventory ferr", ferr)
+	}
 	defer f.Close()
 	d := wav.NewDecoder(f)
-	d.ReadMetadata() // Parses INFO, LIST, and other metadata chunks
-	metadata := d.Metadata
-	metadata.Artist = rec.Artist
-	metadata.Title = rec.Song
-	metadata.Genre = "AAA"
-	metadata.TrackNbr = "1"
+
 	buf, err := d.FullPCMBuffer()
 	if err != nil {
 		panic(err)
 	}
 	out, _ := os.Create("output.wav")
-	defer out.Close()
-	e := wav.NewEncoder(out, buf.Format.SampleRate, buf.Format.NumChannels, 16, 1)
-	e.Metadata = metadata // Inject metadata from original file
+
+	e := wav.NewEncoder(out, 44100, 16, 2, 1)
+	// Add metadata
+	e.Metadata = &wav.Metadata{
+		Title:    rec.Song,
+		Artist:   rec.Artist,
+		Comments: "WVOD",
+		Genre:    "AAA",
+		TrackNbr: "1",
+	}
+
 	if err := e.Write(buf); err != nil {
 		panic(err)
 	}
@@ -259,8 +272,45 @@ func main() {
 	flag.Parse()
 	log.Println("init", *rootImport, *stationid)
 	readPath(*rootImport, *stationid)
-	// read the findex
-	// get the data
-	// add it to nats and db
+readPreferences()
 
+}
+var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
+
+const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
+
+func readPreferences() {
+	// read config preferences.json
+	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	if readerr != nil {
+		log.Println("ERROR Preferences readerr ", readerr)
+	}
+	// parse json
+	var cfg map[string]any
+	errunmarshal := json.Unmarshal(jsondata, &cfg)
+	if errunmarshal != nil {
+		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
+	}
+
+	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+
+	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
+	//log.Println(config.DBaddress)
+
+	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
+	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
+	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
+	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
+	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
+	amm := config.Decrypt(fmt.Sprintf("%v", cfg["AdsMaxMinutes"]), MySecret)
+	config.AdsMaxMinutes, erramm := strconv.Atoi(amm)
+	if erramm != nil {
+		log.Println("CONFIG AdsMaxMinutes", amm, erramm)
+	}
+	//log.Println("CONFIG NatsBucketType", config.NatsBucketType)
+	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
+	config.NewNatsJS()
+	config.NewPGSQL()
 }
