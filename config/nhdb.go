@@ -2573,3 +2573,4 @@ func UserGetbyID(id string) UserStruct {
 	ctxsqlcan()
 	return ds
 }
+	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])

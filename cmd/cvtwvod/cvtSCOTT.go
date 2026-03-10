@@ -151,14 +151,15 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 	if ferr != nil {
 		log.Println("AddInventory ferr", ferr)
 	}
-	defer f.Close()
+
 	d := wav.NewDecoder(f)
 
 	buf, err := d.FullPCMBuffer()
 	if err != nil {
 		panic(err)
 	}
-	out, _ := os.Create("output.wav")
+	os.Remove("/opt/radio/wvod.wav")
+	out, _ := os.Create("/opt/radio/wvod.wav")
 
 	e := wav.NewEncoder(out, 44100, 16, 2, 1)
 	// Add metadata
@@ -183,7 +184,7 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 	rowreturned := config.InventoryAdd(category, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
 	row := strconv.Itoa(rowreturned)
 	if row != "0" {
-		songbytes, songerr := os.ReadFile("output.wav")
+		songbytes, songerr := os.ReadFile("/opt/radio/wvod.wav")
 		if songerr != nil {
 			log.Println("messages."+"cvtwvod", "Put Bucket Song Read Error", "cvtwvod", songerr)
 			config.Send("messages."+"cvtwvod", "Put Bucket Song Read Error", "cvtwvod")
@@ -221,6 +222,8 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 
 		}
 	}
+	f.Close()
+	e.Close()
 }
 
 func readPath(startpath, station string) {
@@ -271,13 +274,16 @@ func main() {
 
 	flag.Parse()
 	log.Println("init", *rootImport, *stationid)
+	readPreferences()
 	readPath(*rootImport, *stationid)
-readPreferences()
 
 }
+
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
+
+var erramm error
 
 func readPreferences() {
 	// read config preferences.json
@@ -303,9 +309,9 @@ func readPreferences() {
 	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
 	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
 	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
-	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
+
 	amm := config.Decrypt(fmt.Sprintf("%v", cfg["AdsMaxMinutes"]), MySecret)
-	config.AdsMaxMinutes, erramm := strconv.Atoi(amm)
+	config.AdsMaxMinutes, erramm = strconv.Atoi(amm)
 	if erramm != nil {
 		log.Println("CONFIG AdsMaxMinutes", amm, erramm)
 	}
