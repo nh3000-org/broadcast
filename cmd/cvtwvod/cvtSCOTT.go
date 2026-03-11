@@ -91,7 +91,7 @@ func processIndex(path, station string) {
 		countforcurrents++
 		currentsselected = false
 		// write currents intro/outro
-		if countforcurrents == 13 {
+		if countforcurrents > 13 {
 			countforcurrents = 1
 			currentsselected = true
 		}
@@ -135,6 +135,7 @@ func processDirectory(path, station, category string) {
 
 var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}
 var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
+var tmpcategory string
 
 func addInventory(rec IndexRecord, currentsselected bool, path string, file string) {
 	var m = rec.Length[1:2]
@@ -179,11 +180,11 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 	}
 
 	added := config.GetDateTime("0h")
-
+	tmpcategory = category
 	if currentsselected {
-		category = "CURRENTS"
+		tmpcategory = "CURRENTS"
 	}
-	rowreturned := config.InventoryAdd(category, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
+	rowreturned := config.InventoryAdd(tmpcategory, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
 	row := strconv.Itoa(rowreturned)
 	if row != "0" {
 		songbytes, songerr := os.ReadFile("/opt/radio/wvod.wav")

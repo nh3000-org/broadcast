@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 17.1 (Ubuntu 17.1-1.pgdg22.04+1)
--- Dumped by pg_dump version 17.1 (Ubuntu 17.1-1.pgdg22.04+1)
+\restrict UOafpq2JgQOtyCKok80K1CBY5554GHL6rPchoY0DHj26cDA5wz5dIVtx8bOrOuc
+
+-- Dumped from database version 17.8 (Ubuntu 17.8-1.pgdg22.04+1)
+-- Dumped by pg_dump version 17.8 (Ubuntu 17.8-1.pgdg22.04+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -351,8 +353,8 @@ COPY public.categories (rowid, id, description) FROM stdin;
 3	PROMOS	Promotions
 4	NEXT	Play Next
 5	ADS	ADS - Advertising Top Of Hour
-6	CURRENTS	Top 40 Currants
-7	RECURRENTS	Recurrants Library
+6	CURRENTS	Top 40 Currents
+7	RECURRENTS	Recurrents Library
 8	NWS-1-PLAYONCE	NWS Spots 6 30 Bot AM Play Once
 9	NWS-2-PLAYONCE	NWS Spots 7 00 Bot AM Play Once
 10	NWS-3-PLAYONCE	NWS Spots 7 30 Bot AM Play Once
@@ -1105,4 +1107,6 @@ CREATE INDEX userindex ON public.webusers USING btree (userpassword);
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict UOafpq2JgQOtyCKok80K1CBY5554GHL6rPchoY0DHj26cDA5wz5dIVtx8bOrOuc
 
