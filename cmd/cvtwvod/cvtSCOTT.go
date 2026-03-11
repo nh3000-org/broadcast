@@ -179,8 +179,10 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 	}
 
 	added := config.GetDateTime("0h")
-	// convert Length from 3:45 to seconds
 
+	if currentsselected {
+		category = "CURRENTS"
+	}
 	rowreturned := config.InventoryAdd(category, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
 	row := strconv.Itoa(rowreturned)
 	if row != "0" {

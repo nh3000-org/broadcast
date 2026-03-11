@@ -255,6 +255,44 @@ ALTER SEQUENCE public.traffic_rowid_seq OWNED BY public.traffic.rowid;
 
 
 --
+-- Name: webusers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.webusers (
+    rowid integer NOT NULL,
+    userrole character varying(32),
+    userpassword text NOT NULL,
+    userpasswordhash character varying(128) NOT NULL,
+    userauthcategories text[] NOT NULL,
+    userauthactions text[] NOT NULL
+);
+
+
+ALTER TABLE public.webusers OWNER TO postgres;
+
+--
+-- Name: webusers_rowid_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.webusers_rowid_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.webusers_rowid_seq OWNER TO postgres;
+
+--
+-- Name: webusers_rowid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.webusers_rowid_seq OWNED BY public.webusers.rowid;
+
+
+--
 -- Name: categories rowid; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -294,6 +332,13 @@ ALTER TABLE ONLY public.schedule ALTER COLUMN rowid SET DEFAULT nextval('public.
 --
 
 ALTER TABLE ONLY public.traffic ALTER COLUMN rowid SET DEFAULT nextval('public.traffic_rowid_seq'::regclass);
+
+
+--
+-- Name: webusers rowid; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.webusers ALTER COLUMN rowid SET DEFAULT nextval('public.webusers_rowid_seq'::regclass);
 
 
 --
@@ -875,6 +920,14 @@ COPY public.traffic (rowid, category, artist, song, album, playedon) FROM stdin;
 
 
 --
+-- Data for Name: webusers; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.webusers (rowid, userrole, userpassword, userpasswordhash, userauthcategories, userauthactions) FROM stdin;
+\.
+
+
+--
 -- Name: categories_rowid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -914,6 +967,13 @@ SELECT pg_catalog.setval('public.schedule_rowid_seq', 462, true);
 --
 
 SELECT pg_catalog.setval('public.traffic_rowid_seq', 1, false);
+
+
+--
+-- Name: webusers_rowid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.webusers_rowid_seq', 1, false);
 
 
 --
@@ -962,6 +1022,14 @@ ALTER TABLE ONLY public.schedule
 
 ALTER TABLE ONLY public.traffic
     ADD CONSTRAINT traffic_pkey PRIMARY KEY (rowid);
+
+
+--
+-- Name: webusers webusers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.webusers
+    ADD CONSTRAINT webusers_pkey PRIMARY KEY (rowid);
 
 
 --
@@ -1025,6 +1093,13 @@ CREATE INDEX trafficbyartist ON public.traffic USING btree (artist, song, album)
 --
 
 CREATE INDEX trafficbycategory ON public.traffic USING btree (category, album);
+
+
+--
+-- Name: userindex; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX userindex ON public.webusers USING btree (userpassword);
 
 
 --
