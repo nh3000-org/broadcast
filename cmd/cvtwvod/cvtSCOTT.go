@@ -254,7 +254,7 @@ func readPath(startpath, station string) {
 			//log.Println("read", info.Name(), category)
 		}
 		if category == "RECURRENTS" {
-			processIndex(path, station)
+			//processIndex(path, station)
 		}
 		if category == "IMAGINGID" {
 			processDirectory(path, station, category)
