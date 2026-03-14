@@ -40,8 +40,27 @@ var count = 1
 var countforcurrents = 1
 var currentsselected = false
 
-//var goodfile string
+var cleanmaxlength = 32
 
+var cleanallowed = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+var cleannew string
+
+func clean(cleanin string) string {
+	var sb strings.Builder
+	for _, r := range cleanin {
+		for _, i := range cleanallowed {
+			if r == i {
+				sb.WriteString(string(r))
+				break
+			}
+		}
+	}
+	cleannew = sb.String()
+	if len(cleannew) > cleanmaxlength {
+		cleannew = cleannew[:cleanmaxlength]
+	}
+	return cleannew
+}
 func processIndex(path, station string) {
 	// read the FINDEX01.DAT file block size 179
 	log.Println("processIndex", path, station)
@@ -83,8 +102,10 @@ func processIndex(path, station string) {
 		ir.Artist = sfb[56:90]
 		ir.Length = sfb[91:96]
 		ir.File = sfb[103:183]
-		ir.Song = strings.ReplaceAll(ir.Song, "\x00", "")
-		ir.Artist = strings.ReplaceAll(ir.Artist, "\x00", "")
+		//ir.Song = strings.ReplaceAll(ir.Song, "\x00", "")
+		ir.Song = clean(ir.Song)
+		//ir.Artist = strings.ReplaceAll(ir.Artist, "\x00", "")
+		ir.Artist = clean(ir.Artist)
 		ir.File = strings.ReplaceAll(ir.File, "\x00", "")
 		log.Println("c:", count, "s:", ir.Song, "a:", ir.Artist, "f:", ir.File, "j1:", "l:", ir.Length)
 		count++
@@ -164,9 +185,10 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 
 	e := wav.NewEncoder(out, 44100, 16, 2, 1)
 	// Add metadata
+	//log.Println("AI", rec.Song, rec.Artist)
 	e.Metadata = &wav.Metadata{
 		Title:    rec.Song,
-		Artist:   rec.Artist,
+		Artist:   rec.Artist + " - " + rec.Song,
 		Comments: "WVOD",
 		Genre:    "AAA",
 		TrackNbr: "1",
@@ -254,7 +276,7 @@ func readPath(startpath, station string) {
 			//log.Println("read", info.Name(), category)
 		}
 		if category == "RECURRENTS" {
-			//processIndex(path, station)
+			processIndex(path, station)
 		}
 		if category == "IMAGINGID" {
 			processDirectory(path, station, category)
