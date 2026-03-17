@@ -448,7 +448,7 @@ func playsetup() oto.Context {
 	op.Format = oto.FormatSignedInt16LE
 
 	// Remember that you should **not** create more than one context
-
+	//op.BufferSize = 0
 	otoCtx, otoreadyChan, otoerr = oto.NewContext(op)
 	if otoerr != nil {
 		panic("playersetup oto.NewContext failed: " + otoerr.Error())
@@ -472,7 +472,7 @@ var sz uint64
 
 func PlayWAV(ctx oto.Context, song string, cat string) int {
 	elapsed = 0
-	//log.Println("playwav", song, cat)
+	log.Println("playwav", song, cat)
 	if cat == "CURRENTS" {
 		t = time.Now()
 		if t.Minute()%2 == 0 {
@@ -501,26 +501,28 @@ func PlayWAV(ctx oto.Context, song string, cat string) int {
 
 	fileBytes = config.GetBucket("wav", song, StationId)
 
-	/* 	if err != nil {
-		panic("reading my-file.mp3 failed: " + err.Error())
-	} */
-
 	// Convert the pure bytes into a reader object that can be used with the wac decoder
 	fileBytesReader = bytes.NewReader(fileBytes)
 
 	// Decode file
 
 	decoderWav = wav.NewDecoder(fileBytesReader)
+	td, tderr := decoderWav.Duration()
+
+	log.Println("bd:", td, "ivf:", decoderWav.IsValidFile(), "err:", tderr)
+
+	fileBytesReader.Seek(0, 0)
 
 	player := ctx.NewPlayer(fileBytesReader)
 	// Play
-	player.Play()
-	for player.IsPlaying() {
-		elapsed++
-		time.Sleep(time.Second)
-	}
 
-	return elapsed
+	player.Play()
+
+	time.Sleep(td)
+
+	player.Close()
+	log.Println("playwav return ", song, cat, td.Seconds(), int(td.Seconds()))
+	return int(td.Seconds())
 }
 func PlayMP3(ctx oto.Context, song string, cat string) int {
 
