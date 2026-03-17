@@ -448,7 +448,7 @@ func playsetup() oto.Context {
 	op.Format = oto.FormatSignedInt16LE
 
 	// Remember that you should **not** create more than one context
-	//op.BufferSize = 0
+	op.BufferSize = 8192
 	otoCtx, otoreadyChan, otoerr = oto.NewContext(op)
 	if otoerr != nil {
 		panic("playersetup oto.NewContext failed: " + otoerr.Error())
