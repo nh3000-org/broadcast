@@ -26,9 +26,9 @@ type IndexRecord struct {
 	Length string
 }
 
-var musicIncludes = []string{"401"}
+var musicIncludes = []string{"401DONE"}
 var legalIncludes = []string{"ID4"}
-var linersIncludes = []string{"LI4", "JI4"}
+var linersIncludes = []string{"LI4"}
 var promosIncludes = []string{"PR4", "SW4"}
 var category string
 var findexfile *os.File
@@ -142,8 +142,9 @@ func processDirectory(path, station, category string) {
 			ir := IndexRecord{}
 			ir.Artist = nm
 			ir.Song = nm
-			ir.File = path + "/" + info.Name()
+			ir.File = info.Name()
 			ir.Length = " 0:30"
+			//path = strings.Replace(path, "/"+ir.File, "", 1)
 			addInventory(ir, currentsselected, path, ir.File)
 			dircount++
 		}
@@ -164,7 +165,7 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 	min, _ := strconv.Atoi(m)
 	sec, _ := strconv.Atoi(s)
 	var l = min*60 + sec
-	log.Println("AddInventory ", path, file, currentsselected, path, "Length", rec.Length, min, sec, l)
+	log.Println("AddInventory ", "p:", path, "f:", file, currentsselected, "Length", rec.Length, min, sec, l)
 	cddirer := os.Chdir(path)
 	if cddirer != nil {
 		log.Println("AddInventory cddirer", cddirer)
@@ -276,10 +277,10 @@ func readPath(startpath, station string) {
 			//log.Println("read", info.Name(), category)
 		}
 		if category == "RECURRENTS" {
-			processIndex(path, station)
+			//processIndex(path, station,)
 		}
 		if category == "IMAGINGID" {
-			processDirectory(path, station, category)
+			processIndex(path, station)
 		}
 		if category == "STATIONID" {
 			processDirectory(path, station, category)
