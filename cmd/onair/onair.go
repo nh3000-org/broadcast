@@ -448,7 +448,7 @@ func playsetup() oto.Context {
 	op.Format = oto.FormatSignedInt16LE
 
 	// Remember that you should **not** create more than one context
-	op.BufferSize = 8192
+	op.BufferSize = 256
 	otoCtx, otoreadyChan, otoerr = oto.NewContext(op)
 	if otoerr != nil {
 		panic("playersetup oto.NewContext failed: " + otoerr.Error())
@@ -472,7 +472,7 @@ var sz uint64
 
 func PlayWAV(ctx oto.Context, song string, cat string) int {
 	elapsed = 0
-	log.Println("playwav", song, cat)
+	//log.Println("playwav", song, cat)
 	if cat == "CURRENTS" {
 		t = time.Now()
 		if t.Minute()%2 == 0 {
@@ -508,12 +508,13 @@ func PlayWAV(ctx oto.Context, song string, cat string) int {
 
 	decoderWav = wav.NewDecoder(fileBytesReader)
 	td, tderr := decoderWav.Duration()
-
-	log.Println("bd:", td, "ivf:", decoderWav.IsValidFile(), "err:", tderr)
+	if tderr != nil {
+		log.Println("decoder err dong:", song, cat, "err:", tderr)
+	}
 
 	fileBytesReader.Seek(0, 0)
 
-	player := ctx.NewPlayer(fileBytesReader)
+	player = ctx.NewPlayer(fileBytesReader)
 	// Play
 
 	player.Play()

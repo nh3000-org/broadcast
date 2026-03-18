@@ -31,9 +31,9 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	laselc := widget.NewLabel("Category:")
 	lasela := widget.NewLabel("Artist:")
 	edsela := widget.NewEntry()
-	selebutton := widget.NewButtonWithIcon("Search", theme.ContentCopyIcon(), func() {
+	selebutton := widget.NewButtonWithIcon("Search", theme.SearchIcon(), func() {
 
-		config.InventorySel(EDcategory.Selected,edsela.Text)
+		config.InventorySel(EDcategory.Selected, edsela.Text)
 		config.FyneInventoryList.Refresh()
 	})
 	gridsel := container.New(layout.NewGridLayoutWithColumns(5), laselc, EDcategory, lasela, edsela, selebutton)
@@ -647,7 +647,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		openSong.Enable()
 		openSongIntro.Enable()
 		openSongOutro.Enable()
-		config.InventoryGet()
+		config.InventorySel(EDcategory.Selected, edsela.Text)
 		config.FyneInventoryList.Refresh()
 
 	})
@@ -673,7 +673,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			l.SetText(trim(config.InventoryStore[id.Row].Album, 12))
 		}
 	})
-	List.SetColumnWidth(0, 32)  // row
+	List.SetColumnWidth(0, 48)  // row
 	List.SetColumnWidth(1, 148) //cat
 	List.SetColumnWidth(2, 148) // artist
 	List.SetColumnWidth(3, 148) // song
