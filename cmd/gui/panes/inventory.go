@@ -28,6 +28,15 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 	config.FyneInventoryWin = win
 	//Details := widget.NewLabel("")
+	laselc := widget.NewLabel("Category:")
+	lasela := widget.NewLabel("Artist:")
+	edsela := widget.NewEntry()
+	selebutton := widget.NewButtonWithIcon("Search", theme.ContentCopyIcon(), func() {
+
+		config.InventorySel(EDcategory.Selected,edsela.Text)
+		config.FyneInventoryList.Refresh()
+	})
+	gridsel := container.New(layout.NewGridLayoutWithColumns(5), laselc, EDcategory, lasela, edsela, selebutton)
 
 	larow := widget.NewLabel("Row: ")
 	edrow := widget.NewEntry()
@@ -655,21 +664,21 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		case 0: // rowid
 			l.SetText(strconv.Itoa(config.InventoryStore[id.Row].Row))
 		case 1: // category
-			l.SetText(config.InventoryStore[id.Row].Category)
+			l.SetText(trim(config.InventoryStore[id.Row].Category, 12))
 		case 2: // artist
-			l.SetText(config.InventoryStore[id.Row].Artist)
+			l.SetText(trim(config.InventoryStore[id.Row].Artist, 18))
 		case 3: // song
-			l.SetText(config.InventoryStore[id.Row].Song)
+			l.SetText(trim(config.InventoryStore[id.Row].Song, 18))
 		case 4: // album
-			l.SetText(config.InventoryStore[id.Row].Album)
+			l.SetText(trim(config.InventoryStore[id.Row].Album, 12))
 		}
 	})
-	List.SetColumnWidth(0, 32)
-	List.SetColumnWidth(1, 170)
-	List.SetColumnWidth(2, 128)
-	List.SetColumnWidth(3, 96)
-	List.SetColumnWidth(4, 96)
-	List.SetColumnWidth(5, 32)
+	List.SetColumnWidth(0, 32)  // row
+	List.SetColumnWidth(1, 148) //cat
+	List.SetColumnWidth(2, 148) // artist
+	List.SetColumnWidth(3, 148) // song
+	List.SetColumnWidth(4, 64)  // album
+	//List.SetColumnWidth(5, 32)
 
 	config.FyneInventoryList = List
 	List.OnSelected = func(id widget.TableCellID) {
@@ -881,7 +890,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	})
 	topbox := container.NewGridWithColumns((4), addbutton, importbutton, exportstub, syncdbtofs)
 	bottombox := container.NewBorder(
-		nil,
+		gridsel,
 		Errors,
 		nil,
 		nil,
@@ -896,4 +905,10 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		List,
 	)
 
+}
+func trim(s string, i int) string {
+	if len(s) < i {
+		return s
+	}
+	return s[0:i]
 }

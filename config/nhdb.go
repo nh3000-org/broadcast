@@ -773,6 +773,83 @@ type InventoryStruct struct {
 }
 
 var InventoryStore = make(map[int]InventoryStruct)
+var iselerr error
+var iselrowserr error
+var iselrows pgx.Rows
+
+func InventorySel(cat, art string) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	_, iselerr = conn.Conn().Prepare(context.Background(), "isel", "select * from inventory  where category = $1 and artist like $2 order by category,artist,song")
+	if iselerr != nil {
+		log.Println("[PID] nextgetconn", iselerr)
+		Send("messages."+"StationId", "[ISEL] Prepare Next Get TOH "+iselerr.Error(), "onair")
+	}
+
+	iselrows, iselrowserr = conn.Query(context.Background(), "isel", cat, art+"%")
+	if iselrowserr != nil {
+		Send("messages."+"InventorySel", "[ISEL] Prepare Inventory Read PID "+iselrowserr.Error(), "onair")
+		log.Fatal("Error reading inventory ISEL", iselrowserr)
+	}
+
+	InventoryStore = make(map[int]InventoryStruct)
+	//rows, rowserr := conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
+	var row int         // rowid
+	var category string // category
+	var artist string   // artist
+	var song string     // song
+	var album string    // Album
+	var songlength int  // song length
+	var rndorder string // assigned weekly
+	var startson string
+	var expireson string
+	var adstimeslots []string
+	var adsdayslots []string
+	var adsmaxspins int
+	var adsmaxspinsperhour int
+	var lastplayed string
+	var dateadded string
+	var spinstoday int    // cleared daily at day reset
+	var spinsweek int     // spins weekly at week reset
+	var spinstotal int    // total spins
+	var sourcelink string // link to source
+	for iselrows.Next() {
+		err := iselrows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins,
+			&adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
+		if err != nil {
+			log.Println("InventoryGet Get Inventory row:", err)
+		}
+		ds := InventoryStruct{}
+		ds.Row = row
+		ds.Category = category
+		ds.Artist = artist
+		ds.Song = song
+		ds.Album = album
+		ds.Songlength = songlength
+		ds.Rndorder = rndorder
+		ds.Song = song
+		ds.Startson = startson
+		ds.Expireson = expireson
+		ds.Lastplayed = lastplayed
+		ds.Dateadded = dateadded
+		ds.AdsTimeSlots = adstimeslots
+		ds.AdsDaySlots = adsdayslots
+		ds.AdsMaxSpins = adsmaxspins
+		ds.AdsMaxSpinsPerHour = adsmaxspinsperhour
+		ds.Spinstoday = spinstoday
+		ds.Spinsweek = spinsweek
+		ds.Spinstotal = spinstotal
+		ds.Sourcelink = sourcelink
+		InventoryStore[len(InventoryStore)] = ds
+
+	}
+
+	conn.Release()
+	ctxsqlcan()
+
+}
+
 var SelectedInventory int
 var igeterr error
 var igetrowserr error
@@ -2573,4 +2650,5 @@ func UserGetbyID(id string) UserStruct {
 	ctxsqlcan()
 	return ds
 }
-	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
+
+//amm := strconv.Itoa(cfg["AdsMaxMinutes"])

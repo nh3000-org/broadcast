@@ -403,7 +403,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			config.CategoriesGet()
 			config.UserGet()
 			config.ScheduleGet()
-			config.InventoryGet()
+			//config.InventoryGet()
 		}
 	})
 
