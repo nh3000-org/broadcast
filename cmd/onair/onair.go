@@ -13,9 +13,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ebitengine/oto/v3"
-	"github.com/go-audio/wav"
-	"github.com/hajimehoshi/go-mp3"
+	"github.com/gopxl/beep"
+
+	//"github.com/gopxl/beep/mp3"
+	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/wav"
+
+	/* 	"github.com/ebitengine/oto/v3"
+	   	"github.com/go-audio/wav"
+	   	"github.com/hajimehoshi/go-mp3" */
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nh3000-org/broadcast/config"
@@ -97,12 +103,12 @@ func playNext() {
 		if config.NatsBucketType == "mp3" {
 			config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 			//config.SendONAIRmp3(artist + " - " + album + " - " + song)
-			itemlength = PlayMP3(otoctx, rowid, category)
+			//itemlength = PlayMP3(otoctx, rowid, category)
 		}
 		if config.NatsBucketType == "wav" {
 			config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 			//config.SendONAIRmp3(artist + " - " + album + " - " + song)
-			itemlength = PlayWAV(otoctx, rowid, category)
+			itemlength = PlayWAV(rowid, category)
 		}
 
 	}
@@ -179,14 +185,14 @@ func adjustToTopOfHour() {
 			//log.Println("toh play", config.NatsBucketType)
 			if config.NatsBucketType == "mp3" {
 				config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, "0", playingday, playinghour, "0", "FILTOTOH", "0", strconv.Itoa(tohspins))))
-				itemlength = PlayMP3(otoctx, rowid, category)
+				//itemlength = PlayMP3(otoctx, rowid, category)
 			}
 			if config.NatsBucketType == "mp4" {
 				config.SendONAIRmp4(string(OnAir2Json(artist, album, song, songlength, "0", playingday, playinghour, "0", "FILTOTOH", "0", strconv.Itoa(tohspins))))
 			}
 			if config.NatsBucketType == "wav" {
 				config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, "0", playingday, playinghour, "0", "FILTOTOH", "0", strconv.Itoa(tohspins))))
-				itemlength = PlayWAV(otoctx, rowid, category)
+				itemlength = PlayWAV(rowid, category)
 			}
 			//			config.SendONAIRmp3(artist + " - " + album + " - " + song)
 
@@ -271,10 +277,10 @@ func playImagingId() {
 		}
 		//config.SendONAIRmp3(artist + " - " + album + " - " + song)
 		if config.NatsBucketType == "mp3" {
-			itemlength = PlayMP3(otoctx, rowid, category)
+			//itemlength = PlayMP3(otoctx, rowid, category)
 		}
 		if config.NatsBucketType == "wav" {
-			itemlength = PlayWAV(otoctx, rowid, category)
+			itemlength = PlayWAV(rowid, category)
 		}
 
 		// update statistics
@@ -426,51 +432,55 @@ func getNextHourPart() {
 
 var elapsed = 0
 var fileid string
-var otoCtx *oto.Context
+
+// var otoCtx *oto.Context
 var otoreadyChan chan struct{}
 var otoerr error
 
-func playsetup() oto.Context {
+/*
+	 func playsetup() oto.Context {
 
-	// Prepare an Oto context (this will use your default audio device) that will
-	// play all our sounds. Its configuration can't be changed later.
+		// Prepare an Oto context (this will use your default audio device) that will
+		// play all our sounds. Its configuration can't be changed later.
 
-	op := &oto.NewContextOptions{}
+		op := &oto.NewContextOptions{}
 
-	// Usually 44100 or 48000. Other values might cause distortions in Oto
-	op.SampleRate = 44100
+		// Usually 44100 or 48000. Other values might cause distortions in Oto
+		op.SampleRate = 44100
 
-	// Number of channels (aka locations) to play sounds from. Either 1 or 2.
-	// 1 is mono sound, and 2 is stereo (most speakers are stereo).
-	op.ChannelCount = 2
+		// Number of channels (aka locations) to play sounds from. Either 1 or 2.
+		// 1 is mono sound, and 2 is stereo (most speakers are stereo).
+		op.ChannelCount = 2
 
-	// Format of the source. go-mp3's format is signed 16bit integers.
-	op.Format = oto.FormatSignedInt16LE
+		// Format of the source. go-mp3's format is signed 16bit integers.
+		op.Format = oto.FormatSignedInt16LE
 
-	// Remember that you should **not** create more than one context
-	op.BufferSize = 256
-	otoCtx, otoreadyChan, otoerr = oto.NewContext(op)
-	if otoerr != nil {
-		panic("playersetup oto.NewContext failed: " + otoerr.Error())
-	}
-	// It might take a bit for the hardware audio devices to be ready, so we wait on the channel.
-	<-otoreadyChan
+		// Remember that you should **not** create more than one context
+		op.BufferSize = 8192 * 2
+		otoCtx, otoreadyChan, otoerr = oto.NewContext(op)
+		if otoerr != nil {
+			panic("playersetup oto.NewContext failed: " + otoerr.Error())
+		}
+		// It might take a bit for the hardware audio devices to be ready, so we wait on the channel.
+		<-otoreadyChan
 
-	return *otoCtx
+		return *otoCtx
 
 }
-
+*/
 var fileBytes []byte
-var fileBytesReader *bytes.Reader
-var t time.Time
-var decodedMp3 *mp3.Decoder
-var decodedMp3err error
-var decoderWav *wav.Decoder
-var decodedWaverr error
-var player *oto.Player
-var sz uint64
 
-func PlayWAV(ctx oto.Context, song string, cat string) int {
+// var fileBytesReader *bytes.Reader
+var t time.Time
+
+//var decodedMp3 *mp3.Decoder
+//var decodedMp3err error
+//var decoderWav *wav.Decoder
+//var decodedWaverr error
+//var player *oto.Player
+//var sz uint64
+
+func PlayWAV(song string, cat string) int {
 	elapsed = 0
 	//log.Println("playwav", song, cat)
 	if cat == "CURRENTS" {
@@ -479,7 +489,7 @@ func PlayWAV(ctx oto.Context, song string, cat string) int {
 			value := config.InventoryGetRowByRow(song)
 			if len(value) > 0 {
 
-				sz = config.GetBucketSize("wav", song+"INTRO")
+				sz := config.GetBucketSize("wav", song+"INTRO")
 
 				if sz > 0 {
 					song += "INTRO"
@@ -489,7 +499,7 @@ func PlayWAV(ctx oto.Context, song string, cat string) int {
 			value := config.InventoryGetRowByRow(song)
 			if len(value) > 0 {
 
-				sz = config.GetBucketSize("wav", song+"INTRO")
+				sz := config.GetBucketSize("wav", song+"INTRO")
 
 				if sz > 0 {
 					song += "OUTRO"
@@ -499,97 +509,100 @@ func PlayWAV(ctx oto.Context, song string, cat string) int {
 
 	}
 
-	fileBytes = config.GetBucket("wav", song, StationId)
+	fileBytes := config.GetBucket("wav", song, StationId)
 
 	// Convert the pure bytes into a reader object that can be used with the wac decoder
-	fileBytesReader = bytes.NewReader(fileBytes)
+	fileBytesReader := bytes.NewReader(fileBytes)
 
 	// Decode file
 
-	decoderWav = wav.NewDecoder(fileBytesReader)
-	td, tderr := decoderWav.Duration()
-	if tderr != nil {
-		log.Println("decoder err dong:", song, cat, "err:", tderr)
+	decoderWav, format, err := wav.Decode(fileBytesReader)
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+
+	if err != nil {
+		log.Println("decoder err decode:", song, cat, "err:", err)
 	}
+	done := make(chan bool)
+	timestart := time.Now()
+	speaker.Play(beep.Seq(decoderWav, beep.Callback(func() {
+		done <- true
+	})))
 
-	fileBytesReader.Seek(0, 0)
+	<-done
+	timedone := time.Now()
 
-	player = ctx.NewPlayer(fileBytesReader)
-	// Play
+	elapsed := timedone.Second() - timestart.Second()
 
-	player.Play()
-
-	time.Sleep(td)
-
-	player.Close()
-	log.Println("playwav return ", song, cat, td.Seconds(), int(td.Seconds()))
-	return int(td.Seconds())
+	log.Println("playwav return ", song, cat, elapsed)
+	return int(elapsed)
 }
-func PlayMP3(ctx oto.Context, song string, cat string) int {
 
-	elapsed = 0
+/*
+	 func PlayMP3( song string, cat string) int {
 
-	if cat == "CURRENTS" {
-		t = time.Now()
-		if t.Minute()%2 == 0 {
-			value := config.InventoryGetRowByRow(song)
-			if len(value) > 0 {
+		elapsed = 0
 
-				sz = config.GetBucketSize("mp3", song+"INTRO")
+		if cat == "CURRENTS" {
+			t = time.Now()
+			if t.Minute()%2 == 0 {
+				value := config.InventoryGetRowByRow(song)
+				if len(value) > 0 {
 
-				if sz > 0 {
-					song += "INTRO"
+					sz = config.GetBucketSize("mp3", song+"INTRO")
+
+					if sz > 0 {
+						song += "INTRO"
+					}
+				}
+			} else {
+				value := config.InventoryGetRowByRow(song)
+				if len(value) > 0 {
+
+					sz = config.GetBucketSize("mp3", song+"INTRO")
+
+					if sz > 0 {
+						song += "OUTRO"
+					}
 				}
 			}
-		} else {
-			value := config.InventoryGetRowByRow(song)
-			if len(value) > 0 {
 
-				sz = config.GetBucketSize("mp3", song+"INTRO")
+		}
+		//log.Println(cat+" ", song, "  ")
+		// Read the mp3 file into memory
 
-				if sz > 0 {
-					song += "OUTRO"
-				}
-			}
+		fileBytes := config.GetBucket("mp3", song, StationId)
+
+		// 	if err != nil {
+			panic("reading my-file.mp3 failed: " + err.Error())
+		//}
+
+		// Convert the pure bytes into a reader object that can be used with the mp3 decoder
+		fileBytesReader := bytes.NewReader(fileBytes)
+
+		// Decode file
+
+		decodedMp3, decodedMp3err = mp3.NewDecoder(fileBytesReader)
+
+		if decodedMp3err != nil {
+			config.Send("messages."+StationId, "Play MP3 Decoder Error "+song, "onair")
+			log.Println("Play mp3.NewDecoder failed: ", decodedMp3err.Error(), "for song:", song)
+			return 0
+		}
+		// Create a new 'player' that will handle our sound. Paused by default.
+		player = ctx.NewPlayer(decodedMp3)
+
+		// Play starts playing the sound and returns without waiting for it (Play() is async).
+		player.Play()
+
+		// We can wait for the sound to finish playing using something like this
+		for player.IsPlaying() {
+			elapsed++
+			time.Sleep(time.Second)
 		}
 
+		return elapsed
 	}
-	//log.Println(cat+" ", song, "  ")
-	// Read the mp3 file into memory
-
-	fileBytes = config.GetBucket("mp3", song, StationId)
-
-	/* 	if err != nil {
-		panic("reading my-file.mp3 failed: " + err.Error())
-	} */
-
-	// Convert the pure bytes into a reader object that can be used with the mp3 decoder
-	fileBytesReader = bytes.NewReader(fileBytes)
-
-	// Decode file
-
-	decodedMp3, decodedMp3err = mp3.NewDecoder(fileBytesReader)
-
-	if decodedMp3err != nil {
-		config.Send("messages."+StationId, "Play MP3 Decoder Error "+song, "onair")
-		log.Println("Play mp3.NewDecoder failed: ", decodedMp3err.Error(), "for song:", song)
-		return 0
-	}
-	// Create a new 'player' that will handle our sound. Paused by default.
-	player = ctx.NewPlayer(decodedMp3)
-
-	// Play starts playing the sound and returns without waiting for it (Play() is async).
-	player.Play()
-
-	// We can wait for the sound to finish playing using something like this
-	for player.IsPlaying() {
-		elapsed++
-		time.Sleep(time.Second)
-	}
-
-	return elapsed
-}
-
+*/
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
@@ -688,7 +701,8 @@ var outro string
 var errremove error
 var errremovei error
 var errremoveo error
-var otoctx oto.Context
+
+//var otoctx oto.Context
 
 func main() {
 	hourtimingstart = time.Now()
@@ -737,7 +751,7 @@ func main() {
 	//config.NewNatsJS()
 	//log.Println(config.NatsBucketType)
 
-	otoctx = playsetup()
+	//otoctx = playsetup()
 
 	if *Logging == "true" {
 		logto = true
@@ -938,7 +952,7 @@ func main() {
 								//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 								log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 
-								itemlength = PlayMP3(otoctx, rowid, category)
+								//itemlength = PlayMP3(otoctx, rowid, category)
 								processingadsminutes += itemlength
 
 							}
@@ -948,7 +962,7 @@ func main() {
 								//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 								log.Println("AD Played", category+": "+artist+" - "+album+" - "+song)
 
-								itemlength = PlayWAV(otoctx, rowid, category)
+								itemlength = PlayWAV(rowid, category)
 								processingadsminutes += itemlength
 
 							}
@@ -977,7 +991,7 @@ func main() {
 							}
 							log.Println(category + ": " + artist + " - " + album + " - " + song)
 							config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-							itemlength = PlayMP3(otoctx, rowid+playintro, category)
+							//itemlength = PlayMP3(otoctx, rowid+playintro, category)
 						}
 						if config.NatsBucketType == "wav" {
 							if config.CheckBucket("wav", rowid+playintro, *stationId) {
@@ -985,7 +999,7 @@ func main() {
 							}
 							log.Println(category + ": " + artist + " - " + album + " - " + song)
 							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-							itemlength = PlayWAV(otoctx, rowid+playintro, category)
+							itemlength = PlayWAV(rowid+playintro, category)
 						}
 
 						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
