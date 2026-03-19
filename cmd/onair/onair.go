@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"runtime"
@@ -16,6 +17,7 @@ import (
 	"github.com/gopxl/beep"
 
 	//"github.com/gopxl/beep/mp3"
+	"github.com/gopxl/beep/mp3"
 	"github.com/gopxl/beep/speaker"
 	"github.com/gopxl/beep/wav"
 
@@ -433,41 +435,6 @@ func getNextHourPart() {
 var elapsed = 0
 var fileid string
 
-// var otoCtx *oto.Context
-var otoreadyChan chan struct{}
-var otoerr error
-
-/*
-	 func playsetup() oto.Context {
-
-		// Prepare an Oto context (this will use your default audio device) that will
-		// play all our sounds. Its configuration can't be changed later.
-
-		op := &oto.NewContextOptions{}
-
-		// Usually 44100 or 48000. Other values might cause distortions in Oto
-		op.SampleRate = 44100
-
-		// Number of channels (aka locations) to play sounds from. Either 1 or 2.
-		// 1 is mono sound, and 2 is stereo (most speakers are stereo).
-		op.ChannelCount = 2
-
-		// Format of the source. go-mp3's format is signed 16bit integers.
-		op.Format = oto.FormatSignedInt16LE
-
-		// Remember that you should **not** create more than one context
-		op.BufferSize = 8192 * 2
-		otoCtx, otoreadyChan, otoerr = oto.NewContext(op)
-		if otoerr != nil {
-			panic("playersetup oto.NewContext failed: " + otoerr.Error())
-		}
-		// It might take a bit for the hardware audio devices to be ready, so we wait on the channel.
-		<-otoreadyChan
-
-		return *otoCtx
-
-}
-*/
 var fileBytes []byte
 
 // var fileBytesReader *bytes.Reader
@@ -529,80 +496,66 @@ func PlayWAV(song string, cat string) int {
 	})))
 
 	<-done
-	timedone := time.Now()
 
-	elapsed := timedone.Second() - timestart.Second()
+	elapsed := time.Since(timestart)
 
-	log.Println("playwav return ", song, cat, elapsed)
-	return int(elapsed)
+	log.Println("playwav return ", song, cat, elapsed.Seconds())
+	return int(elapsed.Seconds())
 }
 
-/*
-	 func PlayMP3( song string, cat string) int {
+func PlayMP3(song string, cat string) int {
 
-		elapsed = 0
+	elapsed = 0
 
-		if cat == "CURRENTS" {
-			t = time.Now()
-			if t.Minute()%2 == 0 {
-				value := config.InventoryGetRowByRow(song)
-				if len(value) > 0 {
+	if cat == "CURRENTS" {
+		t = time.Now()
+		if t.Minute()%2 == 0 {
+			value := config.InventoryGetRowByRow(song)
+			if len(value) > 0 {
 
-					sz = config.GetBucketSize("mp3", song+"INTRO")
+				sz := config.GetBucketSize("mp3", song+"INTRO")
 
-					if sz > 0 {
-						song += "INTRO"
-					}
-				}
-			} else {
-				value := config.InventoryGetRowByRow(song)
-				if len(value) > 0 {
-
-					sz = config.GetBucketSize("mp3", song+"INTRO")
-
-					if sz > 0 {
-						song += "OUTRO"
-					}
+				if sz > 0 {
+					song += "INTRO"
 				}
 			}
+		} else {
+			value := config.InventoryGetRowByRow(song)
+			if len(value) > 0 {
 
-		}
-		//log.Println(cat+" ", song, "  ")
-		// Read the mp3 file into memory
+				sz := config.GetBucketSize("mp3", song+"INTRO")
 
-		fileBytes := config.GetBucket("mp3", song, StationId)
-
-		// 	if err != nil {
-			panic("reading my-file.mp3 failed: " + err.Error())
-		//}
-
-		// Convert the pure bytes into a reader object that can be used with the mp3 decoder
-		fileBytesReader := bytes.NewReader(fileBytes)
-
-		// Decode file
-
-		decodedMp3, decodedMp3err = mp3.NewDecoder(fileBytesReader)
-
-		if decodedMp3err != nil {
-			config.Send("messages."+StationId, "Play MP3 Decoder Error "+song, "onair")
-			log.Println("Play mp3.NewDecoder failed: ", decodedMp3err.Error(), "for song:", song)
-			return 0
-		}
-		// Create a new 'player' that will handle our sound. Paused by default.
-		player = ctx.NewPlayer(decodedMp3)
-
-		// Play starts playing the sound and returns without waiting for it (Play() is async).
-		player.Play()
-
-		// We can wait for the sound to finish playing using something like this
-		for player.IsPlaying() {
-			elapsed++
-			time.Sleep(time.Second)
+				if sz > 0 {
+					song += "OUTRO"
+				}
+			}
 		}
 
-		return elapsed
 	}
-*/
+
+	// Convert the pure bytes into a reader object that can be used with the wac decoder
+	fileBytes := config.GetBucket("mp3", song, StationId)
+	fileBytesReader := bytes.NewReader(fileBytes)
+	decoderMp3, format, err := mp3.Decode(io.NopCloser(fileBytesReader))
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+
+	if err != nil {
+		log.Println("decoder err decode:", song, cat, "err:", err)
+	}
+	done := make(chan bool)
+	timestart := time.Now()
+	speaker.Play(beep.Seq(decoderMp3, beep.Callback(func() {
+		done <- true
+	})))
+
+	<-done
+
+	elapsed := time.Since(timestart)
+
+	log.Println("playwav return ", song, cat, elapsed.Seconds())
+	return int(elapsed.Seconds())
+}
+
 var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
