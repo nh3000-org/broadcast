@@ -26,10 +26,10 @@ type IndexRecord struct {
 	Length string
 }
 
-var musicIncludes = []string{"401DONE"}
-var legalIncludes = []string{"ID4"}
-var linersIncludes = []string{"LI4"}
-var promosIncludes = []string{"PR4", "SW4"}
+var musicIncludes = []string{"401"}
+var legalIncludes = []string{"ID4IGNORE"}
+var linersIncludes = []string{"LI4IGNORE"}
+var promosIncludes = []string{"PR4IGNORE", "SW4IGNORE"}
 var category string
 var findexfile *os.File
 var findexfilerror error
@@ -42,7 +42,7 @@ var currentsselected = false
 
 var cleanmaxlength = 32
 
-var cleanallowed = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+var cleanallowed = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 var cleannew string
 
 func clean(cleanin string) string {
@@ -277,7 +277,7 @@ func readPath(startpath, station string) {
 			//log.Println("read", info.Name(), category)
 		}
 		if category == "RECURRENTS" {
-			//processIndex(path, station,)
+			processIndex(path, station)
 		}
 		if category == "IMAGINGID" {
 			processIndex(path, station)

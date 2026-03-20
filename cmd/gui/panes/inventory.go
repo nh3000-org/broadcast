@@ -453,7 +453,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 				config.Send("messages.IMPORT", "Inventory Walk Err FileInfo "+walkstuberr.Error(), "onair")
 			}
 			win.SetTitle("Importing Complete")
-			config.InventoryGet()
+			config.InventorySel(EDcategory.Selected, edsela.Text)
 			config.FyneInventoryList.Refresh()
 		}, win)
 
@@ -726,7 +726,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		deletebutton := widget.NewButtonWithIcon("Delete Inventory Item", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 			config.InventoryDelete(myrow)
-			config.InventoryGet()
+			config.InventorySel(EDcategory.Selected, edsela.Text)
 			config.FyneInventoryList.Refresh()
 		})
 		savebutton := widget.NewButtonWithIcon("Save Inventory Item", theme.ContentCopyIcon(), func() {
@@ -738,7 +738,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			var maxspins, _ = strconv.Atoi(edadsmaxspins.Selected)
 			var maxspinsperhour, _ = strconv.Atoi(edadsmaxspinsperhour.Selected)
 			config.InventoryUpdate(myrow, EDcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, edadsdayslot.Selected, maxspins, maxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
-			config.InventoryGet()
+			config.InventorySel(EDcategory.Selected, edsela.Text)
 			config.FyneInventoryList.Refresh()
 			if shadowCategory == "CURRENTS" {
 				if EDcategory.Selected != "CURRENTS" {
@@ -787,7 +787,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 		dlg.SetContent(container.NewBorder(DetailsVW, nil, nil, nil, nil))
 		dlg.Show()
-		config.InventoryGet()
+		config.InventorySel(EDcategory.Selected, edsela.Text)
 		config.FyneInventoryList.Refresh()
 		List.Unselect(id)
 	}

@@ -13,6 +13,19 @@ import (
 )
 
 func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
+
+	laseld := widget.NewLabel("Day:")
+	laselday := widget.NewSelect([]string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN", "VID"}, func(string) {})
+	laselh := widget.NewLabel("Hour:")
+	laselhour := widget.NewSelect([]string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}, func(string) {})
+
+	selebutton := widget.NewButtonWithIcon("Search", theme.SearchIcon(), func() {
+
+		config.ScheduleSel(laselday.Selected, laselhour.Selected)
+		config.FyneScheduleList.Refresh()
+	})
+	gridsel := container.New(layout.NewGridLayoutWithColumns(5), laseld, laselday, laselh, laselhour, selebutton)
+
 	larow := widget.NewLabel("Row: ")
 	edrow := widget.NewEntry()
 	edrow.SetPlaceHolder("Automatically Assigned")
@@ -64,7 +77,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		myspins, _ := strconv.Atoi(edspins.Selected)
 
 		config.ScheduleAdd(edday.Selected, edhour.Selected, edpos.Selected, EDcategory.Selected, myspins)
-		config.ScheduleGet()
+		config.ScheduleSel(laselday.Selected,laselhour.Selected)
 		config.FyneScheduleList.Refresh()
 	})
 
@@ -111,14 +124,14 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		deletebutton := widget.NewButtonWithIcon("Delete Schedule Item", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 			config.ScheduleDelete(myrow)
-			config.ScheduleGet()
+			config.ScheduleSel(laselday.Selected, laselhour.Selected)
 			config.FyneScheduleList.Refresh()
 		})
 		savebutton := widget.NewButtonWithIcon("Save Schedule", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 			myspins, _ := strconv.Atoi(edspins.Selected)
 			config.ScheduleUpdate(myrow, edday.Selected, edhour.Selected, edpos.Selected, EDcategory.Selected, myspins)
-			config.ScheduleGet()
+			config.ScheduleSel(laselday.Selected, laselhour.Selected)
 			config.FyneScheduleList.Refresh()
 		})
 		gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
@@ -140,7 +153,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		//DetailsBottom := container.NewBorder(databox, nil, nil, nil, nil)
 		dlg.SetContent(container.NewBorder(DetailsVW, nil, nil, nil, nil))
 		dlg.Show()
-		config.ScheduleGet()
+		config.ScheduleSel(laselday.Selected, laselhour.Selected)
 		config.FyneScheduleList.Refresh()
 		List.Unselect(id)
 	}
@@ -162,13 +175,13 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		//DetailsBottom := container.NewBorder(databox, nil, nil, nil, nil)
 		dlg.SetContent(container.NewBorder(DetailsVW, nil, nil, nil, nil))
 		dlg.Show()
-		config.ScheduleGet()
+		config.ScheduleSel(laselday.Selected, laselhour.Selected)
 		config.FyneScheduleList.Refresh()
 	})
 	topbox := container.NewBorder(addbutton, gridcopy, nil, nil)
 
 	bottombox := container.NewBorder(
-		nil,
+		gridsel,
 		Errors,
 		nil,
 		nil,

@@ -577,6 +577,44 @@ func ScheduleGet() {
 	ctxsqlcan()
 
 }
+func ScheduleSel(day, hour string) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	ScheduleStore = make(map[int]ScheduleStruct)
+	rows, rowserr := conn.Query(ctxsql, "select * from schedule where days='"+day+"' and hours='"+hour+"' order by days,hours,position")
+
+	var rowid int
+	var days string
+	var hours string
+	var position string
+	var categories string
+	var spinstoplay int
+	for rows.Next() {
+
+		err := rows.Scan(&rowid, &days, &hours, &position, &categories, &spinstoplay)
+		if err != nil {
+			log.Println("ScheduleGet Sel Schedule row", err)
+		}
+		ds := ScheduleStruct{}
+		ds.Row = rowid
+		ds.Days = days
+		ds.Hours = hours
+		ds.Position = position
+		ds.Category = categories
+		ds.Spinstoplay = spinstoplay
+
+		ScheduleStore[len(ScheduleStore)] = ds
+
+	}
+	if rowserr != nil {
+		log.Println("ScheduleGet Get Schedule row error", rowserr)
+	}
+
+	conn.Release()
+	ctxsqlcan()
+
+}
 
 var SchedulePlan = make(map[int]ScheduleStruct)
 var sgeterr error
