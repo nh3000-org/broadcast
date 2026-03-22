@@ -49,14 +49,25 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 	lacpf := widget.NewLabel("From Day: ")
 	edcpf := widget.NewSelect([]string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}, func(string) {})
 	lacpt := widget.NewLabel("To Day: ")
-	edcpt := widget.NewSelect([]string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}, func(string) {})
+	edcpt := widget.NewSelect([]string{"*ALL", "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}, func(string) {})
+	lacpfh := widget.NewLabel("From Hour: ")
+	edcpfh := widget.NewSelect([]string{"*ALL", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}, func(string) {})
+	lacpth := widget.NewLabel("To Hour: ")
+	edcpth := widget.NewSelect([]string{"*ALL", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}, func(string) {})
+
 	var cpyerr = false
-	copybutton := widget.NewButtonWithIcon("Copy Day", theme.ContentCopyIcon(), func() {
+	copybutton := widget.NewButtonWithIcon("Copy ", theme.ContentCopyIcon(), func() {
 		if edcpf.Selected == "" {
 			cpyerr = true
 		}
 		if edcpt.Selected == "" {
 			cpyerr = true
+		}
+		if edcpfh.Selected == "" {
+			edcpth.SetSelected("*ALL")
+		}
+		if edcpth.Selected == "" {
+			edcpfh.SetSelected("*ALL")
 		}
 		if edcpf.Selected == edcpt.Selected {
 			cpyerr = true
@@ -66,7 +77,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 			config.ScheduleGet()
 		}
 	})
-	gridcopy := container.New(layout.NewGridLayoutWithColumns(5), lacpf, edcpf, lacpt, edcpt, copybutton)
+	gridcopy := container.New(layout.NewGridLayoutWithColumns(5), lacpf, edcpf, lacpt, edcpt, lacpfh, edcpfh, lacpth, edcpth, copybutton)
 	gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
 	gridday := container.New(layout.NewGridLayoutWithRows(2), laday, edday)
 	gridhour := container.New(layout.NewGridLayoutWithRows(2), lahour, edhour)
@@ -77,7 +88,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		myspins, _ := strconv.Atoi(edspins.Selected)
 
 		config.ScheduleAdd(edday.Selected, edhour.Selected, edpos.Selected, EDcategory.Selected, myspins)
-		config.ScheduleSel(laselday.Selected,laselhour.Selected)
+		config.ScheduleSel(laselday.Selected, laselhour.Selected)
 		config.FyneScheduleList.Refresh()
 	})
 
