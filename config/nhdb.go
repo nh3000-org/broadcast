@@ -1300,8 +1300,15 @@ func InventoryAdd(category string, artist string, song string, album string, son
 
 	return rowid
 }
-
+func PDFOutput() {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Chdir(homeDir)
+}
 func ToPDF(reportname, stationid string) {
+	PDFOutput()
 	switch reportname {
 	case "SpinsPerDay":
 		PDFInventory("Spins Per Day", "SPD", stationid)
