@@ -703,20 +703,37 @@ func ScheduleAdd(days string, hours string, position string, categories string, 
 	ctxsqlcan()
 }
 
-func ScheduleCopy(dayfrom, dayto string) {
-	log.Println("ScheduleCopy ", dayfrom, dayto)
+func ScheduleCopy(dayfrom, dayto, hourfrom, hourto string) {
+
+	log.Println("ScheduleCopy ", dayfrom, dayto, hourfrom, hourto)
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 	conn2, _ := SQL.Pool.Acquire(ctxsql)
 	// delete existing dayto
-	_, rowserr := conn.Exec(ctxsql, "delete from schedule where days =$1", dayto)
+	if hourfrom == "*ALL" {
+		_, rowserr := conn.Exec(ctxsql, "delete from schedule where days =$1", dayto)
 
-	if rowserr != nil {
-		log.Println("ScheduleCopy Delete Schedule row error", rowserr)
+		if rowserr != nil {
+			log.Println("ScheduleCopy Delete Schedule row error", rowserr)
+		}
+	}
+	if hourto != "*ALL" {
+		_, rowserr := conn.Exec(ctxsql, "delete from schedule where days =$1 and hour=$2", dayto, hourto)
+
+		if rowserr != nil {
+			log.Println("ScheduleCopy Delete Schedule row error", rowserr)
+			panic(0)
+		}
 	}
 	// copy dayf  to dayt
-
-	rows, rowserr2 := conn.Query(ctxsql, "select * from schedule where days = $1 order by days,hours,position ", dayfrom)
+	var rows pgx.Rows
+	var rowserr2 error
+	if hourto == "*ALL" {
+		rows, rowserr2 = conn.Query(ctxsql, "select * from schedule where days = $1 order by days,hours,position ", dayfrom)
+	}
+	if hourto != "*ALL" {
+		rows, rowserr2 = conn.Query(ctxsql, "select * from schedule where days = $1 and hous = $2 order by days,hours,position ", dayfrom, hourfrom)
+	}
 	var rowid int
 	var days string
 	var hours string

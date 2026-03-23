@@ -16,6 +16,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 
 	laseld := widget.NewLabel("Day:")
 	laselday := widget.NewSelect([]string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN", "VID"}, func(string) {})
+
 	laselh := widget.NewLabel("Hour:")
 	laselhour := widget.NewSelect([]string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"}, func(string) {})
 
@@ -48,6 +49,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 
 	lacpf := widget.NewLabel("From Day: ")
 	edcpf := widget.NewSelect([]string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}, func(string) {})
+
 	lacpt := widget.NewLabel("To Day: ")
 	edcpt := widget.NewSelect([]string{"*ALL", "MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}, func(string) {})
 	lacpfh := widget.NewLabel("From Hour: ")
@@ -69,15 +71,31 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		if edcpth.Selected == "" {
 			edcpfh.SetSelected("*ALL")
 		}
+		if edcpfh.Selected != "*ALL" && edcpth.Selected != "*ALL" {
+			if edcpfh.Selected == edcpth.Selected {
+				cpyerr = true
+			}
+		}
+		if edcpfh.Selected == "*ALL" && edcpth.Selected != "*ALL" {
+
+				cpyerr = true
+
+		}
+		if edcpfh.Selected != "*ALL" && edcpth.Selected == "*ALL" {
+
+				cpyerr = true
+
+		}
+
 		if edcpf.Selected == edcpt.Selected {
 			cpyerr = true
 		}
 		if !cpyerr {
-			config.ScheduleCopy(edcpf.Selected, edcpt.Selected)
-			config.ScheduleGet()
+			config.ScheduleCopy(edcpf.Selected, edcpt.Selected,edcpfh.Selected,edcpth.Selected)
+			config.ScheduleSel(laselday.Selected, laselhour.Selected)
 		}
 	})
-	gridcopy := container.New(layout.NewGridLayoutWithColumns(5), lacpf, edcpf, lacpt, edcpt, lacpfh, edcpfh, lacpth, edcpth, copybutton)
+	gridcopy := container.New(layout.NewGridLayoutWithColumns(4), lacpf, edcpf, lacpt, edcpt, lacpfh, edcpfh, lacpth, edcpth, copybutton)
 	gridrow := container.New(layout.NewGridLayoutWithRows(2), larow, edrow)
 	gridday := container.New(layout.NewGridLayoutWithRows(2), laday, edday)
 	gridhour := container.New(layout.NewGridLayoutWithRows(2), lahour, edhour)
@@ -116,11 +134,11 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		}
 	})
 	List.SetColumnWidth(0, 64)
-	List.SetColumnWidth(1, 132)
-	List.SetColumnWidth(2, 132)
-	List.SetColumnWidth(3, 132)
-	List.SetColumnWidth(4, 132)
-	List.SetColumnWidth(5, 132)
+	List.SetColumnWidth(1, 64)
+	List.SetColumnWidth(2, 64)
+	List.SetColumnWidth(3, 64)
+	List.SetColumnWidth(4, 256)
+	List.SetColumnWidth(5, 64)
 	config.FyneScheduleList = List
 	List.OnSelected = func(id widget.TableCellID) {
 		config.SelectedDay = id.Row
