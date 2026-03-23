@@ -482,7 +482,7 @@ func CategoriesToArray() []string {
 		if err != nil {
 			log.Println("CategoryArray Get Categories to Array row", err)
 		}
-		CategoryArray = append(CategoryArray, id)
+		CategoryArray = append(CategoryArray, strings.TrimSpace(id))
 		//log.Println("CategoryToArray", id)
 	}
 	if igetctarowserr != nil {

@@ -47,7 +47,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 	lacategory := widget.NewLabel("Category: ")
 	//EDcategory = widget.NewSelect([]string{}, func(string) {})
 	//edcategory := widget.NewSelect(config.CategoriesToArray(), func(string) {})
-	gridcategory := container.New(layout.NewGridLayoutWithRows(2), lacategory, EDcategory)
+	gridcategory := container.New(layout.NewGridLayoutWithRows(2), lacategory, ED2category)
 
 	laartist := widget.NewLabel("Artist: ")
 	edartist := widget.NewEntry()
@@ -619,18 +619,12 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 		runtime.GC()
 	})
 	gridfile := container.New(layout.NewGridLayoutWithColumns(3), openSong, openSongIntro, openSongOutro)
-	bucket := "mp3"
-	if strings.Contains(EDcategory.Selected, "VIDEO") {
-		bucket = "mp4"
-	}
-	if strings.Contains(EDcategory.Selected, "wav") {
-		bucket = "wav"
-	}
-	openSongsz := strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text)))
+
+	openSongsz := strconv.Itoa(int(config.GetBucketSize(config.NatsBucketType, edrow.Text)))
 	edsongsz.SetText("Song Size:" + openSongsz)
-	openSongIntrosz := strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"INTRO")))
+	openSongIntrosz := strconv.Itoa(int(config.GetBucketSize(config.NatsBucketType, edrow.Text+"INTRO")))
 	edintrosz.SetText("Intro Size:" + openSongIntrosz)
-	openSongOutrosz := strconv.Itoa(int(config.GetBucketSize(bucket, edrow.Text+"OUTRO")))
+	openSongOutrosz := strconv.Itoa(int(config.GetBucketSize(config.NatsBucketType, edrow.Text+"OUTRO")))
 	edoutrosz.SetText("Intro Size:" + openSongOutrosz)
 	gridfilesz := container.New(layout.NewGridLayoutWithColumns(3), edsongsz, edintrosz, edoutrosz)
 
@@ -689,7 +683,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 		edrow.SetText(strconv.Itoa(config.InventoryStore[id.Row].Row))
 		edrow.Disable()
-		EDcategory.SetSelected(config.InventoryStore[id.Row].Category)
+		ED2category.SetSelected(config.InventoryStore[id.Row].Category)
 		shadowCategory = config.InventoryStore[id.Row].Category
 		edartist.SetText(config.InventoryStore[id.Row].Artist)
 		edsong.SetText(config.InventoryStore[id.Row].Song)
@@ -737,7 +731,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 			var total, _ = strconv.Atoi(edspinstotal.Text)
 			var maxspins, _ = strconv.Atoi(edadsmaxspins.Selected)
 			var maxspinsperhour, _ = strconv.Atoi(edadsmaxspinsperhour.Selected)
-			config.InventoryUpdate(myrow, EDcategory.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, edadsdayslot.Selected, maxspins, maxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
+			config.InventoryUpdate(myrow, ED2category.Selected, edartist.Text, edsong.Text, edalbum.Text, length, edorder.Text, edstartson.Text, edexpires.Text, edadstimeslot.Selected, edadsdayslot.Selected, maxspins, maxspinsperhour, edlastplayed.Text, eddateadded.Text, today, week, total, edlinks.Text)
 			config.InventorySel(EDcategory.Selected, edsela.Text)
 			config.FyneInventoryList.Refresh()
 			if shadowCategory == "CURRENTS" {
@@ -884,7 +878,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 
 			}
 		}
-		config.InventoryGet()
+		config.InventorySel(EDcategory.Selected, edsela.Text)
 		config.FyneInventoryList.Refresh()
 
 	})

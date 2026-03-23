@@ -78,12 +78,12 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		}
 		if edcpfh.Selected == "*ALL" && edcpth.Selected != "*ALL" {
 
-				cpyerr = true
+			cpyerr = true
 
 		}
 		if edcpfh.Selected != "*ALL" && edcpth.Selected == "*ALL" {
 
-				cpyerr = true
+			cpyerr = true
 
 		}
 
@@ -91,7 +91,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 			cpyerr = true
 		}
 		if !cpyerr {
-			config.ScheduleCopy(edcpf.Selected, edcpt.Selected,edcpfh.Selected,edcpth.Selected)
+			config.ScheduleCopy(edcpf.Selected, edcpt.Selected, edcpfh.Selected, edcpth.Selected)
 			config.ScheduleSel(laselday.Selected, laselhour.Selected)
 		}
 	})
@@ -100,12 +100,12 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 	gridday := container.New(layout.NewGridLayoutWithRows(2), laday, edday)
 	gridhour := container.New(layout.NewGridLayoutWithRows(2), lahour, edhour)
 	gridpos := container.New(layout.NewGridLayoutWithRows(2), lapos, edpos)
-	gridcat := container.New(layout.NewGridLayoutWithRows(2), lacategory, EDcategory)
+	gridcat := container.New(layout.NewGridLayoutWithRows(2), lacategory, ED2category)
 	gridspins := container.New(layout.NewGridLayoutWithRows(2), laspins, edspins)
 	saveaddbutton := widget.NewButtonWithIcon("Add Schedule Item", theme.ContentCopyIcon(), func() {
 		myspins, _ := strconv.Atoi(edspins.Selected)
 
-		config.ScheduleAdd(edday.Selected, edhour.Selected, edpos.Selected, EDcategory.Selected, myspins)
+		config.ScheduleAdd(edday.Selected, edhour.Selected, edpos.Selected, ED2category.Selected, myspins)
 		config.ScheduleSel(laselday.Selected, laselhour.Selected)
 		config.FyneScheduleList.Refresh()
 	})
@@ -146,7 +146,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		edday.SetSelected(config.ScheduleStore[id.Row].Days)
 		edhour.SetSelected(config.ScheduleStore[id.Row].Hours)
 		edpos.SetSelected(config.ScheduleStore[id.Row].Position)
-		EDcategory.SetSelected(config.ScheduleStore[id.Row].Category)
+		ED2category.SetSelected(config.ScheduleStore[id.Row].Category)
 		edspins.SetSelected(strconv.Itoa(config.ScheduleStore[id.Row].Spinstoplay))
 		edrow.SetText(strconv.Itoa(config.ScheduleStore[id.Row].Row))
 		edrow.Disable()

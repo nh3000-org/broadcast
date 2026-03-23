@@ -19,6 +19,7 @@ import (
 )
 
 var EDcategory = widget.NewSelect([]string{}, func(string) {})
+var ED2category = widget.NewSelect([]string{}, func(string) {})
 
 func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 
@@ -394,6 +395,7 @@ func LogonScreen(MyWin fyne.Window) fyne.CanvasObject {
 			}
 			config.NewPGSQL()
 			EDcategory.SetOptions(config.CategoriesToArray())
+			ED2category.SetOptions(config.CategoriesToArray())
 			//USERcategory.SetSelected(config.CategoriesToArray())
 			config.SetupNATS()
 			go config.ReceiveMESSAGE()

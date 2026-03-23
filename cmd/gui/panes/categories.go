@@ -89,6 +89,8 @@ func CategoriesScreen(win fyne.Window) fyne.CanvasObject {
 			myrowcat, _ := strconv.Atoi(edrow.Text)
 
 			config.CategoriesUpdate(myrowcat, edid.Text, eddesc.Text)
+			EDcategory.SetOptions(config.CategoriesToArray())
+			ED2category.SetOptions(config.CategoriesToArray())
 			config.CategoriesGet()
 
 		})
