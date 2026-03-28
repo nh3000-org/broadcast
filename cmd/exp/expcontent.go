@@ -20,6 +20,8 @@ var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.
 
 const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
+var instructions = "Radio Stub Instructions\nBrowse to this file to initiate import\nSongs are identified by ARTIST-SONG-ALBUM.mp3 and ARTIST-SONG-ALBUM-INTRO.mp3 and ARTIST-SONG-ALBUM-OUTRO.mp3 where INTRO and OUTRO are for CURRENTS anouncements in the following categories\nADS used to add advertising to system.\nFILLTOTOH is a phantom category used internally\nIMAGINGID is used to hold artist station plugs\nLIVE is phantom category to indicate live segments and suspend player for an hour\nMUSIC is the music category\nNEXT is phantom category\nROOTS is accompanying music category\nSTATIONID is ids for sprinkling\nCURRENTS is current hits\nNWS is News Weather Sports and will play once then delete"
+
 func readPreferences() {
 	// read config preferences.json
 	jsondata, readerr := os.ReadFile(PreferencesLocation)
@@ -94,7 +96,7 @@ func CategoriesWriteStub(withinventory bool) string {
 		log.Println("CategoriesWriteStub Get Categories row for Stub", err3)
 	}
 
-	//os.WriteFile(userHome+"/README.txt", []byte(instructions), os.ModePerm)
+	os.WriteFile(userHome+"/README.txt", []byte(instructions), os.ModePerm)
 	rows, rowserr := conn.Query(ctxsql, "select * from categories order by id")
 	var rowid int
 	var id string

@@ -250,6 +250,7 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 							if songerr != nil {
 								config.Send("messages."+config.NatsAlias, "Put Bucket Song Read Error", config.NatsAlias)
 							}
+
 							if songerr == nil {
 								pberr = config.PutBucket("mp3", row, songbytes)
 								if pberr == nil {
@@ -381,12 +382,13 @@ func InventoryScreen(win fyne.Window) fyne.CanvasObject {
 						if row != "0" {
 
 							songbytes, songerr = os.ReadFile(imimportdir)
-							log.Println("nats ", imimportdir)
+							//log.Println("nats ", imimportdir)
 							if songerr != nil {
 								config.Send("messages."+config.NatsAlias, "Put Bucket Song Read Error", config.NatsAlias)
 							}
+
 							if songerr == nil {
-								log.Println("nats put", "wav", row)
+								//log.Println("nats put", "wav", row)
 								pberr = config.PutBucket("wav", row, songbytes)
 								if pberr == nil {
 									songbytes = []byte("")
