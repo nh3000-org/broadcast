@@ -1,0 +1,144 @@
+// Package recover is used to restore SQL historical
+// data after importing a stub of all the content
+// generated from expcontent.go
+//
+// This provides restoring values from a restore
+// path to the database such as inventory ad and traffic
+// data [exp/expcontent]
+
+/*
+cvthistory restore historically after recovery.
+
+Use this after importing a stub into a fresh database build.
+
+Usage:
+
+	  cvthistory [flags] [path...]
+
+	  The flags are:
+
+	    -v output debug info
+		-t test run does not update data base
+*/
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/nh3000-org/broadcast/config"
+)
+
+func processTraffic() {
+
+}
+func processInventlory() {
+
+}
+
+// readSQl process the sql dump from postgresql
+// only use traffic and inventory tables
+// traffic import entire table
+// inventory only import
+var importType = ""
+
+func readSQL(rootimport string, station string, verbose string, test string) {
+	if test == "true" {
+		log.Println("readSQL rootImport:", rootimport, "station:", station, "verbose:", verbose, "test", test)
+	}
+	// determine start of stream file
+	// looking for traffic or imventory
+	// read the file
+	inputfile, err := os.Open(rootimport)
+	if err != nil {
+		fmt.Println("readSQL file error:", err)
+		return
+	}
+
+	scanner := bufio.NewScanner(inputfile)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "\\.") {
+			importType = ""
+		}
+		if importType == "INVENTORY" {
+			if test == "true" {
+				log.Println("processing INVENTORY", scanner.Text())
+			}
+
+		}
+		if importType == "TRAFFIC" {
+
+			if test == "true" {
+				log.Println("processing TRAFFIC", scanner.Text())
+			}
+
+		}
+		if strings.Contains(scanner.Text(), "COPY public.inventory") {
+			importType = "INVENTORY"
+		}
+		if strings.Contains(scanner.Text(), "COPY public.traffic") {
+			importType = "TRAFFIC"
+		}
+	}
+
+}
+func main() {
+	rootImport := flag.String("rootimport", "./", "-rootimport base directory of SQL export from postgresql files")
+	stationid := flag.String("stationid", "WVOD", "-stationid call letters of station")
+	verbose := flag.String("v", "false", "-v print execution plan")
+	test := flag.String("t", "false", "-t test execution no poatgresql update")
+
+	flag.Parse()
+	log.Println("init path:", *rootImport, "station:", *stationid, "verbose:", *verbose, "test", *test)
+	readPreferences()
+	readSQL(*rootImport, *stationid, *verbose, *test)
+
+}
+
+var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
+
+const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
+
+var erramm error
+
+func readPreferences() {
+	// read config preferences.json
+	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	if readerr != nil {
+		log.Println("ERROR Preferences readerr ", readerr)
+	}
+	// parse json
+	var cfg map[string]any
+	errunmarshal := json.Unmarshal(jsondata, &cfg)
+	if errunmarshal != nil {
+		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
+	}
+
+	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+
+	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
+	//log.Println(config.DBaddress)
+
+	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
+	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
+	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
+	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
+	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+
+	amm := config.Decrypt(fmt.Sprintf("%v", cfg["AdsMaxMinutes"]), MySecret)
+	config.AdsMaxMinutes, erramm = strconv.Atoi(amm)
+	if erramm != nil {
+		log.Println("CONFIG AdsMaxMinutes", amm, erramm)
+	}
+	//log.Println("CONFIG NatsBucketType", config.NatsBucketType)
+	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
+	config.NewNatsJS()
+	config.NewPGSQL()
+}
