@@ -16,15 +16,11 @@ import (
 	"github.com/nh3000-org/broadcast/config"
 )
 
-var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
-
-const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
-
 var instructions = "Radio Stub Instructions\nBrowse to this file to initiate import\nSongs are identified by ARTIST-SONG-ALBUM.mp3 and ARTIST-SONG-ALBUM-INTRO.mp3 and ARTIST-SONG-ALBUM-OUTRO.mp3 where INTRO and OUTRO are for CURRENTS anouncements in the following categories\nADS used to add advertising to system.\nFILLTOTOH is a phantom category used internally\nIMAGINGID is used to hold artist station plugs\nLIVE is phantom category to indicate live segments and suspend player for an hour\nMUSIC is the music category\nNEXT is phantom category\nROOTS is accompanying music category\nSTATIONID is ids for sprinkling\nCURRENTS is current hits\nNWS is News Weather Sports and will play once then delete"
 
 func readPreferences() {
 	// read config preferences.json
-	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	jsondata, readerr := os.ReadFile(config.PreferencesLocation)
 	if readerr != nil {
 		log.Println("ERROR Preferences readerr ", readerr)
 	}
@@ -35,17 +31,17 @@ func readPreferences() {
 		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
 	}
 
-	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), config.MySecret)
 
-	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
+	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), config.MySecret)
 	log.Println(config.DBaddress)
 
-	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
-	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
-	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
-	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
-	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
-	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), config.MySecret)
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), config.MySecret)
+	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), config.MySecret)
+	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), config.MySecret)
+	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), config.MySecret)
+	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), config.MySecret)
 
 	//log.Println("CONFIG NatsBucketType", config.NatsBucketType)
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)

@@ -33,7 +33,6 @@ type UserSessionJSON struct {
 var SessionCategories []string
 var SessionAction []string
 
-var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 var HashLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/config.hash"
 var authtoken = ""
 
@@ -42,7 +41,7 @@ var isbusy = false
 var userdata = ""
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
-const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
+//const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func ADS(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
@@ -742,7 +741,7 @@ func downloadContent(w http.ResponseWriter, r *http.Request) {
 func readPreferences() {
 
 	// read config preferences.json
-	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	jsondata, readerr := os.ReadFile(config.PreferencesLocation)
 	if readerr != nil {
 		log.Println("ERROR Preferences readerr ", readerr)
 	}
@@ -753,28 +752,28 @@ func readPreferences() {
 		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
 	}
 
-	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), config.MySecret)
 
 	//config.WebPassword = config.Decrypt(fmt.Sprintf("%v", cfg["WEBPASSWORD"]), MySecret)
 
-	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
+	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), config.MySecret)
 	//log.Println(config.DBaddress)
 
-	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
-	config.NatsAlias = config.Decrypt(fmt.Sprintf("%v", cfg["NatsAlias"]), MySecret)
-	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
-	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
-	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
-	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
-	config.WebAddress = config.Decrypt(fmt.Sprintf("%v", cfg["WEBADDRESS"]), MySecret)
-	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
+	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), config.MySecret)
+	config.NatsAlias = config.Decrypt(fmt.Sprintf("%v", cfg["NatsAlias"]), config.MySecret)
+	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), config.MySecret)
+	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), config.MySecret)
+	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), config.MySecret)
+	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), config.MySecret)
+	config.WebAddress = config.Decrypt(fmt.Sprintf("%v", cfg["WEBADDRESS"]), config.MySecret)
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), config.MySecret)
 	log.Println("WebAddress", config.WebAddress)
 	config.NewNatsJS()
 	config.NewPGSQL()
 }
 func configFile(w http.ResponseWriter, r *http.Request) {
-	log.Println("configFile", PreferencesLocation)
-	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	log.Println("configFile", config.PreferencesLocation)
+	jsondata, readerr := os.ReadFile(config.PreferencesLocation)
 	if readerr != nil {
 		log.Println("configFile ", readerr)
 	}
@@ -817,7 +816,7 @@ func main() {
 	setupRoutes()
 }
 func checkauthorization(authtoken string) bool {
-	decrypt := config.Decrypt(authtoken, MySecret)
+	decrypt := config.Decrypt(authtoken, config.MySecret)
 	var jsondat = UserSessionJSON{}
 
 	if err := json.Unmarshal([]byte(decrypt), &jsondat); err != nil {
@@ -910,7 +909,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 	// check aut token expiry
 
-	tobrowser := config.Encrypt(string(js), MySecret)
+	tobrowser := config.Encrypt(string(js), config.MySecret)
 	//r.Header.Set("Authorization", authtoken)
 
 	w.Write([]byte(ibuilder(tobrowser)))

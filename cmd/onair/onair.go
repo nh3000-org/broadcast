@@ -556,13 +556,9 @@ func PlayMP3(song string, cat string) int {
 	return int(elapsed.Seconds())
 }
 
-var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
-
-const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
-
 func readPreferences() {
 	// read config preferences.json
-	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	jsondata, readerr := os.ReadFile(config.PreferencesLocation)
 	if readerr != nil {
 		log.Println("ERROR Preferences readerr ", readerr)
 	}
@@ -573,19 +569,19 @@ func readPreferences() {
 		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
 	}
 
-	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), config.MySecret)
 
-	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
+	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), config.MySecret)
 	//log.Println(config.DBaddress)
 
-	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
-	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), MySecret)
-	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
-	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
-	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
-	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), config.MySecret)
+	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), config.MySecret)
+	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), config.MySecret)
+	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), config.MySecret)
+	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), config.MySecret)
+	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), config.MySecret)
 	//amm := strconv.Itoa(cfg["AdsMaxMinutes"])
-	amm := config.Decrypt(fmt.Sprintf("%v", cfg["AdsMaxMinutes"]), MySecret)
+	amm := config.Decrypt(fmt.Sprintf("%v", cfg["AdsMaxMinutes"]), config.MySecret)
 	config.AdsMaxMinutes, erramm = strconv.Atoi(amm)
 	if erramm != nil {
 		log.Println("CONFIG AdsMaxMinutes", amm, erramm)

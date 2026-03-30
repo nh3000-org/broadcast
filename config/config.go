@@ -25,6 +25,7 @@ import (
  */
 var SQL = &SQLconn{}
 var NATS = &Natsjs{}
+var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
 
 var AdsMaxMinutes int
 

@@ -114,15 +114,13 @@ func GetLogLangs(mystring string) string {
 	return value
 }
 
-var PreferencesLocation = "/opt/radio/preferences.json"
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
-const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
 func readPreferences(logURL string) {
 	// download preferences
 	os.Remove("/opt/radio/preferences.json")
-	cmd := exec.Command("curl", "-o", PreferencesLocation, logURL)
+	cmd := exec.Command("curl", "-o", config.PreferencesLocation, logURL)
 	_, err := cmd.Output()
 	if err != nil {
 		log.Println("CURL could not download preferences: ", err, logURL)
@@ -131,7 +129,7 @@ func readPreferences(logURL string) {
 		log.Println("CURL Done: ")
 	}
 	// read config preferences.json
-	jsondata, readerr := os.ReadFile(PreferencesLocation)
+	jsondata, readerr := os.ReadFile(config.PreferencesLocation)
 	if readerr != nil {
 		log.Println("ERROR Preferences readerr ", readerr)
 	}
@@ -142,17 +140,17 @@ func readPreferences(logURL string) {
 		log.Println("ERROR Preferences errunmarshal ", errunmarshal)
 	}
 
-	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), MySecret)
+	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), config.MySecret)
 
-	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), MySecret)
+	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), config.MySecret)
 	log.Println(config.DBaddress)
 
-	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), MySecret)
+	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), config.MySecret)
 
-	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), MySecret)
-	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), MySecret)
-	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), MySecret)
-	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), MySecret)
+	config.NatsCaroot = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaroot"]), config.MySecret)
+	config.NatsClientkey = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCakey"]), config.MySecret)
+	config.NatsClientcert = config.Decrypt(fmt.Sprintf("%v", cfg["NatsCaclient"]), config.MySecret)
+	config.NatsQueuePassword = config.Decrypt(fmt.Sprintf("%v", cfg["NatsQueuePassword"]), config.MySecret)
 
 	//log.Println("NATS AUTH user", config.NatsServer, config.NatsUser, config.NatsUserPassword)
 	config.NewNatsJS()
