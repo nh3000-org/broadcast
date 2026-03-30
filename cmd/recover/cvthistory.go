@@ -48,6 +48,31 @@ func processInventlory() {
 // inventory only import
 var importType = ""
 
+type InventoryStruct struct {
+	Artist            string
+	Song              string
+	Album             string
+	Length            string
+	Startson          string
+	Expireson         string
+	Adtimeslots       string
+	Addayslots        string
+	Admaxspins        string
+	Admaxspinsperhour string
+	Lastplayed        string
+	Dateadded         string
+	Spinstoday        string
+	Spinsweek         string
+	Spinstotal        string
+}
+type TrafficStruct struct {
+	Category string
+	Artist   string
+	Song     string
+	Album    string
+	Playedon string
+}
+
 func readSQL(rootimport string, station string, verbose string, test string) {
 	if test == "true" {
 		log.Println("readSQL rootImport:", rootimport, "station:", station, "verbose:", verbose, "test", test)
@@ -67,8 +92,56 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 			importType = ""
 		}
 		if importType == "INVENTORY" {
-			if test == "true" {
-				log.Println("processing INVENTORY", scanner.Text())
+			fields := strings.Split(scanner.Text(), "\t")
+			i := InventoryStruct{}
+			for index, value := range fields {
+				if index == 2 { // artist
+					i.Artist = value
+				}
+				if index == 3 { // song
+					i.Song = value
+				}
+				if index == 4 { // artist
+					i.Album = value
+				}
+				if index == 5 { // song
+					i.Length = value
+				}
+
+				if index == 7 { // song
+					i.Startson = value
+				}
+				if index == 8 { // artist
+					i.Expireson = value
+				}
+				if index == 9 { // song
+					i.Adtimeslots = value
+				}
+				if index == 10 { // song
+					i.Addayslots = value
+				}
+				if index == 11 { // song
+					i.Admaxspins = value
+				}
+				if index == 12 { // song
+					i.Admaxspinsperhour = value
+				}
+				if index == 14 { // song
+					i.Lastplayed = value
+				}
+				if index == 15 { // song
+					i.Spinstoday = value
+				}
+				if index == 16 { // song
+					i.Spinsweek = value
+				}
+				if index == 17 { // song
+					i.Spinstotal = value
+				}
+
+			}
+			if verbose == "true" {
+				fmt.Printf("%#v\n", i)
 			}
 
 		}
