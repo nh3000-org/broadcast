@@ -35,10 +35,17 @@ import (
 	"github.com/nh3000-org/broadcast/config"
 )
 
-func processTraffic() {
+// processTraffic - writes all the historical data
+// to the database
+// do not process duplicates
+func processTraffic(is TrafficStruct, station string) {
 
 }
-func processInventlory() {
+
+// processInventory - ipdates the existing content with
+// historical data
+// do no process duplicates
+func processInventlory(ts InventoryStruct, station string) {
 
 }
 
@@ -46,7 +53,7 @@ func processInventlory() {
 // only use traffic and inventory tables
 // traffic import entire table
 // inventory only import
-var importType = ""
+var importType = "" // INVENTORY or TRAFFIC
 
 type InventoryStruct struct {
 	Artist            string
@@ -73,6 +80,8 @@ type TrafficStruct struct {
 	Playedon string
 }
 
+// readSQL - process partial updates to production database
+// from a pgsql dump
 func readSQL(rootimport string, station string, verbose string, test string) {
 	if test == "true" {
 		log.Println("readSQL rootImport:", rootimport, "station:", station, "verbose:", verbose, "test", test)
@@ -111,34 +120,34 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 				if index == 7 { // song
 					i.Startson = value
 				}
-				if index == 8 { // artist
+				if index == 8 { // expireson
 					i.Expireson = value
 				}
-				if index == 9 { // song
+				if index == 9 { // adtimeslots
 					i.Adtimeslots = value
 				}
-				if index == 10 { // song
+				if index == 10 { // addayslots
 					i.Addayslots = value
 				}
-				if index == 11 { // song
+				if index == 11 { // ad max spins
 					i.Admaxspins = value
 				}
-				if index == 12 { // song
+				if index == 12 { // ad max spins per hpur
 					i.Admaxspinsperhour = value
 				}
-				if index == 14 { // song
+				if index == 14 { // last played
 					i.Lastplayed = value
 				}
-				if index == 15 { // song
+				if index == 15 { // spins today
 					i.Spinstoday = value
 				}
-				if index == 16 { // song
+				if index == 16 { // spins per week
 					i.Spinsweek = value
 				}
-				if index == 17 { // song
+				if index == 17 { // spins total
 					i.Spinstotal = value
 				}
-
+				processInventlory(i, station)
 			}
 			if verbose == "true" {
 				fmt.Printf("%#v\n", i)
@@ -147,8 +156,28 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 		}
 		if importType == "TRAFFIC" {
 
-			if test == "true" {
-				log.Println("processing TRAFFIC", scanner.Text())
+			fields := strings.Split(scanner.Text(), "\t")
+			i := TrafficStruct{}
+			for index, value := range fields {
+				if index == 1 { // category
+					i.Category = value
+				}
+				if index == 2 { // song
+					i.Artist = value
+				}
+				if index == 3 { // artist
+					i.Song = value
+				}
+				if index == 4 { // album
+					i.Album = value
+				}
+				if index == 5 { // played on
+					i.Playedon = value
+				}
+				processTraffic(i, station)
+			}
+			if verbose == "true" {
+				fmt.Printf("%#v\n", i)
 			}
 
 		}
