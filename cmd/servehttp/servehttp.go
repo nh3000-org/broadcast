@@ -1,3 +1,5 @@
+// Package servehttp serves https traffic over port 3000
+
 package main
 
 import (
@@ -41,8 +43,8 @@ var isbusy = false
 var userdata = ""
 var KeyAes = []byte{35, 46, 57, 24, 85, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05}  // must be 16 bytes
 var KeyHmac = []byte{36, 45, 53, 21, 87, 35, 24, 74, 87, 35, 88, 98, 66, 32, 14, 05} // must be 16 bytes
-//const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
 
+// ADS -produces a line chart of ADS category
 func ADS(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -105,6 +107,7 @@ func ADS(w http.ResponseWriter, r *http.Request) {
 var stend = "23:59:59"
 var ststart = "00:00:00"
 
+// TRAFFICREPORT -produces a pdf of traffic for an ad campaign (album)
 func TRAFICREPORT(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -130,6 +133,8 @@ func TRAFICREPORT(w http.ResponseWriter, r *http.Request) {
 		log.Println("Traffic", cmderr, "rpt", "TrafficReport.pdf")
 	}
 }
+
+// chart - produces a line chart
 func chart(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -188,6 +193,7 @@ func chart(w http.ResponseWriter, r *http.Request) {
 	line.Render(w)
 }
 
+// counts - produces a pie chart of distribution schedule counts
 func counts(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -208,6 +214,7 @@ func counts(w http.ResponseWriter, r *http.Request) {
 		{Name: "PROMOS", Value: config.InventoryGetCount("PROMOS")},
 		{Name: "FILLTOTOH", Value: config.InventoryGetCount("FILLTOTOH")},
 		{Name: "ADS", Value: config.InventoryGetCount("ADS")},
+		{Name: "ROOTS", Value: config.InventoryGetCount("ROOTS")},
 		{Name: "IMAGINGID", Value: config.InventoryGetCount("IMAGINGID")}}
 
 	pie.SetGlobalOptions(
@@ -220,6 +227,8 @@ func counts(w http.ResponseWriter, r *http.Request) {
 
 	pie.Render(w)
 }
+
+// schedulecounts - produces a pie chart from the schedule
 func schedcounts(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -239,6 +248,7 @@ func schedcounts(w http.ResponseWriter, r *http.Request) {
 		{Name: "RECURRENTS", Value: config.ScheduleGetCount("RECURRENTS")},
 		{Name: "PROMOS", Value: config.ScheduleGetCount("PROMOS")},
 		{Name: "ADS", Value: config.ScheduleGetCount("ADS")},
+		{Name: "ROOTS", Value: config.InventoryGetCount("ROOTS")},
 		{Name: "FILLTOTOH", Value: config.InventoryGetCount("FILLTOTOH")},
 		{Name: "IMAGINGID", Value: config.ScheduleGetCount("IMAGINGID")}}
 
@@ -252,6 +262,8 @@ func schedcounts(w http.ResponseWriter, r *http.Request) {
 
 	pie.Render(w)
 }
+
+// cleartraffic - clears trafic data from 1 year and older
 func cleartraffic(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -263,6 +275,7 @@ func cleartraffic(w http.ResponseWriter, r *http.Request) {
 
 var uploadauth = false
 
+// upload file - process a stub.zip into production
 func uploadFile(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -651,6 +664,8 @@ func uploadFile(w http.ResponseWriter, r *http.Request) {
 	log.Println(userdata)
 	log.Println("Upload File")
 }
+
+// downloadFile - produce a blank stub
 func downloadFile(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -709,6 +724,8 @@ func downloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Write(hl)
 
 }
+
+// downloadContent - use to voice track currents
 func downloadContent(w http.ResponseWriter, r *http.Request) {
 	if !checkauthorization(r.FormValue("Authorization")) {
 		w.Write([]byte(ilogon()))
@@ -738,6 +755,7 @@ func downloadContent(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// readPreferences - read the preferences from a file
 func readPreferences() {
 
 	// read config preferences.json
@@ -771,6 +789,8 @@ func readPreferences() {
 	config.NewNatsJS()
 	config.NewPGSQL()
 }
+
+// configFile - download a config file
 func configFile(w http.ResponseWriter, r *http.Request) {
 	log.Println("configFile", config.PreferencesLocation)
 	jsondata, readerr := os.ReadFile(config.PreferencesLocation)
@@ -782,6 +802,8 @@ func configFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Length", fmt.Sprint(len(jsondata)))
 	w.Write(jsondata)
 }
+
+// setupRoutes- provide http routing
 func setupRoutes() {
 	readPreferences()
 	fileServer := http.FileServer(http.Dir("/opt/radio/publichtml"))
@@ -805,6 +827,7 @@ func setupRoutes() {
 	}
 }
 
+// main - start the server
 func main() {
 	fmt.Println("Writing Startup index.html")
 	readPreferences()
@@ -815,6 +838,8 @@ func main() {
 	//fmt.Println("Waiting for Input", istartup())
 	setupRoutes()
 }
+
+// checkauthorization - make sure the hiden aut field has not expired
 func checkauthorization(authtoken string) bool {
 	decrypt := config.Decrypt(authtoken, config.MySecret)
 	var jsondat = UserSessionJSON{}
@@ -845,6 +870,8 @@ func checkauthorization(authtoken string) bool {
 	SessionAction = jsondat.UserAuthAction
 	return true
 }
+
+// login - show the login screen
 func login(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
@@ -914,6 +941,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte(ibuilder(tobrowser)))
 }
+
+// arrayhas - check to see if user is authorized
 func arrayhas(a []string, v string) bool {
 	//log.Println("arrayhas: a", a, "v", v)
 	for _, value := range a {
@@ -925,6 +954,26 @@ func arrayhas(a []string, v string) bool {
 
 	return false
 }
+
+// displayMessages - show any messages stored in nats
+func displayMessages(authtoken string) string {
+	config.ReceiveMESSAGE()
+	var builder strings.Builder
+	for _, msg := range config.NatsMessages {
+		builder.WriteString(" </tr>\n")
+		builder.WriteString("	 <td colspan=\"1\">" + msg.MSalias + "</td>\n")
+		builder.WriteString("	 <td colspan=\"1\">" + msg.MSmessage + "</td>\n")
+		builder.WriteString("	 <td colspan=\"1\">" + msg.MSdate + "</td>\n")
+
+		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+		builder.WriteString("<td colspan=\"4\"><input type=\"hidden\" name=\"fileid\" id=\"fileid\" value=\"" + strconv.Itoa(inv.Row) + "\" /></td>\n")
+		builder.WriteString(" </tr>\n")
+
+	}
+	return builder.String()
+}
+
+// displayCurrent - show the items in currents for voice tracking
 func displayCurrent(authtoken string) string {
 
 	config.InventoryGetCurrent()
@@ -950,6 +999,8 @@ func displayCurrent(authtoken string) string {
 
 	return builder.String()
 }
+
+// ibuilder - output the interface
 func ibuilder(authtoken string) string {
 
 	var s bytes.Buffer

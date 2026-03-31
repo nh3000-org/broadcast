@@ -37,12 +37,12 @@ import (
 
 // processTraffic - writes all the historical data
 // to the database
-// do not process duplicates
+// does not process duplicates 
 func processTraffic(is TrafficStruct, station string) {
 
 }
 
-// processInventory - ipdates the existing content with
+// processInventory - updates the existing content with
 // historical data
 // do no process duplicates
 func processInventlory(ts InventoryStruct, station string) {
@@ -221,7 +221,6 @@ func readPreferences() {
 	config.DBpassword = config.Decrypt(fmt.Sprintf("%v", cfg["DBPASSWORD"]), config.MySecret)
 
 	config.DBaddress = config.Decrypt(fmt.Sprintf("%v", cfg["DBADDRESS"]), config.MySecret)
-	//log.Println(config.DBaddress)
 
 	config.DBuser = config.Decrypt(fmt.Sprintf("%v", cfg["DBUSER"]), config.MySecret)
 	config.NatsBucketType = config.Decrypt(fmt.Sprintf("%v", cfg["NatsBucketType"]), config.MySecret)
