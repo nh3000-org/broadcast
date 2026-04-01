@@ -35,7 +35,11 @@ type UserSessionJSON struct {
 var SessionCategories []string
 var SessionAction []string
 
-var HashLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/config.hash"
+//var PreferencesLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/preferences.json"
+
+//const MySecret string = "abd&1*~#^2^#s0^=)^^7%c34"
+
+// var HashLocation = "/home/oem/.config/fyne/org.nh3000.nh3000/config.hash"
 var authtoken = ""
 
 var isbusy = false
@@ -875,7 +879,7 @@ func checkauthorization(authtoken string) bool {
 func login(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
-	//pw := r.FormValue("pw")
+	//pw := r.FormValue("pword")
 	userid := r.FormValue("userid")
 	//userpassword := r.FormValue("userpassword")
 	userdata = "\n"
@@ -894,7 +898,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashdata, readerr := os.ReadFile(HashLocation)
+	hashdata, readerr := os.ReadFile(config.HashLocation)
 	if readerr != nil {
 		log.Println("ERROR Preferences readerr ", readerr)
 	}
@@ -912,9 +916,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	errpw := bcrypt.CompareHashAndPassword([]byte(hashdata), []byte(r.FormValue("pword")))
 	if errpw != nil {
 		iserrors = true
-		log.Println("Login Bad Hash ", errpw)
+		log.Println("Login Bad Hash ", errpw, r.FormValue("pword"))
 	}
 	if iserrors {
+		//log.Println("login is errors ", hashdata, " from password", pwh)
 		w.Write([]byte(ilogon()))
 		return
 	}
@@ -938,7 +943,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	tobrowser := config.Encrypt(string(js), config.MySecret)
 	//r.Header.Set("Authorization", authtoken)
-
+	//log.Println("myuser action", myuser.Userauthaction)
+	go config.ReceiveMESSAGE()
 	w.Write([]byte(ibuilder(tobrowser)))
 }
 
@@ -956,19 +962,19 @@ func arrayhas(a []string, v string) bool {
 }
 
 // displayMessages - show any messages stored in nats
-func displayMessages(authtoken string) string {
-	config.ReceiveMESSAGE()
+func displayMessages() string {
+
 	var builder strings.Builder
+	builder.WriteString("<tr style=\"background-color: #ea6f6a;\">\n")
+	builder.WriteString("	 <td colspan=\"9\">" + "Error Messages - Displays Once - Take a Screen Shot" + "</td>\n")
+	builder.WriteString(" </tr>\n")
 	for _, msg := range config.NatsMessages {
-		builder.WriteString(" </tr>\n")
+
+		builder.WriteString("<tr style=\"background-color: #ea6f6a;\">\n")
 		builder.WriteString("	 <td colspan=\"1\">" + msg.MSalias + "</td>\n")
-		builder.WriteString("	 <td colspan=\"1\">" + msg.MSmessage + "</td>\n")
-		builder.WriteString("	 <td colspan=\"1\">" + msg.MSdate + "</td>\n")
-
-		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
-		builder.WriteString("<td colspan=\"4\"><input type=\"hidden\" name=\"fileid\" id=\"fileid\" value=\"" + strconv.Itoa(inv.Row) + "\" /></td>\n")
+		builder.WriteString("	 <td colspan=\"4\">" + msg.MSmessage + "</td>\n")
+		builder.WriteString("	 <td colspan=\"4\">" + msg.MSdate + "</td>\n")
 		builder.WriteString(" </tr>\n")
-
 	}
 	return builder.String()
 }
@@ -1018,7 +1024,7 @@ func ibuilder(authtoken string) string {
 	s.WriteString("	       <th colspan=\"1\"><img src=\"logo.png\" alt=\"Broadcast Radio\" style=\"width:128px;height:128px;\"></th>\n")
 	s.WriteString("	       <th colspan=\"8\">Broadcat Web Interface<br>New Horizons 3000</th>\n")
 	s.WriteString("	     </tr>\n")
-
+	s.WriteString(displayMessages())
 	if arrayhas(SessionAction, "ALL") || arrayhas(SessionAction, "Upload/Download") {
 		s.WriteString("	     <tr>\n")
 		s.WriteString("           <form enctype=\"multipart/form-data\" action=\"" + config.WebAddress + "/upload\" method=\"post\">\n")
@@ -1087,7 +1093,7 @@ func ibuilder(authtoken string) string {
 		s.WriteString("             <option value=\"28\">28 Days</option>")
 		s.WriteString("             <option value=\"90\">90 Days</option>")
 		s.WriteString("            </select></td>")
-		s.WriteString("          <td colspan=\"1\"><select name=\"Categories1\" id=\"categories1\">")
+		s.WriteString("          <td colspan=\"1\"><select name=\"Categories2\" id=\"categories2\">")
 		s.WriteString(config.TrafficGetAlbum("-2160"))
 		s.WriteString("          </select></td>")
 		s.WriteString("          <td colspan=\"2\"><input type=\"submit\" value=\"Ad History\" style=\"color: #4c14e477;\" /></td>\n")
