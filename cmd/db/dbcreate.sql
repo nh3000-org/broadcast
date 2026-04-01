@@ -63,6 +63,7 @@ create table categories (
 insert into categories (id,description) values('STATIONID', 'Station ID');
 insert into categories (id,description) values('IMAGINGID', 'Imaging ID');
 insert into categories (id,description) values('PROMOS', 'Promotions');
+insert into categories (id,description) values('ROOTS', 'Roots Rock');
 insert into categories (id,description)  values('NEXT', 'Play Next');
 insert into categories (id,description) values('ADS', 'ADS - Advertising Top Of Hour');
 insert into categories (id,description) values('CURRENTS', 'Top 40 Currents');
