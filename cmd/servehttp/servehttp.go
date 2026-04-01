@@ -966,7 +966,7 @@ func displayMessages() string {
 
 	var builder strings.Builder
 	builder.WriteString("<tr style=\"background-color: #ea6f6a;\">\n")
-	builder.WriteString("	 <td colspan=\"9\">" + "Error Messages - Displays Once - Take a Screen Shot" + "</td>\n")
+	builder.WriteString("	 <td colspan=\"9\">" + "Error Messages - Click Refresh to Renew - Displays Once - Take a Screen Shot" + "</td>\n")
 	builder.WriteString(" </tr>\n")
 	for _, msg := range config.NatsMessages {
 
