@@ -660,7 +660,7 @@ func SetupNATS() {
 			Name:      "MESSAGES",
 			Subjects:  []string{"messages.*", "events.*", "authorizations.*", "devices.*"},
 			Storage:   nats.FileStorage,
-			MaxAge:    1024 * time.Hour,
+			MaxAge:    161 * time.Hour,
 			FirstSeq:  1,
 			Retention: nats.LimitsPolicy,
 		})
@@ -671,7 +671,7 @@ func SetupNATS() {
 			Name:      "TRAFFIC",
 			Subjects:  []string{"spins.*", "clicks.*", "onair.*"},
 			Storage:   nats.FileStorage,
-			MaxAge:    204800 * time.Hour,
+			MaxAge:    161 * time.Hour,
 			FirstSeq:  1,
 			Retention: nats.LimitsPolicy,
 		})
