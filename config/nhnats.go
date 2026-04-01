@@ -736,7 +736,7 @@ func ReceiveMESSAGE() {
 			rmmeta, _ := rmmsg.Metadata()
 			runtime.GC()
 			runtime.ReadMemStats(&memoryStats)
-			rmmsg.Ack()
+			rmmsg.Nak()
 			ms := MessageStore{}
 			jsaonerr := json.Unmarshal([]byte(string(Decrypt(string(rmmsg.Data()), NatsQueuePassword))), &ms)
 			if jsaonerr != nil {
