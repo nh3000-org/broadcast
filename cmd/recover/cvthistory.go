@@ -7,9 +7,11 @@
 // data [exp/expcontent]
 
 /*
-cvthistory restore historically after recovery.
+cvthistory restore historic values after recovery.
 
 Use this after importing a stub into a fresh database build.
+The metrics for a given item are restored to the dump values.
+This is required to match the new row ids to the restored content.
 
 Usage:
 
@@ -37,16 +39,20 @@ import (
 
 // processTraffic - writes all the historical data
 // to the database
-// does not process duplicates 
-func processTraffic(is TrafficStruct, station string) {
+// does not process duplicates
+func processTraffic(ts TrafficStruct, station, verbose, test string) {
 
 }
 
 // processInventory - updates the existing content with
 // historical data
-// do no process duplicates
-func processInventlory(ts InventoryStruct, station string) {
-
+func processInventory(is InventoryStruct, station, verbose, test string) {
+	// lookup up item by artist, song and album
+	row := config.InventoryGetRowRecovery(is.Artist, is.Song, is.Album)
+	// update with dump values
+	if row != "0" {
+		config.InventoryUpdateRecovery(row, is.Length, is.Startson, is.Expireson, is.Adtimeslots, is.Adayslots, is.Admaxspinsadsmaxspins, is.Admaxspinsperhour, is.Lastplayed, is.Dateadded, is.Spinstoday, is.SpinsPerWeek, is.Spinstotal)
+	}
 }
 
 // readSQl process the sql dump from postgresql
@@ -147,7 +153,7 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 				if index == 17 { // spins total
 					i.Spinstotal = value
 				}
-				processInventlory(i, station)
+				processInventory(i, station, verbose, test)
 			}
 			if verbose == "true" {
 				fmt.Printf("%#v\n", i)
@@ -174,7 +180,7 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 				if index == 5 { // played on
 					i.Playedon = value
 				}
-				processTraffic(i, station)
+				processTraffic(i, station, verbose, test)
 			}
 			if verbose == "true" {
 				fmt.Printf("%#v\n", i)

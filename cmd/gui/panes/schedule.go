@@ -9,7 +9,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/nh3000-org/broadcast/config"
-	//"github.com/nh3000-org/radio/config"
 )
 
 func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
@@ -159,7 +158,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 		savebutton := widget.NewButtonWithIcon("Save Schedule", theme.ContentCopyIcon(), func() {
 			myrow, _ := strconv.Atoi(edrow.Text)
 			myspins, _ := strconv.Atoi(edspins.Selected)
-			config.ScheduleUpdate(myrow, edday.Selected, edhour.Selected, edpos.Selected, EDcategory.Selected, myspins)
+			config.ScheduleUpdate(myrow, edday.Selected, edhour.Selected, edpos.Selected, ED2category.Selected, myspins)
 			config.ScheduleSel(laselday.Selected, laselhour.Selected)
 			config.FyneScheduleList.Refresh()
 		})

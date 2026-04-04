@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict eDFb3U2PUXNYIXcf12m4d8PhLnaKxJszb81R6rHEZ3TCieakQaJA4toKV0Na0OV
+\restrict Fa5SfiNcynbvfAU4prSuFZsEmAzIsuhhX43c8dNAepELiuOpyQ7WcyTUaS7r2nQ
 
 -- Dumped from database version 17.8 (Ubuntu 17.8-1.pgdg22.04+1)
 -- Dumped by pg_dump version 17.8 (Ubuntu 17.8-1.pgdg22.04+1)
@@ -351,40 +351,41 @@ COPY public.categories (rowid, id, description) FROM stdin;
 1	STATIONID	Station ID
 2	IMAGINGID	Imaging ID
 3	PROMOS	Promotions
-4	NEXT	Play Next
-5	ADS	ADS - Advertising Top Of Hour
-6	CURRENTS	Top 40 Currents
-7	RECURRENTS	Recurrents Library
-8	NWS-1-PLAYONCE	NWS Spots 6 30 Bot AM Play Once
-9	NWS-2-PLAYONCE	NWS Spots 7 00 Bot AM Play Once
-10	NWS-3-PLAYONCE	NWS Spots 7 30 Bot AM Play Once
-11	NWS-4-PLAYONCE	NWS Spots 8 00 Bot AM Play Once
-12	NWS-5-PLAYONCE	NWS Spots 8 30 Bot AM Play Once
-13	DJAM-71-PLAYONCE	DJ Morning Spots 7 Top AM Play Once
-14	DJAM-72-PLAYONCE	DJ Morning Spots 7 Bot AM Play Once
-15	DJAM-81-PLAYONCE	DJ Morning Spots 8 Top AM Play Once
-16	DJAM-82-PLAYONCE	DJ Morning Spots 8 Bot AM Play Once
-17	DJAM-91-PLAYONCE	DJ Morning Spots 9 TopAM Play Once
-18	DJAM-92-PLAYONCE	DJ Morning Spots 9 Bot AM Play Once
-19	DJAM-101-PLAYONCE	DJ Morning Spots 10 Top AM Play Once
-20	DJAM-102-PLAYONCE	DJ Morning Spots 10 Bot AM Play Once
-21	DJAM-111-PLAYONCE	DJ Morning Spots 11 Top AM Play Once
-22	DJAM-112-PLAYONCE	DJ Morning Spots 11 Bot AM Play Once
-23	DJPM-121-PLAYONCE	DJ Afternoon Spots 12 Top AM Play Once
-24	DJPM-122-PLAYONCE	DJ Afternoon Spots 12 Bot AM Play Once
-25	DJPM-131-PLAYONCE	DJ Afternoon Spots 13 Top PM Play Once
-26	DJPM-132-PLAYONCE	DJ Afternoon Spots 13 Bot PM Play Once
-27	DJPM-141-PLAYONCE	DJ Afternoon Spots 14 Top PM Play Once
-28	DJPM-142-PLAYONCE	DJ Afternoon Spots 14 Bot PM Play Once
-29	DJPM-151-PLAYONCE	DJ Afternoon Spots 15 Top PM Play Once
-30	DJPM-152-PLAYONCE	DJ Afternoon Spots 15 Bot PM Play Once
-31	DJPM-161-PLAYONCE	DJ Afternoon Spots 16 Top PM Play Once
-32	DJPM-162-PLAYONCE	DJ Afternoon Spots 16 Bot PM Play Once
-33	DJPM-141-PLAYONCE	DJ Afternoon Spots 17 Top PM Play Once
-34	DJPM-172-PLAYONCE	DJ Afternoon Spots 17 Bot PM Play Once
-35	DJPM-181-PLAYONCE	DJ Afternoon Spots 18 Top PM Play Once
-36	DJPM-182-PLAYONCE	DJ Afternoon Spots 18 Bot PM Play Once
-37	FILLTOTOH	Fill To TOH Schedule
+4	ROOTS	Roots Rock
+5	NEXT	Play Next
+6	ADS	ADS - Advertising Top Of Hour
+7	CURRENTS	Top 40 Currents
+8	RECURRENTS	Recurrents Library
+9	NWS-1-PLAYONCE	NWS Spots 6 30 Bot AM Play Once
+10	NWS-2-PLAYONCE	NWS Spots 7 00 Bot AM Play Once
+11	NWS-3-PLAYONCE	NWS Spots 7 30 Bot AM Play Once
+12	NWS-4-PLAYONCE	NWS Spots 8 00 Bot AM Play Once
+13	NWS-5-PLAYONCE	NWS Spots 8 30 Bot AM Play Once
+14	DJAM-71-PLAYONCE	DJ Morning Spots 7 Top AM Play Once
+15	DJAM-72-PLAYONCE	DJ Morning Spots 7 Bot AM Play Once
+16	DJAM-81-PLAYONCE	DJ Morning Spots 8 Top AM Play Once
+17	DJAM-82-PLAYONCE	DJ Morning Spots 8 Bot AM Play Once
+18	DJAM-91-PLAYONCE	DJ Morning Spots 9 TopAM Play Once
+19	DJAM-92-PLAYONCE	DJ Morning Spots 9 Bot AM Play Once
+20	DJAM-101-PLAYONCE	DJ Morning Spots 10 Top AM Play Once
+21	DJAM-102-PLAYONCE	DJ Morning Spots 10 Bot AM Play Once
+22	DJAM-111-PLAYONCE	DJ Morning Spots 11 Top AM Play Once
+23	DJAM-112-PLAYONCE	DJ Morning Spots 11 Bot AM Play Once
+24	DJPM-121-PLAYONCE	DJ Afternoon Spots 12 Top AM Play Once
+25	DJPM-122-PLAYONCE	DJ Afternoon Spots 12 Bot AM Play Once
+26	DJPM-131-PLAYONCE	DJ Afternoon Spots 13 Top PM Play Once
+27	DJPM-132-PLAYONCE	DJ Afternoon Spots 13 Bot PM Play Once
+28	DJPM-141-PLAYONCE	DJ Afternoon Spots 14 Top PM Play Once
+29	DJPM-142-PLAYONCE	DJ Afternoon Spots 14 Bot PM Play Once
+30	DJPM-151-PLAYONCE	DJ Afternoon Spots 15 Top PM Play Once
+31	DJPM-152-PLAYONCE	DJ Afternoon Spots 15 Bot PM Play Once
+32	DJPM-161-PLAYONCE	DJ Afternoon Spots 16 Top PM Play Once
+33	DJPM-162-PLAYONCE	DJ Afternoon Spots 16 Bot PM Play Once
+34	DJPM-141-PLAYONCE	DJ Afternoon Spots 17 Top PM Play Once
+35	DJPM-172-PLAYONCE	DJ Afternoon Spots 17 Bot PM Play Once
+36	DJPM-181-PLAYONCE	DJ Afternoon Spots 18 Top PM Play Once
+37	DJPM-182-PLAYONCE	DJ Afternoon Spots 18 Bot PM Play Once
+38	FILLTOTOH	Fill To TOH Schedule
 \.
 
 
@@ -933,7 +934,7 @@ COPY public.webusers (rowid, userrole, userpassword, userpasswordhash, userauthc
 -- Name: categories_rowid_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.categories_rowid_seq', 37, true);
+SELECT pg_catalog.setval('public.categories_rowid_seq', 38, true);
 
 
 --
@@ -1108,5 +1109,5 @@ CREATE INDEX userindex ON public.webusers USING btree (userpassword);
 -- PostgreSQL database dump complete
 --
 
-\unrestrict eDFb3U2PUXNYIXcf12m4d8PhLnaKxJszb81R6rHEZ3TCieakQaJA4toKV0Na0OV
+\unrestrict Fa5SfiNcynbvfAU4prSuFZsEmAzIsuhhX43c8dNAepELiuOpyQ7WcyTUaS7r2nQ
 

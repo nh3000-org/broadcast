@@ -1225,6 +1225,48 @@ func InventoryGetRowByRow(rowin string) string {
 	return strconv.Itoa(row)
 
 }
+var igetrecoveryiderr error
+var igetrowrecoveryiderr error
+var igetrowrecoveryid pgx.Rows
+
+func InventoryGetRowRecovery(artist,song,album string) string {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 5*time.Second)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	_, igetrecoveryiderr = conn.Conn().Prepare(context.Background(), "igetrowrecoveryid", "select rowid from inventory  where artist = $1 and song=$2 and album=$3")
+	if igetrecoveryiderr != nil {
+		log.Println("[PID] igetrowrecoveryid", igetrecoveryiderr)
+		Send("messages."+"InventoryGetRowRecoveryCount", "[IGETROWRECOVERY] Prepare Get Count "+igetrecoveryiderr.Error(), "http")
+	}
+
+	igetrowrecoveryid, igetrowrecoveryiderr = conn.Query(context.Background(), "igetrowrecoveryid", artist,song,album)
+	if igetrowiderr != nil {
+		Send("messages."+"InventoryGetRowRecovery", "[IGETROW] Prepare Inventory Read PID "+igetrowrecoveryiderr.Error(), "http")
+		log.Fatal("Error reading inventory IGETROWRECOVERY", igetrowrecoveryiderr)
+	}
+
+	//rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where rowid = '"+rowin+"'")
+	var row int // rowid
+
+	for igetrowid.Next() {
+		err := igetrowid.Scan(&row)
+		if err != nil {
+			log.Println("InventoryGetID Inventory row", err)
+			conn.Release()
+			ctxsqlcan()
+			return "0"
+		}
+
+	}
+	/* 	if rowserr != nil {
+		log.Println("InventoryGet Get Inventory row error", rowserr)
+	} */
+	conn.Release()
+	ctxsqlcan()
+	//log.Println("getrow ", row)
+	return strconv.Itoa(row)
+
+}
 
 func InventoryDelete(row int) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
@@ -1249,7 +1291,17 @@ func InventoryUpdate(row int, category string, artist string, song string, album
 	conn.Release()
 	ctxsqlcan()
 }
+func InventoryUpdateRecovery(row ,songlength,startson , expireson string, adstimeslots []string, adsdayslots []string, adsmaxspins int, adsmaxspinsperhour int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 5*time.Second)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+	_, rowserr := conn.Exec(ctxsql, "update inventory set  songlength = $1, startson = $2,expireson = $3, adstimeslots = $4, adsdayslots = $5,adsmaxspins = $6, adsmaxspinsperhour = $7,lastplayed = $8, dateadded = $9, spinstoday = $10, spinsweek = $11, spinstotal = $12 , where rowid = $13",  songlength,  startson, expireson, adstimeslots, adsdayslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal,  row)
 
+	if rowserr != nil {
+		log.Println("Inventory Update Recovery row error", rowserr)
+	}
+	conn.Release()
+	ctxsqlcan()
+}
 func InventoryAdd(category string, artist string, song string, album string, songlength int, rndorder string, startson string, expireson string, adstimeslots []string, adsdayslots []string, adsmaxspins int, adsmaxspinsperhour int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int, sourcelink string) int {
 
 	var iactxsql context.Context
