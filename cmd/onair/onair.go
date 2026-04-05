@@ -1,3 +1,25 @@
+// Package onair is used play the schedule
+// with available content
+//
+// This provides the onair broadcast and
+// autostarts when the system is turned on
+//
+// It requires NATS and POSTGRESQL services to be initialized
+
+/*
+onair plays the broadcast schedule.
+
+Usage:
+
+	  onair [flags] [path...]
+
+	  The flags are:
+
+	    -schedday MON TUE WED THU FRI SAT SUN
+		-schedhour 00 - 23
+		-logging true or false
+		These are overideds for use during testing
+*/
 package main
 
 import (
@@ -15,19 +37,13 @@ import (
 	"time"
 
 	"github.com/gopxl/beep"
-
-	//"github.com/gopxl/beep/mp3"
 	"github.com/gopxl/beep/mp3"
 	"github.com/gopxl/beep/speaker"
 	"github.com/gopxl/beep/wav"
 
-	/* 	"github.com/ebitengine/oto/v3"
-	   	"github.com/go-audio/wav"
-	   	"github.com/hajimehoshi/go-mp3" */
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nh3000-org/broadcast/config"
-	//"github.com/nh3000-org/radio/config"
 )
 
 var memoryStats runtime.MemStats
@@ -38,15 +54,11 @@ var schedhour string   // 00 .. 23
 var logto bool
 var tohcount int
 
-//var moh = 0
-
-// schedule
 var days string
 var hours string
 var position string
 var categories string
 
-// inventory
 var rowid string
 var category string
 var artist string
@@ -82,6 +94,8 @@ var nextrowserr error
 var nexterr error
 var erramm error
 
+// playnext - interups schedule to play the contents of the
+// NEXT category
 func playNext() {
 	nextgetconn, _ = config.SQL.Pool.Acquire(context.Background())
 	_, errnextget = nextgetconn.Conn().Prepare(context.Background(), "next", "select * from inventory where category = 'NEXT'")
@@ -141,6 +155,9 @@ var pidinvupdconn *pgxpool.Conn
 var piderrinventoryupd error
 var tohhour string
 
+// adjustToTopOfHour - fills the schedule to the top of
+// hour with RECURRENTS and every 2 plays inserts
+// an IMAGINGID then advances the next hour part
 func adjustToTopOfHour() {
 
 	tohmin = float64(time.Now().Minute())
@@ -239,15 +256,9 @@ func adjustToTopOfHour() {
 	getNextHourPart()
 }
 
-//var pidaddconn *pgxpool.Conn
-//var pidaddconnerr error
-//var errpidadd *pgxpool.Conn
-//var pidadderr error
-
+// playImagingId - plays on the schedule from topofhour
 func playImagingId() {
-	/* 	if logto {
-		log.Println("[PID]", "DAY", playingday, "HOUR", playinghour)
-	} */
+
 	pidgetconn, _ = config.SQL.Pool.Acquire(context.Background())
 	_, pidnextget = pidgetconn.Conn().Prepare(context.Background(), "pid", "select * from inventory where category = 'IMAGINGID' order by lastplayed, rndorder limit 1")
 	if pidnextget != nil {
@@ -317,6 +328,8 @@ func playImagingId() {
 	pidgetconn.Release()
 
 }
+
+// getNextDay - handles day part of schedule
 func getNextDay() {
 	clearSpinsPerDayCount()
 	if playingday == "MON" {
