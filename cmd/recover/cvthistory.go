@@ -5,23 +5,6 @@
 // This provides restoring values from a restore
 // path to the database such as inventory ad and traffic
 // data [exp/expcontent]
-
-/*
-cvthistory restore historic values after recovery.
-
-Use this after importing a stub into a fresh database build.
-The metrics for a given item are restored to the dump values.
-This is required to match the new row ids to the restored content.
-
-Usage:
-
-	  cvthistory [flags] [path...]
-
-	  The flags are:
-
-	    -v output debug info
-		-t test run does not update data base
-*/
 package main
 
 import (
@@ -212,7 +195,7 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 				if index == 5 { // played on
 					i.Playedon = value
 				}
-				
+
 			}
 			processTraffic(i, station, verbose, test)
 			if verbose == "true" {
@@ -229,6 +212,23 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 	}
 
 }
+
+/*
+cvthistory restore historic values after recovery.
+
+Use this after importing a stub into a fresh database build.
+The metrics for a given item are restored to the dump values.
+This is required to match the new row ids to the restored content.
+
+Usage:
+
+	  cvthistory [flags] [path...]
+
+	  The flags are:
+
+	    -v output debug info
+		-t test run does not update data base
+*/
 func main() {
 	rootImport := flag.String("rootimport", "./", "-rootimport base directory of SQL export from postgresql files")
 	stationid := flag.String("stationid", "WVOD", "-stationid call letters of station")
