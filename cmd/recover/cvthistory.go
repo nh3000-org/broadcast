@@ -26,6 +26,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -41,17 +42,46 @@ import (
 // to the database
 // does not process duplicates
 func processTraffic(ts TrafficStruct, station, verbose, test string) {
-
+	cd := config.TrafficCheckDuplicate(ts.Playedon,ts.Album)
+	if cd != 0 {
+		log.Println("processTraffic Found Duplicate ",ts.Album,ts.Playedon,ts.Album,ts.Artist)
+		return
+	}
+	if test == "false" {
+		config.TrafficAdd(ts.Category,ts.Artist,ts.Song,ts.Album,ts.Playedon)
+	}
+	if verbose == "true" {
+		log.Println("Traffic Added",ts.Category, ts.Artist, ts.Song, ts.Album, ts.Playedon)
+	}
 }
 
 // processInventory - updates the existing content with
 // historical data
+var Admaxspins int
+var Admaxspinsperhour int
+var Spinstoday int
+var SpinsPerWeek int
+var Spinstotal int
+
 func processInventory(is InventoryStruct, station, verbose, test string) {
 	// lookup up item by artist, song and album
 	row := config.InventoryGetRowRecovery(is.Artist, is.Song, is.Album)
 	// update with dump values
 	if row != "0" {
-		config.InventoryUpdateRecovery(row, is.Length, is.Startson, is.Expireson, is.Adtimeslots, is.Adayslots, is.Admaxspinsadsmaxspins, is.Admaxspinsperhour, is.Lastplayed, is.Dateadded, is.Spinstoday, is.SpinsPerWeek, is.Spinstotal)
+		//convert string to int
+		Admaxspins, _ = strconv.Atoi(is.Admaxspins)
+		Admaxspinsperhour, _ = strconv.Atoi(is.Admaxspinsperhour)
+		Spinstoday, _ = strconv.Atoi(is.Spinstoday)
+		SpinsPerWeek, _ = strconv.Atoi(is.Spinsweek)
+		Spinstotal, _ = strconv.Atoi(is.Spinstotal)
+		if test == "false" {
+			config.InventoryUpdateRecovery(row, is.Length, is.Startson, is.Expireson, is.Adtimeslots, is.Addayslots, Admaxspins, Admaxspinsperhour, is.Lastplayed, is.Dateadded, Spinstoday, SpinsPerWeek, Spinstotal)
+		}
+	}
+	if verbose == "true" {
+		if row == "0" {
+			log.Println("processInventory Database record not found", is.Artist, is.Song, is.Album)
+		}
 	}
 }
 
@@ -199,8 +229,8 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 func main() {
 	rootImport := flag.String("rootimport", "./", "-rootimport base directory of SQL export from postgresql files")
 	stationid := flag.String("stationid", "WVOD", "-stationid call letters of station")
-	verbose := flag.String("v", "false", "-v print execution plan")
-	test := flag.String("t", "false", "-t test execution no poatgresql update")
+	verbose := flag.String("v", "true", "-v print execution plan")
+	test := flag.String("t", "true", "-t test execution no poatgresql update")
 
 	flag.Parse()
 	log.Println("init path:", *rootImport, "station:", *stationid, "verbose:", *verbose, "test", *test)

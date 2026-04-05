@@ -222,7 +222,8 @@ func adjustToTopOfHour() {
 				config.Send("messages."+StationId, "Inventory Update TOH "+toherrinventoryupd.Error(), "onair")
 			}
 			tohinvupdconn.Release()
-			addToTraffic("FILLTOTOH", artist, song, album, played[0:19])
+			config.TrafficAdd("FILLTOTOH", artist, song, album, played[0:19])
+			//addToTraffic("FILLTOTOH", artist, song, album, played[0:19])
 			if tohspins < 1 {
 				break
 			}
@@ -308,8 +309,8 @@ func playImagingId() {
 			config.Send("messages."+StationId, "Inventory Update PID "+piderrinventoryupd.Error(), "onair")
 		}
 		pidinvupdconn.Release()
-
-		addToTraffic("FILLTOTOH", artist, song, album, played[0:19])
+		config.TrafficAdd("FILLTOTOH", artist, song, album, played[0:19])
+		//addToTraffic("FILLTOTOH", artist, song, album, played[0:19])
 
 	}
 
@@ -593,7 +594,7 @@ func readPreferences() {
 }
 
 // add to traffic
-func addToTraffic(category, artist, song, album, playedon string) {
+/* func addToTraffic(category, artist, song, album, playedon string) {
 	trafficaddconn, trafficaddconnerr = config.SQL.Pool.Acquire(context.Background())
 	if trafficaddconnerr != nil {
 		log.Println("[main] Prepare trafficadd", trafficaddconnerr)
@@ -613,7 +614,7 @@ func addToTraffic(category, artist, song, album, playedon string) {
 		config.Send("messages."+StationId, "[main] Updating Inventory "+trafficadderr.Error(), "onair")
 	}
 	trafficaddconn.Release()
-}
+} */
 
 var itemlength = 0
 var StationId = ""
@@ -967,8 +968,8 @@ func main() {
 					// update statistics
 					played = config.GetDateTime("0h")
 					if (strings.HasPrefix(category, "ADS") && playtheads) || strings.HasPrefix(category, "NWS") || strings.HasPrefix(category, "DJ") || strings.HasPrefix(category, "PROMOS") || strings.HasPrefix(category, "IMAGINGID") {
-
-						addToTraffic(category, artist, song, album, played[0:19])
+						config.TrafficAdd(category, artist, song, album, played[0:19])
+						//addToTraffic(category, artist, song, album, played[0:19])
 
 					}
 					spinsweek, _ = strconv.Atoi(week)

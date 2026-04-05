@@ -1225,11 +1225,12 @@ func InventoryGetRowByRow(rowin string) string {
 	return strconv.Itoa(row)
 
 }
+
 var igetrecoveryiderr error
 var igetrowrecoveryiderr error
 var igetrowrecoveryid pgx.Rows
 
-func InventoryGetRowRecovery(artist,song,album string) string {
+func InventoryGetRowRecovery(artist, song, album string) string {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 5*time.Second)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
 
@@ -1239,7 +1240,7 @@ func InventoryGetRowRecovery(artist,song,album string) string {
 		Send("messages."+"InventoryGetRowRecoveryCount", "[IGETROWRECOVERY] Prepare Get Count "+igetrecoveryiderr.Error(), "http")
 	}
 
-	igetrowrecoveryid, igetrowrecoveryiderr = conn.Query(context.Background(), "igetrowrecoveryid", artist,song,album)
+	igetrowrecoveryid, igetrowrecoveryiderr = conn.Query(context.Background(), "igetrowrecoveryid", artist, song, album)
 	if igetrowiderr != nil {
 		Send("messages."+"InventoryGetRowRecovery", "[IGETROW] Prepare Inventory Read PID "+igetrowrecoveryiderr.Error(), "http")
 		log.Fatal("Error reading inventory IGETROWRECOVERY", igetrowrecoveryiderr)
@@ -1291,10 +1292,10 @@ func InventoryUpdate(row int, category string, artist string, song string, album
 	conn.Release()
 	ctxsqlcan()
 }
-func InventoryUpdateRecovery(row ,songlength,startson , expireson string, adstimeslots []string, adsdayslots []string, adsmaxspins int, adsmaxspinsperhour int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int) {
+func InventoryUpdateRecovery(row, songlength, startson, expireson string, adstimeslots string, adsdayslots string, adsmaxspins int, adsmaxspinsperhour int, lastplayed string, dateadded string, spinstoday int, spinsweek int, spinstotal int) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 5*time.Second)
 	conn, _ := SQL.Pool.Acquire(ctxsql)
-	_, rowserr := conn.Exec(ctxsql, "update inventory set  songlength = $1, startson = $2,expireson = $3, adstimeslots = $4, adsdayslots = $5,adsmaxspins = $6, adsmaxspinsperhour = $7,lastplayed = $8, dateadded = $9, spinstoday = $10, spinsweek = $11, spinstotal = $12 , where rowid = $13",  songlength,  startson, expireson, adstimeslots, adsdayslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal,  row)
+	_, rowserr := conn.Exec(ctxsql, "update inventory set  songlength = $1, startson = $2,expireson = $3, adstimeslots = $4, adsdayslots = $5,adsmaxspins = $6, adsmaxspinsperhour = $7,lastplayed = $8, dateadded = $9, spinstoday = $10, spinsweek = $11, spinstotal = $12 , where rowid = $13", songlength, startson, expireson, adstimeslots, adsdayslots, adsmaxspins, adsmaxspinsperhour, lastplayed, dateadded, spinstoday, spinsweek, spinstotal, row)
 
 	if rowserr != nil {
 		log.Println("Inventory Update Recovery row error", rowserr)
@@ -2405,6 +2406,74 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 
 }
 
+var errtrafficadd error
+var trafficadderr error 
+
+func TrafficAdd(category, artist, song, album, playedon string) {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+
+	if connerr != nil {
+		log.Println("TrafficAdd", connerr)
+		ctxsqlcan()
+		return 
+	}
+	_, errtrafficadd = conn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (category,artist, song,album,playedon) values($1,$2,$3,$4,$5)")
+	if errtrafficadd != nil {
+		log.Println("[main] Prepare trafficadd", errtrafficadd)
+		Send("messages."+"TRAFFFIC", "[main] Prepare trafficadd "+errtrafficadd.Error(), "onair")
+	}
+	//log.Println("adding inventory to traffic adding", song)
+
+	_, trafficadderr = conn.Exec(context.Background(), "trafficadd", category, artist, song, album, playedon[0:19])
+	if trafficadderr != nil {
+		log.Println("[main] updating inventory " + trafficadderr.Error())
+		Send("messages."+"TRAFFIC", "[main] Updating Inventory "+trafficadderr.Error(), "onair")
+	}
+	conn.Release()
+}
+var igettcderr error
+
+func TrafficCheckDuplicate(date, alb string) int {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, connerr := SQL.Pool.Acquire(ctxsql)
+
+	if connerr != nil {
+		log.Println("TrafficGetCountByAlbum", connerr)
+		ctxsqlcan()
+		return 0
+	}
+
+	count := 0
+	_, igettcderr = conn.Conn().Prepare(context.Background(), "igettcbacount", "select count(*)  from traffic where playedon like $1 and album = $2")
+	if igettcderr != nil {
+		log.Println("[IGTCBA] nextgetconn", igettcderr)
+		Send("messages."+"InventoryTrafficCD", "[IGTTCD] Prepare Get Count "+igettcderr.Error(), "http")
+	}
+
+	rows, rowserr := conn.Query(context.Background(), "igettcbacount", date, alb)
+
+	//rc, rowserr := conn.Query(ctxsql, "select count(*)  from traffic where playedon like '"+date+"%' and album ='"+alb+"'")
+	if rowserr != nil {
+		log.Println("TrafficGetCountByAlbum rowserr", rowserr)
+		conn.Release()
+		ctxsqlcan()
+		return 0
+	}
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			log.Println("TrafficGetCountByAlbum rowserr playedon", err)
+		}
+		//log.Println("TrafficGetCountByAlbum ", date, alb, count)
+
+	}
+
+	conn.Release()
+	ctxsqlcan()
+	return count
+
+}
 var igettcbaerr error
 
 func TrafficGetCountByAlbum(date, alb string) int {
