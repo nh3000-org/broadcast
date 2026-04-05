@@ -375,6 +375,8 @@ func getNextDay() {
 var cspwgetconn *pgxpool.Conn
 var cspwerr error
 
+// clearSpinsPerWeekCount - as part of charting
+// report the currents spins per week every monday at 00
 func clearSpinsPerWeekCount() {
 	if logto {
 		log.Println("[clearSpinsPerWeekCount]")
@@ -392,6 +394,7 @@ func clearSpinsPerWeekCount() {
 
 }
 
+// clearSpinsPerDayCount - runs nightly at 00
 func clearSpinsPerDayCount() {
 	if logto {
 		log.Println("[clearSpinsPerDayCount]")
@@ -413,6 +416,7 @@ func clearSpinsPerDayCount() {
 var hp int
 var hperr error
 
+// getNextHourPart - occurs after every fillToTopOfHour
 func getNextHourPart() {
 	//adjustToTopOfHour()
 	if logto {
@@ -448,19 +452,11 @@ func getNextHourPart() {
 
 var elapsed = 0
 var fileid string
-
 var fileBytes []byte
-
-// var fileBytesReader *bytes.Reader
 var t time.Time
 
-//var decodedMp3 *mp3.Decoder
-//var decodedMp3err error
-//var decoderWav *wav.Decoder
-//var decodedWaverr error
-//var player *oto.Player
-//var sz uint64
-
+// playWav - plays a wav file from the NATS store and determines
+// if an intro or outro for currents is needed
 func PlayWAV(song string, cat string) int {
 	elapsed = 0
 	//log.Println("playwav", song, cat)
@@ -517,6 +513,8 @@ func PlayWAV(song string, cat string) int {
 	return int(elapsed.Seconds())
 }
 
+// PlayMP3 plays an mp3 from the NATS store and determines
+// if an intro or outro is needed for currents
 func PlayMP3(song string, cat string) int {
 
 	elapsed = 0
@@ -570,6 +568,7 @@ func PlayMP3(song string, cat string) int {
 	return int(elapsed.Seconds())
 }
 
+// readPreferences - get data from the user store
 func readPreferences() {
 	// read config preferences.json
 	jsondata, readerr := os.ReadFile(config.PreferencesLocation)
@@ -665,8 +664,6 @@ var errremove error
 var errremovei error
 var errremoveo error
 
-//var otoctx oto.Context
-
 func main() {
 	hourtimingstart = time.Now()
 	schedDay := flag.String("schedday", "MON", "-schedday MON || TUE || WED || THU || FRI || SAT || SUN")
@@ -705,16 +702,8 @@ func main() {
 	log.Println("TEST from cli", schedDay, schedHour)
 	log.Println("TEST day hour minute station logging", playingday, playinghour, pm, *stationId, *Logging)
 
-	//playingday = *schedDay
-	//playinghour = *schedHour
-
 	log.Println("Startup Parms:", actschedday, *schedHour, *stationId, *Logging)
 	readPreferences()
-	//config.NewPGSQL()
-	//config.NewNatsJS()
-	//log.Println(config.NatsBucketType)
-
-	//otoctx = playsetup()
 
 	if *Logging == "true" {
 		logto = true
@@ -899,10 +888,7 @@ func main() {
 							tdate := config.GetDateTime("0h")[0:10]
 
 							v := pomap[tdate+"."+playinghour]
-							// TODO FORCE ADDS
-							//log.Println("ADS PLAYING 1 per hour:")
-							//targetmaxspinsperhour = 1
-							//log.Println("ADS count from history v", v, "max", targetmaxspinsperhour, artist, song, album, tdate+"."+playinghour)
+
 							if v == targetmaxspinsperhour {
 								log.Println("ADS Reached max ad spins used: v", v, "max", targetmaxspinsperhour, artist, song, album)
 								playtheads = false
@@ -933,11 +919,7 @@ func main() {
 
 					} else {
 						// play the item
-						// check for currents to play intro/outro
-						//2025/10/31 18:25:50 Bucket MP3 Missing  bucket mp3 id 746INTRO error: nats: object not found
-						//    2025/10/31 18:25:50 Play mp3.NewDecoder failed:  EOF for song: 746INTRO
-						//2025/11/01 07:00:50 Bucket MP3 Missing  bucket mp3 id 385INTRO error: nats: object not found
-						//2025/11/01 07:00:50 Play mp3.NewDecoder failed:  EOF for song: 385INTRO
+
 						playintro = ""
 						if strings.HasPrefix(category, "CURRENTS") {
 							playnum, _ = strconv.Atoi(played[18:19])
@@ -964,18 +946,6 @@ func main() {
 							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 							itemlength = PlayWAV(rowid+playintro, category)
 						}
-
-						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
-						// handle ads time slots, max spins, and max minutes
-						//log.Println(category + ": " + artist + " - " + album + " - " + song)
-						/* 						if config.NatsBucketType == "mp3" {
-						   							config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-						   							itemlength = PlayMP3(otoctx, rowid+playintro, category)
-						   						}
-						   						if config.NatsBucketType == "wav" {
-						   							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
-						   							itemlength = PlayWAV(otoctx, rowid+playintro, category)
-						   						} */
 
 					}
 					// update statistics
