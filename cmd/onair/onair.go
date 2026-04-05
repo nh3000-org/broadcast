@@ -6,20 +6,6 @@
 //
 // It requires NATS and POSTGRESQL services to be initialized
 
-/*
-onair plays the broadcast schedule.
-
-Usage:
-
-	  onair [flags] [path...]
-
-	  The flags are:
-
-	    -schedday MON TUE WED THU FRI SAT SUN
-		-schedhour 00 - 23
-		-logging true or false
-		These are overideds for use during testing
-*/
 package main
 
 import (
@@ -664,6 +650,20 @@ var errremove error
 var errremovei error
 var errremoveo error
 
+/*
+onair plays the broadcast schedule.
+
+Usage:
+
+	  onair [flags] [path...]
+
+	  The flags are:
+
+	    -schedday MON TUE WED THU FRI SAT SUN
+		-schedhour 00 - 23
+		-logging true or false
+		These are overideds for use during testing
+*/
 func main() {
 	hourtimingstart = time.Now()
 	schedDay := flag.String("schedday", "MON", "-schedday MON || TUE || WED || THU || FRI || SAT || SUN")
