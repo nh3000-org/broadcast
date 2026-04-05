@@ -1241,7 +1241,7 @@ func InventoryGetRowRecovery(artist, song, album string) string {
 	}
 
 	igetrowrecoveryid, igetrowrecoveryiderr = conn.Query(context.Background(), "igetrowrecoveryid", artist, song, album)
-	if igetrowiderr != nil {
+	if igetrowrecoveryiderr != nil {
 		Send("messages."+"InventoryGetRowRecovery", "[IGETROW] Prepare Inventory Read PID "+igetrowrecoveryiderr.Error(), "http")
 		log.Fatal("Error reading inventory IGETROWRECOVERY", igetrowrecoveryiderr)
 	}
@@ -1249,16 +1249,15 @@ func InventoryGetRowRecovery(artist, song, album string) string {
 	//rows, rowserr := conn.Query(ctxsql, "select rowid from inventory  where rowid = '"+rowin+"'")
 	var row int // rowid
 
-	for igetrowid.Next() {
-		err := igetrowid.Scan(&row)
-		if err != nil {
-			log.Println("InventoryGetID Inventory row", err)
-			conn.Release()
-			ctxsqlcan()
-			return "0"
-		}
-
+	igetrowrecoveryid.Next()
+	err := igetrowrecoveryid.Scan(&row)
+	if err != nil {
+		log.Println("InventoryGetID Inventory row", err)
+		conn.Release()
+		ctxsqlcan()
+		return "0"
 	}
+
 	/* 	if rowserr != nil {
 		log.Println("InventoryGet Get Inventory row error", rowserr)
 	} */
@@ -2407,7 +2406,7 @@ func InventoryGetTrafficCount(artist, song, album string) map[string]int {
 }
 
 var errtrafficadd error
-var trafficadderr error 
+var trafficadderr error
 
 func TrafficAdd(category, artist, song, album, playedon string) {
 	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
@@ -2416,7 +2415,7 @@ func TrafficAdd(category, artist, song, album, playedon string) {
 	if connerr != nil {
 		log.Println("TrafficAdd", connerr)
 		ctxsqlcan()
-		return 
+		return
 	}
 	_, errtrafficadd = conn.Conn().Prepare(context.Background(), "trafficadd", "insert into  traffic (category,artist, song,album,playedon) values($1,$2,$3,$4,$5)")
 	if errtrafficadd != nil {
@@ -2432,6 +2431,7 @@ func TrafficAdd(category, artist, song, album, playedon string) {
 	}
 	conn.Release()
 }
+
 var igettcderr error
 
 func TrafficCheckDuplicate(date, alb string) int {
@@ -2474,6 +2474,7 @@ func TrafficCheckDuplicate(date, alb string) int {
 	return count
 
 }
+
 var igettcbaerr error
 
 func TrafficGetCountByAlbum(date, alb string) int {

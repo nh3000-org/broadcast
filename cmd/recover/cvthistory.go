@@ -42,16 +42,16 @@ import (
 // to the database
 // does not process duplicates
 func processTraffic(ts TrafficStruct, station, verbose, test string) {
-	cd := config.TrafficCheckDuplicate(ts.Playedon,ts.Album)
+	cd := config.TrafficCheckDuplicate(ts.Playedon, ts.Album)
 	if cd != 0 {
-		log.Println("processTraffic Found Duplicate ",ts.Album,ts.Playedon,ts.Album,ts.Artist)
+		log.Println("processTraffic Found Duplicate ", ts.Album, ts.Playedon, ts.Album, ts.Artist)
 		return
 	}
 	if test == "false" {
-		config.TrafficAdd(ts.Category,ts.Artist,ts.Song,ts.Album,ts.Playedon)
+		config.TrafficAdd(ts.Category, ts.Artist, ts.Song, ts.Album, ts.Playedon)
 	}
 	if verbose == "true" {
-		log.Println("Traffic Added",ts.Category, ts.Artist, ts.Song, ts.Album, ts.Playedon)
+		log.Println("Traffic Added", ts.Category, ts.Artist, ts.Song, ts.Album, ts.Playedon)
 	}
 }
 
@@ -74,6 +74,7 @@ func processInventory(is InventoryStruct, station, verbose, test string) {
 		Spinstoday, _ = strconv.Atoi(is.Spinstoday)
 		SpinsPerWeek, _ = strconv.Atoi(is.Spinsweek)
 		Spinstotal, _ = strconv.Atoi(is.Spinstotal)
+		log.Println("CheckingInventory", is.Artist, is.Song)
 		if test == "false" {
 			config.InventoryUpdateRecovery(row, is.Length, is.Startson, is.Expireson, is.Adtimeslots, is.Addayslots, Admaxspins, Admaxspinsperhour, is.Lastplayed, is.Dateadded, Spinstoday, SpinsPerWeek, Spinstotal)
 		}
@@ -183,11 +184,12 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 				if index == 17 { // spins total
 					i.Spinstotal = value
 				}
-				processInventory(i, station, verbose, test)
+
 			}
-			if verbose == "true" {
-				fmt.Printf("%#v\n", i)
-			}
+			processInventory(i, station, verbose, test)
+			//if verbose == "true" {
+			//	fmt.Printf("%#v\n", i.Artist)
+			//}
 
 		}
 		if importType == "TRAFFIC" {
@@ -210,8 +212,9 @@ func readSQL(rootimport string, station string, verbose string, test string) {
 				if index == 5 { // played on
 					i.Playedon = value
 				}
-				processTraffic(i, station, verbose, test)
+				
 			}
+			processTraffic(i, station, verbose, test)
 			if verbose == "true" {
 				fmt.Printf("%#v\n", i)
 			}
