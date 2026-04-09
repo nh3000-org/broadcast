@@ -227,7 +227,7 @@ func main() {
 	rootImport := flag.String("rootimport", "./", "-rootimport base directory of SQL export from postgresql files")
 	stationid := flag.String("stationid", "WVOD", "-stationid call letters of station")
 	verbose := flag.String("v", "true", "-v print execution plan")
-	test := flag.String("t", "true", "-t test execution no poatgresql update")
+	test := flag.String("t", "true", "-t test execution no postgresql update")
 
 	flag.Parse()
 	log.Println("init path:", *rootImport, "station:", *stationid, "verbose:", *verbose, "test", *test)
