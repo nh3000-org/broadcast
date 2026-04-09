@@ -236,9 +236,9 @@ func adjustToTopOfHour() {
 //var pidadderr error
 
 func playImagingId() {
-	/* 	if logto {
+		if logto {
 		log.Println("[PID]", "DAY", playingday, "HOUR", playinghour)
-	} */
+	}
 	pidgetconn, _ = config.SQL.Pool.Acquire(context.Background())
 	_, pidnextget = pidgetconn.Conn().Prepare(context.Background(), "pid", "select * from inventory where category = 'IMAGINGID' order by lastplayed, rndorder limit 1")
 	if pidnextget != nil {
@@ -520,7 +520,7 @@ func PlayWAV(ctx oto.Context, song string, cat string) int {
 	//player.SetBufferSize(0)
 	player.Seek(0, 0)
 	player.Play()
-	
+
 	//for player.IsPlaying() {
 	//	time.Sleep(1 * time.Second)
 	//}
@@ -566,9 +566,9 @@ func PlayMP3(ctx oto.Context, song string, cat string) int {
 
 	fileBytes := config.GetBucket("mp3", song, StationId)
 
-	/* 	if err != nil {
+	 	if err != nil {
 		panic("reading my-file.mp3 failed: " + err.Error())
-	} */
+	}
 
 	// Convert the pure bytes into a reader object that can be used with the mp3 decoder
 	fileBytesReader := bytes.NewReader(fileBytes)
@@ -998,14 +998,14 @@ func main() {
 						//config.SendONAIRmp3(artist + " - " + album + " - " + song + "-" + songlength + " " + "SCHED[" + rowid + "-" + days + "-" + hours + "-" + position + "-" + categories + "-" + toplay + "-" + strconv.Itoa(spinstoplay) + "]")
 						// handle ads time slots, max spins, and max minutes
 						//log.Println(category + ": " + artist + " - " + album + " - " + song)
-						/* 						if config.NatsBucketType == "mp3" {
+						 						if config.NatsBucketType == "mp3" {
 						   							config.SendONAIRmp3(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 						   							itemlength = PlayMP3(otoctx, rowid+playintro, category)
 						   						}
 						   						if config.NatsBucketType == "wav" {
 						   							config.SendONAIRwav(string(OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, category, toplay, strconv.Itoa(spinstoplay))))
 						   							itemlength = PlayWAV(otoctx, rowid+playintro, category)
-						   						} */
+						   						}
 
 					}
 					// update statistics
@@ -1069,9 +1069,9 @@ func main() {
 
 					expireson = strings.Replace(expireson, " ", "T", 1)
 					expireson = expireson + "Z"
-					/* 					if !strings.HasPrefix(expireson, "9999") {
+					 					if !strings.HasPrefix(expireson, "9999") {
 						log.Println("Expires on", expireson)
-					} */
+					}
 					ex, exerr = time.Parse(time.RFC3339, expireson)
 					if exerr != nil {
 						log.Println("[main] inventory time parse "+exerr.Error(), " schedule", playingday, playinghour, categories)
@@ -1201,4 +1201,4 @@ func OnAir2Json(artist, album, song, songlength, rowid, days, hours, position, c
 
 	return OAJDATA
 }
- */
+*/

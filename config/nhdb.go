@@ -2429,6 +2429,7 @@ func TrafficAdd(category, artist, song, album, playedon string) {
 		log.Println("[main] updating inventory " + trafficadderr.Error())
 		Send("messages."+"TRAFFIC", "[main] Updating Inventory "+trafficadderr.Error(), "onair")
 	}
+	ctxsqlcan()
 	conn.Release()
 }
 
@@ -2827,9 +2828,7 @@ func UserGetbyID(id string) UserStruct {
 		ds.Userauthaction = userauthaction
 		//log.Println("DB USER", ds.Userauthaction)
 	}
-	if igetuserbyidrowserr != nil {
-		log.Println("UserGet GetUserbyID row error", igetuserbyidrowserr)
-	}
+
 	conn.Release()
 	ctxsqlcan()
 	return ds
