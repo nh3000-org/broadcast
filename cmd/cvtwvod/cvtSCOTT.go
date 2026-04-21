@@ -30,7 +30,7 @@ var musicIncludes = []string{"401,402,403,404.405,406,407,408,409,410"}
 var legalIncludes = []string{"SW4"}
 var linersIncludes = []string{"LI4"}
 var promosIncludes = []string{"PR4", "JI4"}
-var datedIncludes = []string{"CA_", "CM_", "COM", "NE4"}
+var datedIncludes = []string{"CM_", "COM", "NE4"}
 var category string
 var findexfile *os.File
 var findexfilerror error
@@ -186,7 +186,8 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 
 	buf, err := d.FullPCMBuffer()
 	if err != nil {
-		panic(err)
+		log.Println("AddInventory", err)
+		return
 	}
 	os.Remove("/opt/radio/wvod.wav")
 	out, _ := os.Create("/opt/radio/wvod.wav")
@@ -203,10 +204,10 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 	}
 
 	if err := e.Write(buf); err != nil {
-		panic(err)
+		log.Println("AddInventory e.Write", err)
 	}
 	if err := e.Close(); err != nil {
-		panic(err)
+		log.Println("AddInventory e.Close", err)
 	}
 
 	added := config.GetDateTime("0h")
