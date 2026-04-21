@@ -75,7 +75,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 				cpyerr = true
 			}
 		}
-		if edcpfh.Selected == "*ALL" && edcpth.Selected != "*ALL" {
+/* 		if edcpfh.Selected == "*ALL" && edcpth.Selected != "*ALL" {
 
 			cpyerr = true
 
@@ -84,7 +84,7 @@ func ScheduleScreen(win fyne.Window) fyne.CanvasObject {
 
 			cpyerr = true
 
-		}
+		} */
 
 		if edcpf.Selected == edcpt.Selected {
 			cpyerr = true
