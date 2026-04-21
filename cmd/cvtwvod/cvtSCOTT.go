@@ -26,10 +26,11 @@ type IndexRecord struct {
 	Length string
 }
 
-var musicIncludes = []string{"401"}
-var legalIncludes = []string{"ID4IGNORE"}
-var linersIncludes = []string{"LI4IGNORE"}
-var promosIncludes = []string{"PR4IGNORE", "SW4IGNORE"}
+var musicIncludes = []string{"401,402,403,404.405,406,407,408,409,410"}
+var legalIncludes = []string{"SW4"}
+var linersIncludes = []string{"LI4"}
+var promosIncludes = []string{"PR4", "JI4"}
+var datedIncludes = []string{"CA_", "CM_", "COM", "NE4"}
 var category string
 var findexfile *os.File
 var findexfilerror error
@@ -38,7 +39,8 @@ var fbindex int64 = 1
 var continuereading = true
 var count = 1
 var countforcurrents = 1
-var currentsselected = false
+var countforroots = 1
+var typesselected = "RECURRENTS"
 
 var cleanmaxlength = 32
 
@@ -110,13 +112,18 @@ func processIndex(path, station string) {
 		log.Println("c:", count, "s:", ir.Song, "a:", ir.Artist, "f:", ir.File, "j1:", "l:", ir.Length)
 		count++
 		countforcurrents++
-		currentsselected = false
+		countforroots++
+		typesselected = ""
 		// write currents intro/outro
-		if countforcurrents > 13 {
+		if countforcurrents > 18 {
 			countforcurrents = 1
-			currentsselected = true
+			typesselected = "CURRENTS"
 		}
-		addInventory(ir, currentsselected, path, ir.File)
+		if countforroots > 36 {
+			countforroots = 1
+			typesselected = "ROOTS"
+		}
+		addInventory(ir, typesselected, path, ir.File)
 
 		fbindex++
 		//if count > 3 {
@@ -145,7 +152,7 @@ func processDirectory(path, station, category string) {
 			ir.File = info.Name()
 			ir.Length = " 0:30"
 			//path = strings.Replace(path, "/"+ir.File, "", 1)
-			addInventory(ir, currentsselected, path, ir.File)
+			addInventory(ir, typesselected, path, ir.File)
 			dircount++
 		}
 		return nil
@@ -159,13 +166,13 @@ var hp = []string{"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "1
 var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
 var tmpcategory string
 
-func addInventory(rec IndexRecord, currentsselected bool, path string, file string) {
+func addInventory(rec IndexRecord, typesselected string, path string, file string) {
 	var m = rec.Length[1:2]
 	var s = rec.Length[3:5]
 	min, _ := strconv.Atoi(m)
 	sec, _ := strconv.Atoi(s)
 	var l = min*60 + sec
-	log.Println("AddInventory ", "p:", path, "f:", file, currentsselected, "Length", rec.Length, min, sec, l)
+	log.Println("AddInventory ", "p:", path, "f:", file, typesselected, "Length", rec.Length, min, sec, l)
 	cddirer := os.Chdir(path)
 	if cddirer != nil {
 		log.Println("AddInventory cddirer", cddirer)
@@ -204,12 +211,13 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 
 	added := config.GetDateTime("0h")
 	tmpcategory = category
-	if currentsselected {
+	if typesselected == "CURRENTS" {
 		tmpcategory = "CURRENTS"
 	}
-	// force all wvod songs into roots
-	currentsselected = false
-	tmpcategory = "ROOTS"
+	if typesselected == "ROOTS" {
+		tmpcategory = "ROOTS"
+	}
+
 	rowreturned := config.InventoryAdd(tmpcategory, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
 	row := strconv.Itoa(rowreturned)
 	if row != "0" {
@@ -228,7 +236,7 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 				config.Send("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod")
 			}
 
-			if currentsselected {
+			if typesselected == "CURRENTS" {
 				pberr := config.PutBucket("wav", row+"INTRO", songbytes)
 				if pberr == nil {
 					songbytes = []byte("")
@@ -238,7 +246,7 @@ func addInventory(rec IndexRecord, currentsselected bool, path string, file stri
 					config.Send("messages."+"cvtwvod", "Put Bucket Write Error", "cvtwvod")
 				}
 			}
-			if currentsselected {
+			if typesselected == "CURRENTS" {
 				pberr := config.PutBucket("wav", row+"OUTRO", songbytes)
 				if pberr == nil {
 					songbytes = []byte("")
@@ -263,34 +271,36 @@ func readPath(startpath, station string) {
 		category = ""
 		continuereading = false
 		if info.IsDir() {
-
+			//var musicIncludes = []string{"401,402,403,404.405,406,407,408,409,410"}
+			//var legalIncludes = []string{"SW4"}
+			//var linersIncludes = []string{"LI4"}
+			//var promosIncludes = []string{"PR4","JI4"}
+			//var datedIncludes = []string{"CA_","CM_","COM"}
 			// determine the category
 			if slices.Contains(musicIncludes, info.Name()) {
 				category = "RECURRENTS"
+				processIndex(path, station)
 			}
 			if slices.Contains(legalIncludes, info.Name()) {
 				category = "STATIONID"
+				processIndex(path, station)
 			}
 			if slices.Contains(linersIncludes, info.Name()) {
 				category = "IMAGINGID"
+				processIndex(path, station)
 			}
 			if slices.Contains(promosIncludes, info.Name()) {
 				category = "PROMOS"
+				processDirectory(path, station, category)
+			}
+
+			if slices.Contains(datedIncludes, info.Name()) {
+				category = "DATED"
+				processIndex(path, station)
 			}
 			//log.Println("read", info.Name(), category)
 		}
-		if category == "RECURRENTS" {
-			processIndex(path, station)
-		}
-		if category == "IMAGINGID" {
-			processIndex(path, station)
-		}
-		if category == "STATIONID" {
-			processDirectory(path, station, category)
-		}
-		if category == "PROMOS" {
-			processDirectory(path, station, category)
-		}
+
 		return nil
 	})
 	if walkfileerr != nil {

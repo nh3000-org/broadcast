@@ -68,6 +68,7 @@ insert into categories (id,description)  values('NEXT', 'Play Next');
 insert into categories (id,description) values('ADS', 'ADS - Advertising Top Of Hour');
 insert into categories (id,description) values('CURRENTS', 'Top 40 Currents');
 insert into categories (id,description) values('RECURRENTS', 'Recurrents Library');
+insert into categories (id,description) values('DATED', 'Scott Artifacts');
 insert into categories (id,description) values('NWS-1-PLAYONCE', 'NWS Spots 6 30 Bot AM Play Once');
 insert into categories (id,description) values('NWS-2-PLAYONCE', 'NWS Spots 7 00 Bot AM Play Once');
 insert into categories (id,description) values('NWS-3-PLAYONCE', 'NWS Spots 7 30 Bot AM Play Once');
