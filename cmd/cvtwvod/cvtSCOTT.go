@@ -113,7 +113,7 @@ func processIndex(path, station string) {
 		count++
 		countforcurrents++
 		countforroots++
-		typesselected = ""
+		typesselected = category
 		// write currents intro/outro
 		if countforcurrents > 18 {
 			countforcurrents = 1
@@ -205,9 +205,11 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 
 	if err := e.Write(buf); err != nil {
 		log.Println("AddInventory e.Write", err)
+		return
 	}
 	if err := e.Close(); err != nil {
 		log.Println("AddInventory e.Close", err)
+		return
 	}
 
 	added := config.GetDateTime("0h")
@@ -218,7 +220,10 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 	if typesselected == "ROOTS" {
 		tmpcategory = "ROOTS"
 	}
-
+	if rec.Artist == "" {
+		log.Println("AddInventory Artist blank", err)
+		return
+	}
 	rowreturned := config.InventoryAdd(tmpcategory, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
 	row := strconv.Itoa(rowreturned)
 	if row != "0" {
