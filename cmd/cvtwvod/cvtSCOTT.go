@@ -26,11 +26,11 @@ type IndexRecord struct {
 	Length string
 }
 
-var musicIncludes = []string{"401,402,403,404.405,406,407,408,409,410"}
-var legalIncludes = []string{"SW4"}
-var linersIncludes = []string{"LI4"}
-var promosIncludes = []string{"PR4", "JI4"}
-var datedIncludes = []string{"CM_", "COM", "NE4"}
+var musicIncludes = []string{"401,402"}
+var legalIncludes = []string{"SW4IGNORE"}
+var linersIncludes = []string{"LI4IGNORE"}
+var promosIncludes = []string{"PR4IGNORE", "JI4IGNORE"}
+var datedIncludes = []string{"CM_IGNORE", "COMIGNORE", "NE4IGNORE"}
 var category string
 var findexfile *os.File
 var findexfilerror error
@@ -41,7 +41,7 @@ var count = 1
 var countforcurrents = 1
 var countforroots = 1
 var typesselected = "RECURRENTS"
-
+var testcount = 0
 var cleanmaxlength = 32
 
 var cleanallowed = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -63,9 +63,9 @@ func clean(cleanin string) string {
 	}
 	return cleannew
 }
-func processIndex(path, station string) {
+func processIndex(path, station string, test string) {
 	// read the FINDEX01.DAT file block size 179
-	log.Println("processIndex", path, station)
+	log.Println("processIndex", path, station, test)
 	os.Chdir(path)
 	//if !info.IsDir() && category != "" {
 	findexfile, findexfilerror = os.Open("FINDEX01.DAT")
@@ -75,6 +75,12 @@ func processIndex(path, station string) {
 	}
 	continuereading = true
 	for continuereading {
+		testcount++
+		if test == "true" && testcount > 51 {
+			log.Println("========== reached testing limit")
+			testcount = 0
+			return
+		}
 		var seekstart int64 = fbindex * 183
 		_, fbseelerror := findexfile.Seek(seekstart, 0)
 		if fbseelerror != nil {
@@ -269,31 +275,36 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 	e.Close()
 }
 
-func readPath(startpath, station string) {
-
+func readPath(startpath, station string, test string) {
 	os.Chdir(startpath)
 	fbindex = 1
 	walkfileerr := filepath.Walk(startpath, func(path string, info os.FileInfo, err error) error {
 		category = ""
 		continuereading = false
 		if info.IsDir() {
+			os.Chdir(startpath)
 			//var musicIncludes = []string{"401,402,403,404.405,406,407,408,409,410"}
 			//var legalIncludes = []string{"SW4"}
 			//var linersIncludes = []string{"LI4"}
 			//var promosIncludes = []string{"PR4","JI4"}
 			//var datedIncludes = []string{"CA_","CM_","COM"}
 			// determine the category
+			log.Println("==========================", info.Name(), startpath)
+			os.Chdir(startpath + "/" + info.Name())
+			dir, _ := os.Getwd()
+			log.Println("====", dir, info.Name())
 			if slices.Contains(musicIncludes, info.Name()) {
+				log.Println("====processing", dir, info.Name())
 				category = "RECURRENTS"
-				processIndex(path, station)
+				processIndex(path, station, test)
 			}
 			if slices.Contains(legalIncludes, info.Name()) {
 				category = "STATIONID"
-				processIndex(path, station)
+				processIndex(path, station, test)
 			}
 			if slices.Contains(linersIncludes, info.Name()) {
 				category = "IMAGINGID"
-				processIndex(path, station)
+				processIndex(path, station, test)
 			}
 			if slices.Contains(promosIncludes, info.Name()) {
 				category = "PROMOS"
@@ -302,7 +313,7 @@ func readPath(startpath, station string) {
 
 			if slices.Contains(datedIncludes, info.Name()) {
 				category = "DATED"
-				processIndex(path, station)
+				processIndex(path, station, test)
 			}
 			//log.Println("read", info.Name(), category)
 		}
@@ -316,11 +327,12 @@ func readPath(startpath, station string) {
 func main() {
 	rootImport := flag.String("rootimport", "./", "-rootimport base directory of scott files")
 	stationid := flag.String("stationid", "WVOD", "-stationid call letters of station")
+	test := flag.String("test", "true", "-test only process 50 from each category")
 
 	flag.Parse()
-	log.Println("init", *rootImport, *stationid)
+	log.Println("init", *rootImport, *stationid, *test)
 	readPreferences()
-	readPath(*rootImport, *stationid)
+	readPath(*rootImport, *stationid, *test)
 
 }
 
