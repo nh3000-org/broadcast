@@ -283,17 +283,14 @@ func readPath(startpath, station string, test string) {
 		continuereading = false
 		if info.IsDir() {
 			os.Chdir(startpath)
-			//var musicIncludes = []string{"401,402,403,404.405,406,407,408,409,410"}
-			//var legalIncludes = []string{"SW4"}
-			//var linersIncludes = []string{"LI4"}
-			//var promosIncludes = []string{"PR4","JI4"}
-			//var datedIncludes = []string{"CA_","CM_","COM"}
-			// determine the category
+
 			log.Println("==========================", info.Name(), startpath)
 			os.Chdir(startpath + "/" + info.Name())
 			dir, _ := os.Getwd()
 			log.Println("====", dir, info.Name())
-			if slices.Contains(musicIncludes, info.Name()) {
+			fmt.Println(musicIncludes)
+			if info.Name() == "401" || info.Name() == "402" {
+				//if slices.Contains(musicIncludes, info.Name()) {
 				log.Println("====processing", dir, info.Name())
 				category = "RECURRENTS"
 				processIndex(path, station, test)
