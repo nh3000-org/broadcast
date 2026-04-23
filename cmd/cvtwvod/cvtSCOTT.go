@@ -73,6 +73,7 @@ func processIndex(path, station string, test string) {
 		log.Println("findexfile error reading", findexfilerror)
 		return
 	}
+	testcount = 0
 	continuereading = true
 	for continuereading {
 		testcount++
@@ -284,12 +285,11 @@ func readPath(startpath, station string, test string) {
 		if info.IsDir() {
 			os.Chdir(startpath)
 
-			log.Println("==========================", info.Name(), startpath)
+			//log.Println("==========================", info.Name(), startpath)
 			os.Chdir(startpath + "/" + info.Name())
 			dir, _ := os.Getwd()
-			log.Println("====", dir, info.Name())
-			fmt.Println(musicIncludes)
-			if info.Name() == "401" || info.Name() == "402" {
+			//if info.Name() == "408" {
+			if info.Name() == "401" || info.Name() == "408" {
 				//if slices.Contains(musicIncludes, info.Name()) {
 				log.Println("====processing", dir, info.Name())
 				category = "RECURRENTS"
