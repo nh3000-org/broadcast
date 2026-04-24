@@ -289,7 +289,7 @@ func readPath(startpath, station string, test string) {
 			os.Chdir(startpath + "/" + info.Name())
 			dir, _ := os.Getwd()
 			//if info.Name() == "408" {
-			if info.Name() == "401" || info.Name() == "408" {
+			if  info.Name() == "408" {
 				//if slices.Contains(musicIncludes, info.Name()) {
 				log.Println("====processing", dir, info.Name())
 				category = "RECURRENTS"
