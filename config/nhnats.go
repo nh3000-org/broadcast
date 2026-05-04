@@ -90,7 +90,7 @@ func NewNatsJS() error {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + natsconnecterr.Error())
 		}
-		log.Println("NewNatsJS  connect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + natsconnecterr.Error())
+		log.Println("NewNatsJS 1 connect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + natsconnecterr.Error())
 	}
 
 	njsjetstream, njsjetstreamerr := jetstream.New(natsconnect)
@@ -98,12 +98,12 @@ func NewNatsJS() error {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + getLangsNats("ms-err7") + njsjetstreamerr.Error())
 		}
-		log.Println("NewNatsJS jetstreamnew ", getLangsNats("ms-eraj"), njsjetstreamerr)
+		log.Println("NewNatsJS 2 jetstreamnew ", getLangsNats("ms-eraj"), njsjetstreamerr)
 	}
 
 	msgjs, msgjserr := njsjetstream.Stream(nnjsctx, "MESSAGES")
 	if msgjserr != nil {
-		log.Println("NewNatsJS NATS MESSAGES", getLangsNats("ms-eraj"), msgjserr)
+		log.Println("NewNatsJS 3 NATS MESSAGES", getLangsNats("ms-eraj"), msgjserr)
 
 	}
 
@@ -125,12 +125,12 @@ func NewNatsJS() error {
 		if FyneMessageWin != nil {
 			FyneMessageWin.SetTitle(getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + natsconnecterrmissing.Error())
 		}
-		log.Println("SetupNATS object connect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + natsconnecterrmissing.Error())
+		log.Println("SetupNATS 4 object connect" + getLangsNats("ms-snd") + " " + getLangsNats("ms-err7") + natsconnecterrmissing.Error())
 	}
 
 	jsctx, jsmissingerr := natsconnectobject.JetStream()
 	if jsmissingerr != nil {
-		log.Println("SetupNATS JetStream ", getLangsNats("ms-eraj"), jsmissingerr)
+		log.Println("SetupNATS 5 JetStream ", getLangsNats("ms-eraj"), jsmissingerr)
 
 	}
 
@@ -142,7 +142,7 @@ func NewNatsJS() error {
 
 	mp3obs, mp3errobs := jsctx.ObjectStore("mp3")
 	if mp3errobs != nil {
-		log.Println("SetupNATS ObjectStore mp3 ", mp3errobs)
+		log.Println("SetupNATS 6 ObjectStore mp3 ", mp3errobs)
 	}
 
 	jsctx.CreateObjectStore(&nats.ObjectStoreConfig{
@@ -153,7 +153,7 @@ func NewNatsJS() error {
 
 	wavobs, waverrobs := jsctx.ObjectStore("wav")
 	if waverrobs != nil {
-		log.Println("SetupNATS ObjectStore wav ", waverrobs)
+		log.Println("SetupNATS 7 ObjectStore wav ", waverrobs)
 	}
 
 	jsctx.CreateObjectStore(&nats.ObjectStoreConfig{
@@ -164,28 +164,28 @@ func NewNatsJS() error {
 
 	mp4obs, mp4errobs := jsctx.ObjectStore("mp4")
 	if mp4errobs != nil {
-		log.Println("SetupNATS ObjectStore mp4 ", mp4errobs)
+		log.Println("SetupNATS 8 ObjectStore mp4 ", mp4errobs)
 	}
 
 	onairmp3, kveerr := njsjetstream.CreateOrUpdateKeyValue(nnjsctx, jetstream.KeyValueConfig{
 		Bucket: "OnAirmp3",
 	})
 	if kveerr != nil {
-		log.Println("SetupNATS MP3 err", kveerr)
+		log.Println("SetupNATS 9 MP3 err", kveerr)
 	}
 
 	onairmp4, kveerr := njsjetstream.CreateOrUpdateKeyValue(nnjsctx, jetstream.KeyValueConfig{
 		Bucket: "OnAirmp4",
 	})
 	if kveerr != nil {
-		log.Println("SetupNATS MP4 err", kveerr)
+		log.Println("SetupNATS 10 MP4 err", kveerr)
 	}
 
 	onairwav, kveerr := njsjetstream.CreateOrUpdateKeyValue(nnjsctx, jetstream.KeyValueConfig{
 		Bucket: "OnAirwav",
 	})
 	if kveerr != nil {
-		log.Println("SetupNATS WAV err", kveerr)
+		log.Println("SetupNATS 11 WAV err", kveerr)
 	}
 
 	nnjsd.Ctxcan = nnjsctxcan

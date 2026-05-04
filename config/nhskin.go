@@ -28,6 +28,7 @@ var DarkInputBorder = color.RGBA{187, 188, 201, 64}
 var DarkSeparator = color.RGBA{187, 188, 201, 64}
 var DarkShadow = color.RGBA{187, 188, 201, 64}
 var DarkScrollBar = color.RGBA{187, 188, 201, 64}
+var DarkScrollBarBackground = color.RGBA{187, 188, 201, 1}
 var DarkFocus = color.RGBA{187, 188, 201, 64}
 var DarkPlaceholder = color.RGBA{187, 188, 201, 220}
 var DarkDisabled = color.RGBA{187, 188, 201, 64}
@@ -43,6 +44,7 @@ var LightInputBorder = color.RGBA{129, 137, 252, 250}
 var LightSeparator = color.Black
 var LightShadow = color.RGBA{129, 137, 252, 64}
 var LightScrollBar = color.RGBA{129, 137, 252, 250}
+var LightScrollBarBackground = color.RGBA{129, 137, 252, 1}
 var LightFocus = color.RGBA{129, 137, 252, 64}
 var LightPlaceholder = color.RGBA{129, 137, 252, 220}
 var LightDisabled = color.RGBA{129, 137, 252, 64}
@@ -58,6 +60,7 @@ var RetroInputBorder = color.RGBA{116, 207, 103, 250}
 var RetroSeparator = color.Black
 var RetroShadow = color.RGBA{116, 207, 103, 64}
 var RetroScrollBar = color.RGBA{116, 207, 103, 250}
+var RetroScrollBarBackground = color.RGBA{116, 207, 103, 1}
 var RetroFocus = color.RGBA{116, 207, 103, 64}
 var RetroPlaceholder = color.RGBA{116, 207, 103, 255}
 var RetroDisabled = color.RGBA{116, 207, 103, 64}
@@ -92,6 +95,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 		}
 		if name == "scrollBar" {
 			return DarkScrollBar
+		}
+		if name == "scrollBarBackground" {
+			return DarkScrollBarBackground
 		}
 		if name == "focus" {
 			return DarkFocus
@@ -163,6 +169,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 		}
 		if name == "scrollBar" {
 			return LightScrollBar
+		}
+		if name == "scrollBarBackground" {
+			return LightScrollBarBackground
 		}
 		if name == "focus" {
 			return LightFocus
@@ -236,6 +245,9 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 		}
 		if name == "scrollBar" {
 			return RetroScrollBar
+		}
+		if name == "scrollBarBackground" {
+			return RetroScrollBarBackground
 		}
 		if name == "focus" {
 			return RetroFocus
