@@ -193,8 +193,8 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 
 	buf, err := d.FullPCMBuffer()
 	if err != nil {
-		log.Println("AddInventory", err)
-		return
+		log.Panicln("AddInventory", err)
+
 	}
 	os.Remove("/opt/radio/wvod.wav")
 	out, _ := os.Create("/opt/radio/wvod.wav")
@@ -211,12 +211,12 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 	}
 
 	if err := e.Write(buf); err != nil {
-		log.Println("AddInventory e.Write", err)
-		return
+		log.Panicln("AddInventory e.Write", err)
+
 	}
 	if err := e.Close(); err != nil {
-		log.Println("AddInventory e.Close", err)
-		return
+		log.Panicln("AddInventory e.Close", err)
+
 	}
 
 	added := config.GetDateTime("0h")
@@ -229,7 +229,7 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 	}
 	if rec.Artist == "" {
 		log.Println("AddInventory Artist blank", err)
-		return
+		rec.Artist = "Unknown"
 	}
 	rowreturned := config.InventoryAdd(tmpcategory, rec.Artist, rec.Song, "WVOD", l, "000000", "1999-01-01 00:00:00", "9999-01-01 00:00:00", hp, dp, 0, 0, "1999-01-01 00:00:00", added[0:19], 0, 0, 0, "DIGITAL")
 	row := strconv.Itoa(rowreturned)
