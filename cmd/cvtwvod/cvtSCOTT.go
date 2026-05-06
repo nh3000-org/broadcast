@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	//"strconv"
 	"github.com/go-audio/wav"
@@ -174,6 +176,34 @@ var dp = []string{"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"}
 var tmpcategory string
 
 func addInventory(rec IndexRecord, typesselected string, path string, file string) {
+
+	iactxsql, iactxsqlcan := context.WithTimeout(context.Background(), 3*time.Second)
+
+	iadconn, _ := config.SQL.Pool.Acquire(iactxsql)
+
+	iadrows, iadrowserr := iadconn.Query(iactxsql, "select count(*) from inventory  where ( artist = $1 and song = $2)", rec.Artist, rec.Song)
+	log.Println("InventoryAdd Check Duplicates", rec.Artist, rec.Song)
+	if iadrowserr != nil {
+		log.Println("InventoryAdd Check Duplicates 1", iadrowserr)
+	}
+
+	rowsc := 0
+	for iadrows.Next() {
+		iadrowserr = iadrows.Scan(&rowsc)
+		if iadrowserr != nil {
+			log.Println("InventoryAdd Check Duplicates 2", iadrowserr)
+		}
+
+	}
+
+	if rowsc > 0 {
+		iadconn.Release()
+		iactxsqlcan()
+		log.Println("InventoryAdd Duplicate Ignored", rec.Artist, rec.Song)
+		return
+
+	}
+
 	var m = rec.Length[1:2]
 	var s = rec.Length[3:5]
 	min, _ := strconv.Atoi(m)
@@ -289,7 +319,7 @@ func readPath(startpath, station string, test string) {
 			os.Chdir(startpath + "/" + info.Name())
 			dir, _ := os.Getwd()
 			//if info.Name() == "408" {
-			if info.Name() == "401" {
+			if info.Name() == "408" {
 				//if slices.Contains(musicIncludes, info.Name()) {
 				log.Println("====processing", dir, info.Name())
 				category = "RECURRENTS"
@@ -329,6 +359,7 @@ func main() {
 	flag.Parse()
 	log.Println("init", *rootImport, *stationid, *test)
 	readPreferences()
+	config.NewPGSQL()
 	readPath(*rootImport, *stationid, *test)
 
 }

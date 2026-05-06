@@ -1330,17 +1330,17 @@ func InventoryAdd(category string, artist string, song string, album string, son
 	if iadrowserr != nil {
 		log.Println("InventoryAdd Add Inventory row error query", iadrowserr)
 	}
-	rowcount = 0
+
 	rowsc = 0
 	for iadrows.Next() {
 		iadrowserr = iadrows.Scan(&rowsc)
 		if iadrowserr != nil {
 			log.Println("InventoryAdd Get Inventory row", iadrowserr)
 		}
-		rowcount++
+
 	}
 
-	if rowcount > 1 {
+	if rowsc > 0 {
 		iadconn.Release()
 		iactxsqlcan()
 		return 0
