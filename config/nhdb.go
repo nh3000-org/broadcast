@@ -1315,13 +1315,13 @@ func InventoryAdd(category string, artist string, song string, album string, son
 	var iadrowserr error
 	//var iarowserr error
 	var iarows1err error
-	var rowcount = 0
+	//var rowcount = 0
 	var rowsc = 0
 	var rowid = 0
 	var iaconn *pgxpool.Conn
 	var iaconn1 *pgxpool.Conn
 	//log.Println("startson ", startson, "endon", expireson, "lastplayed", lastplayed, "added", dateadded)
-	iactxsql, iactxsqlcan = context.WithTimeout(context.Background(), 1*time.Minute)
+	iactxsql, iactxsqlcan = context.WithTimeout(context.Background(), 24*time.Hour)
 
 	iadconn, _ = SQL.Pool.Acquire(iactxsql)
 

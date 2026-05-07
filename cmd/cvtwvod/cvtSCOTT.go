@@ -302,6 +302,8 @@ func addInventory(rec IndexRecord, typesselected string, path string, file strin
 
 		}
 	}
+	iadconn.Release()
+	iactxsqlcan()
 	f.Close()
 	e.Close()
 }
