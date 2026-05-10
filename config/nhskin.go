@@ -86,6 +86,7 @@ func (m MyTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) colo
 
 	//log.Println(name)
 	//log.Println("skin "+strconv.Itoa(Selected)+" name ", name)
+
 	if Selected == Dark {
 		if name == "separator" {
 			return DarkSeparator

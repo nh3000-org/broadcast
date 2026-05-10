@@ -46,8 +46,10 @@ type Pane struct {
 func main() {
 
 	var a = app.NewWithID("org.nh3000.nh3000")
+	
 	config.FyneApp = a
 	var w = a.NewWindow("NH3000")
+	//w.Canvas().Scale()
 	config.FyneMainWin = w
 	config.PreferedLanguage = "eng"
 	if strings.HasPrefix(os.Getenv("LANG"), "en") {
@@ -66,6 +68,7 @@ func main() {
 	}
 	config.Selected = config.Dark
 	config.FyneApp.Settings().SetTheme(config.MyTheme{})
+	
 	config.FyneApp.SetIcon(MyLogo)
 
 	logLifecycle()
