@@ -994,7 +994,34 @@ func displayCurrent(authtoken string) string {
 		builder.WriteString("	             <td colspan=\"1\">" + strconv.Itoa(inv.Songlength) + "</td>\n")
 		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
 		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
-		builder.WriteString("	             <td colspan=\"3\">.</td>\n")
+		builder.WriteString("	             <td colspan=\"3\">CURRENTS</td>\n")
+		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"asa\" id=\"asa\" value=\"" + inv.Artist + "-" + inv.Song + "-" + inv.Album + "\" /></td>\n")
+		builder.WriteString(" <td colspan=\"1\"><input type=\"submit\" value=\"Download Content\" style=\"color: #4c14e477;\" /></td>\n")
+		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
+		builder.WriteString("<td colspan=\"4\"><input type=\"hidden\" name=\"fileid\" id=\"fileid\" value=\"" + strconv.Itoa(inv.Row) + "\" /></td>\n")
+		builder.WriteString(" </tr>\n")
+
+	}
+
+	return builder.String()
+}
+
+// displayRoots - show the items in Roots for maintenance
+func displayRoots(authtoken string) string {
+
+	config.InventoryGetRoots()
+	var builder strings.Builder
+	for _, inv := range config.InventoryStoreRoots {
+
+		builder.WriteString(" </tr>\n")
+		builder.WriteString("<form  action=\"" + config.WebAddress + "/retrieve\" method=\"post\">\n")
+		builder.WriteString("	             <td colspan=\"1\">" + inv.Artist + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + inv.Song + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + inv.Album + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + strconv.Itoa(inv.Songlength) + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
+		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
+		builder.WriteString("	             <td colspan=\"3\">ROOTS</td>\n")
 		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"asa\" id=\"asa\" value=\"" + inv.Artist + "-" + inv.Song + "-" + inv.Album + "\" /></td>\n")
 		builder.WriteString(" <td colspan=\"1\"><input type=\"submit\" value=\"Download Content\" style=\"color: #4c14e477;\" /></td>\n")
 		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
@@ -1139,12 +1166,32 @@ func ibuilder(authtoken string) string {
 		s.WriteString("	             <td colspan=\"1\">Length</td>\n")
 		s.WriteString("	             <td colspan=\"1\">Intro</td>\n")
 		s.WriteString("	             <td colspan=\"1\">Outro</td>\n")
-		s.WriteString("	             <td colspan=\"3\">.</td>\n")
+		s.WriteString("	             <td colspan=\"3\">CURRENTS</td>\n")
 		s.WriteString("	     </tr>\n")
 
 		s.WriteString(displayCurrent(authtoken))
 
 	}
+
+	if arrayhas(SessionAction, "ALL") || arrayhas(SessionAction, "Upload/Download") {
+
+		s.WriteString("	     <tr \">\n")
+		s.WriteString("	     	<td colspan=\"8\">Download ROOTS inventory item for voice tracking.<br>Transfer the contents to the client<br>Use GUI to upload the item to the store</td>\n")
+		s.WriteString("	     </tr>\n")
+		s.WriteString("	     <tr style=\"background-color: #11d4e277;\">\n")
+		s.WriteString("	             <td colspan=\"1\">Artist</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Song</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Album</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Length</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Intro</td>\n")
+		s.WriteString("	             <td colspan=\"1\">Outro</td>\n")
+		s.WriteString("	             <td colspan=\"3\">ROOTS</td>\n")
+		s.WriteString("	     </tr>\n")
+
+		s.WriteString(displayRoots(authtoken))
+
+	}
+
 	s.WriteString("	   </table>\n")
 	s.WriteString("</body>\n")
 	s.WriteString("</html>\n")

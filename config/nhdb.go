@@ -986,7 +986,7 @@ func InventoryGet() {
 
 }
 
-var InventoryStoreCurrent = make(map[int]InventoryStruct)
+var InventoryStoreCurrent = []InventoryStruct{}
 var igetcurrenterr error
 var igetcurrentrowserr error
 var igetcurrentrows pgx.Rows
@@ -1007,7 +1007,7 @@ func InventoryGetCurrent() {
 		log.Fatal("Error reading inventory IGETCURRENT", igetcurrentrowserr)
 	}
 
-	InventoryStoreCurrent = make(map[int]InventoryStruct)
+	InventoryStoreCurrent = []InventoryStruct{}
 	//rows, rowserr := conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
 	var row int         // rowid
 	var category string // category
@@ -1055,7 +1055,87 @@ func InventoryGetCurrent() {
 		ds.Spinsweek = spinsweek
 		ds.Spinstotal = spinstotal
 		ds.Sourcelink = sourcelink
-		InventoryStoreCurrent[len(InventoryStoreCurrent)] = ds
+		//InventoryStoreCurrent[len(InventoryStoreCurrent)] = ds
+		InventoryStoreCurrent = append(InventoryStoreCurrent, ds)
+
+	}
+
+	conn.Release()
+	ctxsqlcan()
+
+}
+
+var InventoryStoreRoots = []InventoryStruct{}
+var igetrootserr error
+var igetrootsrowserr error
+var igetrootsrows pgx.Rows
+
+func InventoryGetRoots() {
+	ctxsql, ctxsqlcan := context.WithTimeout(context.Background(), 1*time.Minute)
+	conn, _ := SQL.Pool.Acquire(ctxsql)
+
+	_, igetrootserr = conn.Conn().Prepare(context.Background(), "igetroots", "select * from inventory where category = 'ROOTS' order by category,artist,song ")
+	if igetrootserr != nil {
+		log.Println("[PID] nextgetconn", igetrootserr)
+		Send("messages."+"StationId", "[IGETROOTS] Prepare Next Get Roots "+igetrootserr.Error(), "web")
+	}
+
+	igetrootsrows, igetrootsrowserr = conn.Query(context.Background(), "igetroots")
+	if igetrootsrowserr != nil {
+		Send("messages."+"InventoryGet", "[IGETROOTS] Prepare Inventory Read PID "+igetrootsrowserr.Error(), "web")
+		log.Fatal("Error reading inventory IGETROOTS", igetrootsrowserr)
+	}
+
+	InventoryStoreRoots = []InventoryStruct{}
+	//rows, rowserr := conn.Query(ctxsql, "select * from inventory  order by category,artist,song")
+	var row int         // rowid
+	var category string // category
+	var artist string   // artist
+	var song string     // song
+	var album string    // Album
+	var songlength int  // song length
+	var rndorder string // assigned weekly
+	var startson string
+	var expireson string
+	var adstimeslots []string
+	var adsdayslots []string
+	var adsmaxspins int
+	var adsmaxspinsperhour int
+	var lastplayed string
+	var dateadded string
+	var spinstoday int    // cleared daily at day reset
+	var spinsweek int     // spins weekly at week reset
+	var spinstotal int    // total spins
+	var sourcelink string // link to source
+	for igetrootsrows.Next() {
+		err := igetrootsrows.Scan(&row, &category, &artist, &song, &album, &songlength, &rndorder, &startson, &expireson, &adstimeslots, &adsdayslots, &adsmaxspins,
+			&adsmaxspinsperhour, &lastplayed, &dateadded, &spinstoday, &spinsweek, &spinstotal, &sourcelink)
+		if err != nil {
+			log.Println("InventoryGet Get Inventory roots row:", err)
+		}
+		ds := InventoryStruct{}
+		ds.Row = row
+		ds.Category = category
+		ds.Artist = artist
+		ds.Song = song
+		ds.Album = album
+		ds.Songlength = songlength
+		ds.Rndorder = rndorder
+		ds.Song = song
+		ds.Startson = startson
+		ds.Expireson = expireson
+		ds.Lastplayed = lastplayed
+		ds.Dateadded = dateadded
+		ds.AdsTimeSlots = adstimeslots
+		ds.AdsDaySlots = adsdayslots
+		ds.AdsMaxSpins = adsmaxspins
+		ds.AdsMaxSpinsPerHour = adsmaxspinsperhour
+		ds.Spinstoday = spinstoday
+		ds.Spinsweek = spinsweek
+		ds.Spinstotal = spinstotal
+		ds.Sourcelink = sourcelink
+		//InventoryStoreCurrent[len(InventoryStoreCurrent)] = ds
+		InventoryStoreRoots = append(InventoryStoreRoots, ds)
 
 	}
 
