@@ -999,6 +999,7 @@ func displayCurrent(authtoken string) string {
 		builder.WriteString(" <td colspan=\"1\"><input type=\"submit\" value=\"Download Content\" style=\"color: #4c14e477;\" /></td>\n")
 		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 		builder.WriteString("<td colspan=\"4\"><input type=\"hidden\" name=\"fileid\" id=\"fileid\" value=\"" + strconv.Itoa(inv.Row) + "\" /></td>\n")
+		builder.WriteString(" </form>\n")
 		builder.WriteString(" </tr>\n")
 
 	}
@@ -1026,6 +1027,7 @@ func displayRoots(authtoken string) string {
 		builder.WriteString(" <td colspan=\"1\"><input type=\"submit\" value=\"Download Content\" style=\"color: #4c14e477;\" /></td>\n")
 		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
 		builder.WriteString("<td colspan=\"4\"><input type=\"hidden\" name=\"fileid\" id=\"fileid\" value=\"" + strconv.Itoa(inv.Row) + "\" /></td>\n")
+		builder.WriteString(" </form>\n")
 		builder.WriteString(" </tr>\n")
 
 	}
