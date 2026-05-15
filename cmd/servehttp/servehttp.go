@@ -816,7 +816,7 @@ func setupRoutes() {
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/config", configFile)
 	http.HandleFunc("/download", downloadFile)
-	http.HandleFunc("/retrieve", downloadContent)
+	http.HandleFunc("/currents", downloadContent)
 	http.HandleFunc("/upload", uploadFile)
 	http.HandleFunc("/chart", chart)
 	http.HandleFunc("/ADS", ADS)
@@ -986,8 +986,8 @@ func displayCurrent(authtoken string) string {
 	var builder strings.Builder
 	for _, inv := range config.InventoryStoreCurrent {
 
-		builder.WriteString(" </tr>\n")
-		builder.WriteString("<form  action=\"" + config.WebAddress + "/retrieve\" method=\"post\">\n")
+		builder.WriteString(" <tr>\n")
+
 		builder.WriteString("	             <td colspan=\"1\">" + inv.Artist + "</td>\n")
 		builder.WriteString("	             <td colspan=\"1\">" + inv.Song + "</td>\n")
 		builder.WriteString("	             <td colspan=\"1\">" + inv.Album + "</td>\n")
@@ -995,6 +995,9 @@ func displayCurrent(authtoken string) string {
 		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
 		builder.WriteString("	             <td colspan=\"1\">" + strconv.FormatUint(config.GetBucketSize(config.NatsBucketType, strconv.Itoa(inv.Row)), 10) + "</td>\n")
 		builder.WriteString("	             <td colspan=\"3\">CURRENTS</td>\n")
+		builder.WriteString(" </tr>\n")
+		builder.WriteString(" <tr>\n")
+		builder.WriteString("<form  action=\"" + config.WebAddress + "/retrieve\" method=\"post\">\n")
 		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"asa\" id=\"asa\" value=\"" + inv.Artist + "-" + inv.Song + "-" + inv.Album + "\" /></td>\n")
 		builder.WriteString(" <td colspan=\"1\"><input type=\"submit\" value=\"Download Content\" style=\"color: #4c14e477;\" /></td>\n")
 		builder.WriteString(" <td colspan=\"2\"><input type=\"hidden\" name=\"Authorization\" id=\"Authorization\" value=\"" + authtoken + "\" /></td>\n")
@@ -1014,7 +1017,7 @@ func displayRoots(authtoken string) string {
 	var builder strings.Builder
 	for _, inv := range config.InventoryStoreRoots {
 
-		builder.WriteString(" </tr>\n")
+		builder.WriteString(" <tr>\n")
 		builder.WriteString("<form  action=\"" + config.WebAddress + "/retrieve\" method=\"post\">\n")
 		builder.WriteString("	             <td colspan=\"1\">" + inv.Artist + "</td>\n")
 		builder.WriteString("	             <td colspan=\"1\">" + inv.Song + "</td>\n")
